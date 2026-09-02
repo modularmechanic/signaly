@@ -1,0 +1,231 @@
+/* Builder layout only. Every colour comes from tokens.css. */
+
+.builder {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) minmax(360px, 3fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+}
+
+.builder-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.builder-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.builder-card {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 10px;
+}
+
+.builder-card > h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.builder-note {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+}
+
+.builder-gate {
+  max-width: 46ch;
+  margin: 48px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* ---------- chat ---------- */
+.chat-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.chat-msg {
+  border-left: 3px solid var(--border-soft);
+  padding-left: 8px;
+}
+
+.chat-msg.error {
+  border-left-color: var(--danger);
+}
+
+.chat-msg.assistant {
+  border-left-color: var(--kind-c);
+}
+
+.chat-role {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.chat-text {
+  margin: 2px 0 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chat-form textarea {
+  min-height: 64px;
+  resize: vertical;
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  padding: 6px;
+}
+
+/* ---------- code editor ---------- */
+.code-editor {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.code-editor .gutter {
+  margin: 0;
+  padding: 6px 6px 6px 8px;
+  overflow: hidden;
+  text-align: right;
+  color: var(--text-dim);
+  background: var(--rail);
+  font: inherit;
+  user-select: none;
+}
+
+.code-editor textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 320px;
+  margin: 0;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+}
+
+.editor-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.editor-msg {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.editor-msg.error {
+  color: var(--danger);
+}
+
+/* ---------- faceplate ---------- */
+.fp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.cropper {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.crop-rect {
+  position: absolute;
+  border: 1px dashed var(--focus);
+  background: color-mix(in srgb, var(--focus) 14%, transparent);
+  pointer-events: none;
+}
+
+.fp-preview {
+  position: relative;
+  margin: 8px 0 0;
+  width: fit-content;
+}
+
+.fp-node {
+  position: absolute;
+  border: 1px solid var(--focus);
+  border-radius: var(--r-sm);
+  pointer-events: none;
+}
+
+/* ---------- library ---------- */
+.lib-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 32vh;
+  overflow-y: auto;
+}
+
+.lib-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lib-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lib-slug {
+  color: var(--text-dim);
+}
