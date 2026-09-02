@@ -1,0 +1,31 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { KEYS, readJson, removeJson, writeJson } from './local-json';
+
+describe('local-json', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('round-trips through a versioned envelope', () => {
+    writeJson(KEYS.settings, { rowWidthHp: 88 });
+    expect(readJson(KEYS.settings, { rowWidthHp: 0 })).toEqual({ rowWidthHp: 88 });
+    expect(JSON.parse(localStorage.getItem(KEYS.settings) ?? '{}')).toEqual({
+      v: 1,
+      data: { rowWidthHp: 88 },
+    });
+  });
+
+  it('falls back for missing, unparseable and wrong-version payloads', () => {
+    expect(readJson('missing', 'fb')).toBe('fb');
+    localStorage.setItem('bad', '{not json');
+    expect(readJson('bad', 'fb')).toBe('fb');
+    localStorage.setItem('old', JSON.stringify({ v: 0, data: 'x' }));
+    expect(readJson('old', 'fb')).toBe('fb');
+    localStorage.setItem('naked', JSON.stringify(['x']));
+    expect(readJson('naked', 'fb')).toBe('fb');
+  });
+
+  it('removes a key', () => {
+    writeJson('k', 1);
+    removeJson('k');
+    expect(localStorage.getItem('k')).toBeNull();
+  });
+});

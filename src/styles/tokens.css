@@ -1,0 +1,57 @@
+:root {
+  /* signal kinds — audio / pitch / gate / cv. CVD-tuned defaults. */
+  --kind-a: #e8871e;
+  --kind-p: #3b82f6;
+  --kind-g: #d6336c;
+  --kind-c: #0fa3a3;
+
+  /* surfaces */
+  --bg: #101114;
+  --bg-2: #17181d;
+  --rail: #1c1d22;
+  --surface: #23252b;
+  --surface-2: #2b2e35;
+
+  /* text */
+  --text: #e8eaed;
+  --text-dim: #8b8f9a;
+  --text-invert: #14161a;
+
+  /* lines + focus */
+  --border: rgba(0, 0, 0, 0.55);
+  --border-soft: rgba(255, 255, 255, 0.09);
+  --focus: #7cc4ff;
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus);
+
+  /* accents */
+  --amber: #ffb347;
+  --led: #ff4d3a;
+  --danger: #e0534a;
+
+  /* faceplate tints, one per module category */
+  --cat-sources: #e05d3a;
+  --cat-filters: #e0a53a;
+  --cat-env-func: #5aa876;
+  --cat-amp-mix: #7d8794;
+  --cat-fx: #7a63c9;
+  --cat-voices: #c94f6d;
+  --cat-seq-ctrl: #3f7fc4;
+  --cat-drums: #d98e2b;
+  --cat-meters: #3fb8b0;
+  --cat-output: #2e3138;
+  --cat-utility: #8a8f98;
+  --cat-custom: #d16bd1;
+
+  /* geometry — must match HP_PX / PANEL_H in src/core/types.ts */
+  --hp: 15px;
+  --panel-h: 380px;
+
+  /* radii */
+  --r-sm: 3px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* type */
+  --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
