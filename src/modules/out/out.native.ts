@@ -43,7 +43,10 @@ export const native: NativeSpec = {
     shL.curve = curve;
     shR.curve = curve;
     const merger = ac.createChannelMerger(2);
+    // Fixed -6 dB trim after the limiter: a raw ±5 V oscillator at default LEVEL
+    // otherwise lands near 0 dBFS, which is painfully loud on headphones.
     const master = ac.createGain();
+    master.gain.value = 0.5;
 
     inL.connect(gl);
     inR.connect(gr);

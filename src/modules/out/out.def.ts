@@ -9,7 +9,7 @@ export const def: ModuleDef = {
   cat: 'OUTPUT',
   native: 'out',
   dark: true,
-  knobs: [{ id: 'level', label: 'LEVEL', min: 0, max: 1.4, def: 0.9, fmt: 'fPc', big: true }],
+  knobs: [{ id: 'level', label: 'LEVEL', min: 0, max: 1.4, def: 0.5, fmt: 'fPc', big: true }],
   sws: [
     { id: 'spectrum', label: 'SPECTRUM', options: ['OFF', 'ON'], def: 0 },
     { id: 'phase', label: 'PHASE', options: ['OFF', 'ON'], def: 0 },
