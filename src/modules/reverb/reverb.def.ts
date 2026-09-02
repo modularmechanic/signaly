@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './reverb.panel';
 
 export const def: ModuleDef = {
   id: 'reverb',
@@ -37,5 +36,4 @@ export const def: ModuleDef = {
     { id: 'outl', label: 'OUT L', kind: 'a' },
     { id: 'outr', label: 'OUT R', kind: 'a' },
   ],
-  panel,
 };

@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './seq.panel';
 
 export const def: ModuleDef = {
   id: 'seq',
@@ -22,5 +21,4 @@ export const def: ModuleDef = {
     { id: 'gate', label: 'GATE', kind: 'g' },
   ],
   display: 'steps',
-  panel,
 };

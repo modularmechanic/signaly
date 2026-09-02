@@ -29,7 +29,7 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
   const spec = getSpec(m.def.id);
   const tint = CAT_COLOR[m.def.cat] ?? CAT_COLOR.CUSTOM;
   // The computed fallback layout repeats the module name; the header already shows it.
-  const nodes = layoutPanel(m.def).nodes.filter((n) => n.id !== `label:${m.def.id}`);
+  const nodes = layoutPanel(m.def).nodes;
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
     if (e.target !== e.currentTarget) return;

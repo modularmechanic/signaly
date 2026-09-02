@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './gate.panel';
 
 // Time knobs store SECONDS (fMs picks ms/s on readout); dB knobs store raw dB.
 export const def: ModuleDef = {
@@ -29,5 +28,4 @@ export const def: ModuleDef = {
     { id: 'outr', label: 'OUT R', kind: 'a' },
     { id: 'gate', label: 'GATE OUT', kind: 'g' },
   ],
-  panel,
 };

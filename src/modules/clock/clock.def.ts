@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './clock.panel';
 
 /** Out ids x1/x2/d2/d4 are historic: they name the DEFAULT rate of each output
     (×1/×2/÷2/÷4), not a fixed one — every output has its own rate knob. */
@@ -31,5 +30,4 @@ export const def: ModuleDef = {
     { id: 'rec', label: 'REC', kind: 'g' },
   ],
   display: 'text',
-  panel,
 };

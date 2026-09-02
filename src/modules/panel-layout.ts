@@ -3,12 +3,14 @@ import type { KnobDef, ModuleDef, PanelLayout, PanelNode, PanelNodeKind } from '
 const HEADER_H = 0.1;
 const JACK_ROW_H = 0.09;
 const SW_ROW_H = 0.07;
+const LED_ROW_H = 0.05;
+const LED_W = 0.12;
 const DISPLAY_H = 0.18;
 const PAD_X = 0.06;
 
 const cache = new Map<string, PanelLayout>();
 
-/** Authored geometry wins; user modules without `panel` get this computed fallback. */
+/** Authored geometry wins; every built-in and any user module without `panel` gets this. */
 export function layoutPanel(def: ModuleDef): PanelLayout {
   if (def.panel) return def.panel;
   const hit = cache.get(def.id);
@@ -81,15 +83,16 @@ function computePanel(def: ModuleDef): PanelLayout {
   const cols = def.hp <= 4 ? 1 : 2;
   const jackCols = def.hp <= 4 ? 2 : 4;
   const sws = def.sws ?? [];
-  const nodes: PanelNode[] = [
-    { id: `label:${def.id}`, kind: 'label', x: 0, y: 0, w: 1, h: HEADER_H, label: def.name },
-  ];
+  const leds = def.leds ?? [];
+  // The header band (0..HEADER_H) is reserved for <ModuleHeader>; no node is emitted for it.
+  const nodes: PanelNode[] = [];
 
   const jackRows = Math.ceil(def.ins.length / jackCols) + Math.ceil(def.outs.length / jackCols);
   const swH = Math.ceil(sws.length / cols) * SW_ROW_H;
+  const ledH = leds.length ? LED_ROW_H : 0;
   const displayH = def.display ? DISPLAY_H : 0;
   const knobRows = knobRowCount(def.knobs, cols);
-  const knobsH = Math.max(0, 1 - HEADER_H - jackRows * JACK_ROW_H - swH - displayH);
+  const knobsH = Math.max(0, 1 - HEADER_H - jackRows * JACK_ROW_H - swH - ledH - displayH);
 
   let y = HEADER_H;
   if (knobRows > 0) {
@@ -113,6 +116,21 @@ function computePanel(def: ModuleDef): PanelLayout {
       kind: 'switch',
       label: s.label,
     }));
+  }
+  if (leds.length) {
+    const w = Math.min(LED_W, (1 - 2 * PAD_X) / leds.length);
+    leds.forEach((id, i) => {
+      nodes.push({
+        id: `led:${id}`,
+        kind: 'led',
+        x: (1 - w * leds.length) / 2 + i * w,
+        y,
+        w,
+        h: LED_ROW_H,
+        label: id,
+      });
+    });
+    y += LED_ROW_H;
   }
   if (def.display) {
     nodes.push({

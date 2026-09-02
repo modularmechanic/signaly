@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './arp.panel';
 
 export const def: ModuleDef = {
   id: 'arp',
@@ -32,5 +31,4 @@ export const def: ModuleDef = {
     { id: 'eoc', label: 'EOC', kind: 'g' },
   ],
   display: 'text',
-  panel,
 };

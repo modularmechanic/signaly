@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './vca.panel';
 
 export const def: ModuleDef = {
   id: 'vca',
@@ -25,5 +24,4 @@ export const def: ModuleDef = {
     { id: 'o1', label: 'OUT 1', kind: 'a' },
     { id: 'o2', label: 'OUT 2', kind: 'a' },
   ],
-  panel,
 };

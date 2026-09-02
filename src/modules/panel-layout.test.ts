@@ -64,6 +64,20 @@ describe('panel-layout', () => {
     expect(a?.w).toBeCloseTo(big?.w ?? 0);
   });
 
+  it('emits one node per declared led and still returns an authored panel verbatim', () => {
+    forgetPanel('lit');
+    const led = layoutPanel(def({ id: 'lit', leds: ['clk'] })).nodes.find((n) => n.id === 'led:clk');
+    expect(led).toBeDefined();
+    if (!led) return;
+    expect(led.kind).toBe('led');
+    for (const v of [led.x, led.y, led.w, led.h]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
+    const panel = { nodes: [{ id: 'led:clk', kind: 'led' as const, x: 0, y: 0, w: 1, h: 1 }] };
+    expect(layoutPanel(def({ id: 'lit-authored', leds: ['clk'], panel }))).toBe(panel);
+  });
+
   it('memoises per def id', () => {
     forgetPanel('lay');
     expect(layoutPanel(def())).toBe(layoutPanel(def()));

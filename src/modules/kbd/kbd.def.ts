@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './kbd.panel';
 
 export const def: ModuleDef = {
   id: 'kbd',
@@ -16,5 +15,4 @@ export const def: ModuleDef = {
     { id: 'trig', label: 'TRIG', kind: 'g' },
   ],
   display: 'piano',
-  panel,
 };

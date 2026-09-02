@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './voct.panel';
 
 export const def: ModuleDef = {
   id: 'voct',
@@ -20,5 +19,4 @@ export const def: ModuleDef = {
   ],
   outs: [{ id: 'out', label: 'V/OCT OUT', kind: 'p' }],
   display: 'text',
-  panel,
 };

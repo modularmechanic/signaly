@@ -56,6 +56,7 @@ const DEF = shape({
   ins: list(JACK),
   outs: list(JACK),
   display: nul('string'),
+  leds: orNull(list(s('string'))),
   panel: orNull(shape({ nodes: list(PANEL_NODE) })),
 });
 
@@ -104,9 +105,10 @@ DEF — the panel and ports:
   sws?: <=8 of { id, label(<=16), options (2..16 strings, <=16 chars), def? option index }
   ins / outs: <=8 each of { id, label(<=16), kind }; kind is a=audio p=pitch CV g=gate/trigger c=control CV.
   display?: one of ${DISPLAYS.join(' ')}
+  leds?: <=8 unique [a-z0-9_-] ids (<=16 chars), each an indicator the DSP lights with { t: 'led', id, v }.
   panel?: OPTIONAL { nodes: [{ id, kind, x, y, w, h, label? }] } in 0..1 panel coordinates, <=64 nodes,
     x+w<=1 and y+h<=1. Node ids: knob:<knobId> fader:<knobId> switch:<swId> in:<jackId> out:<jackId>
-    led:<any> label:<any> display:<display>. Include panel ONLY when the user asks for a specific layout
+    led:<ledId> label:<any> display:<display>. Include panel ONLY when the user asks for a specific layout
     or is aligning controls to a faceplate image; otherwise omit it and the app lays the panel out itself.
 
 DSP — exactly one class, no imports, no exports:

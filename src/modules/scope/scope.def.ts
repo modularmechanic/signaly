@@ -1,5 +1,4 @@
 import type { JackDef, ModuleDef } from '../../core/types';
-import { panel } from './scope.panel';
 
 const chans = [1, 2, 3, 4];
 
@@ -22,5 +21,4 @@ export const def: ModuleDef = {
   ins: chans.map((c): JackDef => ({ id: `in${c}`, label: `IN ${c}`, kind: 'a' })),
   outs: chans.map((c): JackDef => ({ id: `thru${c}`, label: `THRU ${c}`, kind: 'a' })),
   display: 'scope',
-  panel,
 };

@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './clockdiv.panel';
 
 export const def: ModuleDef = {
   id: 'clockdiv',
@@ -15,5 +14,5 @@ export const def: ModuleDef = {
     { id: 'rst', label: 'RESET', kind: 'g' },
   ],
   outs: [{ id: 'out', label: '÷ OUT', kind: 'g' }],
-  panel,
+  leds: ['clk'],
 };

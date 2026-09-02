@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './ddelay.panel';
 
 export const def: ModuleDef = {
   id: 'ddelay',
@@ -28,5 +27,5 @@ export const def: ModuleDef = {
     { id: 'clk', label: 'CLOCK', kind: 'g' },
   ],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
-  panel,
+  leds: ['clk'],
 };

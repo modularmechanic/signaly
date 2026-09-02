@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './ladder.panel';
 
 export const def: ModuleDef = {
   id: 'ladder',
@@ -22,5 +21,4 @@ export const def: ModuleDef = {
     { id: 'rcv', label: 'RES CV', kind: 'c' },
   ],
   outs: [{ id: 'lp', label: 'LP OUT', kind: 'a' }],
-  panel,
 };

@@ -115,6 +115,14 @@ describe('validateUserDef', () => {
     expect(errorOf(withDef({ panel }))).toMatch(/overflows/);
   });
 
+  it('accepts leds and resolves led panel nodes against them', () => {
+    const panel = { nodes: [{ id: 'led:clk', kind: 'led', x: 0, y: 0, w: 0.1, h: 0.1 }] };
+    expect(validateUserDef(withDef({ leds: ['clk'], panel })).ok).toBe(true);
+    expect(errorOf(withDef({ panel }))).toMatch(/names no led/);
+    expect(errorOf(withDef({ leds: ['clk', 'clk'] }))).toMatch(/leds\[1\]/);
+    expect(errorOf(withDef({ leds: ['CLK'] }))).toMatch(/leds\[0\]/);
+  });
+
   it('rejects more than 64 panel nodes', () => {
     const nodes = Array.from({ length: 65 }, () => ({
       id: 'led:a',

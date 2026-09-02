@@ -29,15 +29,20 @@ function checkDef(def: ModuleDef): void {
     if (k.attenuates !== undefined) expect(cvIns.has(k.attenuates)).toBe(true);
   }
 
+  const leds = def.leds ?? [];
+  expect(new Set(leds).size).toBe(leds.length);
+  for (const id of leds) expect(id).toMatch(/^[a-z0-9_-]+$/);
+
   if (!def.panel) return;
   const controls = new Set<string>([
     ...def.knobs.flatMap((k) => [`knob:${k.id}`, `fader:${k.id}`]),
     ...(def.sws ?? []).map((s) => `switch:${s.id}`),
     ...def.ins.flatMap((j) => [`in:${j.id}`, `input:${j.id}`]),
     ...def.outs.flatMap((j) => [`out:${j.id}`, `output:${j.id}`]),
+    ...leds.map((id) => `led:${id}`),
   ]);
   for (const node of def.panel.nodes) {
-    if (/^(knob|fader|switch|in|out|input|output):/.test(node.id)) {
+    if (/^(knob|fader|switch|led|in|out|input|output):/.test(node.id)) {
       expect(controls.has(node.id)).toBe(true);
     }
     for (const v of [node.x, node.y, node.w, node.h]) {

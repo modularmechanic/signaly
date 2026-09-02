@@ -80,7 +80,9 @@ export interface ModuleDef {
   ins: JackDef[];
   outs: JackDef[];
   display?: Display;
-  /** authored by built-ins via `<id>.panel.ts`; optional for user modules */
+  /** ids lit by a `{ t: 'led', id, v }` worklet feed; laid out as `led:<id>` panel nodes */
+  leds?: string[];
+  /** optional authored geometry (user modules); built-ins use the computed layout */
   panel?: PanelLayout;
 }
 

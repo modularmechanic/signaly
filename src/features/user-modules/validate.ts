@@ -30,7 +30,7 @@ export const FMT_NAMES: readonly string[] = [
 export const DISPLAYS: readonly string[] = ['scope', 'meter', 'steps', 'env', 'piano', 'text'];
 export const JACK_KINDS: readonly string[] = ['a', 'p', 'g', 'c'];
 const NODE_KIND: readonly string[] = ['knob', 'fader', 'switch', 'led', 'in', 'out', 'display', 'label'];
-const FREE_PREFIX: readonly string[] = ['led', 'label', 'display'];
+const FREE_PREFIX: readonly string[] = ['label', 'display'];
 const EPS = 1e-9;
 
 export function validateSlug(v: unknown): v is string {
@@ -118,6 +118,16 @@ function switches(v: unknown): SwitchDef[] {
   return out;
 }
 
+function leds(v: unknown): string[] {
+  const seen = new Set<string>();
+  return list(v, 'leds', 8).map((raw, i) => {
+    const id = str(raw, `leds[${i}]`, 16);
+    if (!/^[a-z0-9_-]+$/.test(id) || seen.has(id)) bad(`leds[${i}] must be a unique [a-z0-9_-] id`);
+    seen.add(id);
+    return id;
+  });
+}
+
 function panel(v: unknown, d: UserDef): PanelLayout {
   const o = obj(v, 'panel');
   const knobIds = new Set(d.knobs.map((k) => k.id));
@@ -125,6 +135,7 @@ function panel(v: unknown, d: UserDef): PanelLayout {
     knob: knobIds,
     fader: knobIds,
     switch: new Set((d.sws ?? []).map((s) => s.id)),
+    led: new Set(d.leds ?? []),
     in: new Set(d.ins.map((j) => j.id)),
     out: new Set(d.outs.map((j) => j.id)),
   };
@@ -177,6 +188,8 @@ export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: 
     if (sws !== undefined) def.sws = switches(sws);
     const display = opt(r.display);
     if (display !== undefined) def.display = pick(display, 'def.display', DISPLAYS) as Display;
+    const l = opt(r.leds);
+    if (l !== undefined) def.leds = leds(l);
     const p = opt(r.panel);
     if (p !== undefined) def.panel = panel(p, def);
     return { ok: true, def };

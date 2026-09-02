@@ -1,5 +1,4 @@
 import type { ModuleDef } from '../../core/types';
-import { panel } from './euklid.panel';
 
 export const def: ModuleDef = {
   id: 'euklid',
@@ -30,5 +29,4 @@ export const def: ModuleDef = {
     { id: 'acc', label: 'ACCENT', kind: 'g' },
   ],
   display: 'steps',
-  panel,
 };
