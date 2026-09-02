@@ -9,6 +9,7 @@ import {
   jackKey,
   type JackInfo,
 } from '../../hooks/patch-state';
+import { disconnectCable } from '../../engine/rack';
 import { useRackStore } from '../../state/rack-store';
 
 interface Pt {
@@ -21,12 +22,49 @@ interface Seg {
   kind: Kind;
   color: string;
   alpha?: number;
+  /** absent on the in-progress drag rope, which is not clickable */
+  id?: number;
 }
 
 const SAG = 14;
 const WIDTH = 3;
 /** kind is legible without colour: the highlight pass carries a per-kind dash */
 const DASH: Record<Kind, number[]> = { a: [], p: [10, 5], g: [3, 3], c: [1, 4] };
+/** how close the pointer must come to a cable's centre line to grab it */
+const HIT_PX = 7;
+/** samples per curve for hit-testing: 24 keeps the error under a pixel at rack scale */
+const HIT_STEPS = 24;
+const INTERACTIVE = 'button, input, select, textarea, a, [role="slider"], [role="radio"], [contenteditable]';
+
+const control = (s: Seg): Pt => ({
+  x: (s.a.x + s.b.x) / 2,
+  y: (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16,
+});
+
+/** Squared distance from p to the quadratic through a -> control -> b, by sampling. */
+function distToRope(s: Seg, p: Pt): number {
+  const c = control(s);
+  let best = Infinity;
+  let px = s.a.x;
+  let py = s.a.y;
+  for (let i = 1; i <= HIT_STEPS; i++) {
+    const t = i / HIT_STEPS;
+    const u = 1 - t;
+    const x = u * u * s.a.x + 2 * u * t * c.x + t * t * s.b.x;
+    const y = u * u * s.a.y + 2 * u * t * c.y + t * t * s.b.y;
+    // distance from p to the segment (px,py)-(x,y)
+    const dx = x - px;
+    const dy = y - py;
+    const len = dx * dx + dy * dy;
+    const h = len === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - px) * dx + (p.y - py) * dy) / len));
+    const ex = px + h * dx - p.x;
+    const ey = py + h * dy - p.y;
+    best = Math.min(best, Math.hypot(ex, ey));
+    px = x;
+    py = y;
+  }
+  return best;
+}
 
 /** One canvas for every cable. Never re-renders: endpoints and cables are read
     inside the shared render-bus draw, and an unchanged signature skips the repaint. */
@@ -51,6 +89,7 @@ export function CableCanvas(): ReactNode {
     const plug = read('--metal-2', '#0f1012');
     const pin = read('--edge', '#050506');
 
+    const ptr = { x: -1, y: -1, inside: false };
     let dpr = 1;
     const size = (): void => {
       dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -61,7 +100,9 @@ export function CableCanvas(): ReactNode {
     };
     size();
 
-    const rope = (s: Seg): void => {
+    let hover: number | null = null;
+
+    const rope = (s: Seg, lit: boolean): void => {
       const mx = (s.a.x + s.b.x) / 2;
       const my = (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16;
       const curve = (dy: number): void => {
@@ -78,8 +119,13 @@ export function CableCanvas(): ReactNode {
       ctx.strokeStyle = jacket;
       ctx.lineWidth = WIDTH + 2;
       curve(0);
+      if (lit) {
+        ctx.strokeStyle = 'rgba(255,255,255,.85)';
+        ctx.lineWidth = WIDTH + 4;
+        curve(0);
+      }
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = WIDTH;
+      ctx.lineWidth = lit ? WIDTH + 1 : WIDTH;
       curve(0);
       ctx.strokeStyle = 'rgba(255,255,255,.22)';
       ctx.lineWidth = 1;
@@ -112,7 +158,7 @@ export function CableCanvas(): ReactNode {
         if (!out || !inp) continue;
         const a = jackCenter(out);
         const b = jackCenter(inp);
-        segs.push({ a, b, kind: out.kind, color: kindColor[out.kind] });
+        segs.push({ a, b, kind: out.kind, color: kindColor[out.kind], id: c.id });
         sig += `|${c.id},${a.x | 0},${a.y | 0},${b.x | 0},${b.y | 0}`;
       }
       const drag = getDrag();
@@ -129,11 +175,48 @@ export function CableCanvas(): ReactNode {
         });
         sig += `|d${drag.x | 0},${drag.y | 0},${drag.kind}`;
       }
+      hover = drag ? null : hitTest(segs);
+      sig += `|h${hover ?? ''}`;
       if (sig === last) return;
       last = sig;
+      document.body.classList.toggle('cable-hover', hover !== null);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      for (const s of segs) rope(s);
+      for (const s of segs) rope(s, s.id !== undefined && s.id === hover);
+    };
+
+    /** Nearest cable under the pointer, or null. The canvas never takes pointer events,
+        so a cable lying over a knob or jack loses: the control stays clickable. */
+    const hitTest = (segs: Seg[]): number | null => {
+      if (!ptr.inside) return null;
+      let best: number | null = null;
+      let bestD = HIT_PX;
+      for (const s of segs) {
+        if (s.id === undefined) continue;
+        const d = distToRope(s, ptr);
+        if (d < bestD) {
+          bestD = d;
+          best = s.id;
+        }
+      }
+      if (best === null) return null;
+      const el = document.elementFromPoint(ptr.x, ptr.y);
+      return el && el.closest(INTERACTIVE) ? null : best;
+    };
+
+    const onMove = (e: PointerEvent): void => {
+      ptr.x = e.clientX;
+      ptr.y = e.clientY;
+      ptr.inside = true;
+    };
+    const onLeave = (): void => {
+      ptr.inside = false;
+    };
+    const onClick = (): void => {
+      if (hover === null) return;
+      disconnectCable(hover);
+      hover = null;
+      document.body.classList.remove('cable-hover');
     };
 
     const relayout = (): void => {
@@ -143,11 +226,18 @@ export function CableCanvas(): ReactNode {
     };
     window.addEventListener('resize', relayout);
     window.addEventListener('scroll', invalidateJackRects, true);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerleave', onLeave, { passive: true });
+    window.addEventListener('click', onClick);
     const unregister = addDraw(draw);
     return () => {
       unregister();
       window.removeEventListener('resize', relayout);
       window.removeEventListener('scroll', invalidateJackRects, true);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener('click', onClick);
+      document.body.classList.remove('cable-hover');
     };
   }, []);
 

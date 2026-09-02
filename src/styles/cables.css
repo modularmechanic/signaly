@@ -212,7 +212,15 @@
   position: fixed;
   z-index: 40;
   inset: 0;
+  /* Never takes pointer events: the canvas covers the viewport, so hit-testing happens
+     on window events instead and a control under a cable stays clickable. */
   pointer-events: none;
+}
+
+/* Set while the pointer is within HIT_PX of a cable and not over a control. */
+body.cable-hover,
+body.cable-hover .rack {
+  cursor: pointer;
 }
 
 /* ---------- patch status / tooltip line ---------- */
