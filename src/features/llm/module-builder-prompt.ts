@@ -95,7 +95,7 @@ SLUG: matches [a-z0-9-]{3,32}, kebab-case, descriptive.
 
 DEF — the panel and ports:
   name: <=24 chars. sub: <=32 chars, the small line under the name.
-  hp: integer 1..24 panel width (1 HP = 15px, panel is 380px tall). 4-8 HP suits most modules.
+  hp: integer 1..24 panel width (1 HP = 26px, panel is 658px tall). 4-8 HP suits most modules.
   cat: one of ${CAT_ORDER.join(' | ')}
   dark?: boolean, dark faceplate.
   knobs: <=16 of { id, label(<=16), min, max, def, fmt?, curve?, big?, fader?, cvIn?, attenuates? }
