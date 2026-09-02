@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-} from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import type { JackDef, Kind } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import {
@@ -15,7 +8,7 @@ import {
   registerJack,
   startJackDrag,
   subscribeArm,
-  unpatchInput,
+  unpatchJack,
   unregisterJack,
   type JackDir,
 } from '../../hooks/patch-state';
@@ -54,15 +47,26 @@ export function Jack({ m, def, dir, patched }: JackProps): ReactNode {
     const el = ref.current;
     if (el) startJackDrag({ uid, jackId: def.id, dir, kind: def.kind, el }, e.nativeEvent);
   };
+  const unpatch = (): void => {
+    unpatchJack(uid, dir, def.id);
+  };
+
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>): void => {
     if (e.key === 'Escape') return cancelArm();
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (!patched) return;
+      // The panel also removes the whole module on Delete; never let this bubble that far.
+      e.preventDefault();
+      e.stopPropagation();
+      return unpatch();
+    }
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     arm();
   };
 
   const label = `${def.label} ${dir === 'in' ? 'input' : 'output'}, ${KIND_NAME[def.kind]}${
-    patched ? ', patched' : ''
+    patched ? ', patched — press Delete to disconnect' : ''
   }`;
 
   return (
@@ -79,7 +83,7 @@ export function Jack({ m, def, dir, patched }: JackProps): ReactNode {
         onClick={arm}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
-        onDoubleClick={() => dir === 'in' && unpatchInput(uid, def.id)}
+        onDoubleClick={unpatch}
       >
         <span className="jack-glyph" aria-hidden="true">
           {KIND_GLYPH[def.kind]}

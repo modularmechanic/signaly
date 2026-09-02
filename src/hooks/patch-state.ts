@@ -68,12 +68,13 @@ function setCompat(need: JackDir, on: boolean): void {
   for (const info of registry.values()) if (info.dir === need) info.el.classList.toggle('compat', on);
 }
 
-/** Double-click an input to pull its cable out. */
-export function unpatchInput(uid: number, jackId: string): void {
-  useRackStore
-    .getState()
-    .cables.filter((c) => c.to.uid === uid && c.to.jack === jackId)
-    .forEach((c) => disconnectCable(c.id));
+/** Pull every cable off a jack. Inputs hold at most one; an output may fan out to many.
+    Returns how many were removed so the caller can stay silent when there was nothing to pull. */
+export function unpatchJack(uid: number, dir: JackDir, jackId: string): number {
+  const end = dir === 'in' ? ('to' as const) : ('from' as const);
+  const doomed = useRackStore.getState().cables.filter((c) => c[end].uid === uid && c[end].jack === jackId);
+  doomed.forEach((c) => disconnectCable(c.id));
+  return doomed.length;
 }
 
 /* ---- keyboard patching: arm a jack, then arm its partner ---- */

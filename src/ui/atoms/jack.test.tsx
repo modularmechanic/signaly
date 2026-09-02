@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JackDef, ModuleDef } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
-import { connectCable } from '../../engine/rack';
+import { connectCable, disconnectCable } from '../../engine/rack';
 import { cancelArm } from '../../hooks/patch-state';
 import { useRackStore } from '../../state/rack-store';
 import { Jack } from './jack';
@@ -56,6 +56,7 @@ const press = (el: HTMLElement, k: string): void =>
 beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   vi.mocked(connectCable).mockClear();
+  vi.mocked(disconnectCable).mockClear();
   cancelArm();
   useRackStore.getState().reset();
   src = mkInstance(1, mkDef('src', [], [OUT]));
@@ -85,7 +86,9 @@ describe('Jack', () => {
   it('labels direction, kind and patch state', () => {
     expect(btn('OUT').getAttribute('aria-label')).toBe('OUT output, audio');
     act(() => root.render(<Jack m={src} def={OUT} dir="out" patched />));
-    expect(btn('OUT').getAttribute('aria-label')).toBe('OUT output, audio, patched');
+    expect(btn('OUT').getAttribute('aria-label')).toBe(
+      'OUT output, audio, patched — press Delete to disconnect',
+    );
   });
 
   it('keyboard arm then complete reaches connectCable', () => {
@@ -109,6 +112,51 @@ describe('Jack', () => {
     press(btn('OUT'), 'Enter');
     press(btn('OUT'), ' ');
     expect(btn('OUT').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('Delete on a patched jack disconnects it, from either end', () => {
+    act(() => root.render(<Jack m={dst} def={IN} dir="in" patched />));
+    const cable = { id: 7, from: { uid: 1, jack: 'out' }, to: { uid: 2, jack: 'in' } };
+    act(() => useRackStore.getState().addCable(cable));
+    press(btn('IN'), 'Delete');
+    expect(vi.mocked(disconnectCable)).toHaveBeenCalledWith(7);
+
+    vi.mocked(disconnectCable).mockClear();
+    act(() => root.render(<Jack m={src} def={OUT} dir="out" patched />));
+    press(btn('OUT'), 'Delete');
+    expect(vi.mocked(disconnectCable)).toHaveBeenCalledWith(7);
+  });
+
+  it('Delete on an unpatched jack disconnects nothing and still reaches the panel', () => {
+    // The panel listens with a React onKeyDown, so mirror that rather than a native listener.
+    const onPanelKey = vi.fn();
+    act(() =>
+      root.render(
+        <div onKeyDown={onPanelKey}>
+          <Jack m={dst} def={IN} dir="in" patched={false} />
+        </div>,
+      ),
+    );
+    press(btn('IN'), 'Delete');
+    expect(vi.mocked(disconnectCable)).not.toHaveBeenCalled();
+    expect(onPanelKey).toHaveBeenCalled();
+  });
+
+  it('Delete on a patched jack stops propagation so the module is not removed', () => {
+    const onPanelKey = vi.fn();
+    act(() =>
+      root.render(
+        <div onKeyDown={onPanelKey}>
+          <Jack m={dst} def={IN} dir="in" patched />
+        </div>,
+      ),
+    );
+    act(() =>
+      useRackStore.getState().addCable({ id: 9, from: { uid: 1, jack: 'out' }, to: { uid: 2, jack: 'in' } }),
+    );
+    press(btn('IN'), 'Delete');
+    expect(vi.mocked(disconnectCable)).toHaveBeenCalledWith(9);
+    expect(onPanelKey).not.toHaveBeenCalled();
   });
 
   it('pointer drag ends in the same connect call', () => {
