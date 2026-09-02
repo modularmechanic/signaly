@@ -41,7 +41,7 @@ export function CableCanvas(): ReactNode {
       a: read('--kind-a', '#e8871e'),
       p: read('--kind-p', '#3b82f6'),
       g: read('--kind-g', '#d6336c'),
-      c: read('--kind-c', '#0fa3a3'),
+      c: read('--kind-c', '#2dc7c0'),
     };
     const shade = read('--bg', '#101114');
     const sheen = read('--border-soft', 'rgba(255,255,255,.28)');

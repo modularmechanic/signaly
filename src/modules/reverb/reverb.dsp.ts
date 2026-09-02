@@ -18,6 +18,7 @@ import {
   onePoleCoeff,
   DL,
   OnePole,
+  lpCoeff,
   TP,
   type BaseOptions,
   type Params,
@@ -166,10 +167,10 @@ class Reverb extends Base {
       kMdep = p.mdep ?? 0.4;
 
     // shared per-block coeffs
-    const ilpC = 1 - Math.exp((-TP * clamp(p.inlp ?? 14000, 200, 18000)) / sampleRate);
-    const ihpC = 1 - Math.exp((-TP * clamp(p.inhp ?? 20, 10, 2000)) / sampleRate);
-    const dampC = 1 - Math.exp((-TP * clamp(p.damp ?? 7000, 200, 18000)) / sampleRate);
-    const lowC = 1 - Math.exp((-TP * clamp(p.lowd ?? 40, 10, 2000)) / sampleRate);
+    const ilpC = lpCoeff(clamp(p.inlp ?? 14000, 200, 18000));
+    const ihpC = lpCoeff(clamp(p.inhp ?? 20, 10, 2000));
+    const dampC = lpCoeff(clamp(p.damp ?? 7000, 200, 18000));
+    const lowC = lpCoeff(clamp(p.lowd ?? 40, 10, 2000));
     const preS = clamp(p.pre ?? 0.02, 0, 0.29) * sampleRate;
 
     for (let i = 0; i < L.length; i++) {
@@ -220,8 +221,12 @@ class Reverb extends Base {
         b2 = clamp((this.lp2 - this.hp2) * dec, -8, 8);
         b2 = this.apRun(this.t2ap2, b2, 0, S);
         this.t2d2.push(b2);
-        yl = 0.55 * (this.t2d1.read(266 * s * S) + this.t2d1.read(2974 * s * S) - this.t2ap2.d.read(1913 * s * S));
-        yr = 0.55 * (this.t1d1.read(353 * s * S) + this.t1d1.read(3627 * s * S) - this.t1ap2.d.read(1228 * s * S));
+        yl =
+          0.55 *
+          (this.t2d1.read(266 * s * S) + this.t2d1.read(2974 * s * S) - this.t2ap2.d.read(1913 * s * S));
+        yr =
+          0.55 *
+          (this.t1d1.read(353 * s * S) + this.t1d1.read(3627 * s * S) - this.t1ap2.d.read(1228 * s * S));
       } else if (algo === 2) {
         // ---------- ROOM: Schroeder / Freeverb ----------
         this.sz.a = this.szCoefShort;
@@ -250,9 +255,11 @@ class Reverb extends Base {
         if (this.ph > 1) this.ph -= 1;
         const md = (large ? 22 : 12) * s * kMdep;
         const lp = this.fdnLp;
-        const d0 = lp[0] + (this.fdn[0].read(this.fdnLen[0] * s * S + Math.sin(TP * this.ph) * md) - lp[0]) * dampC;
+        const d0 =
+          lp[0] + (this.fdn[0].read(this.fdnLen[0] * s * S + Math.sin(TP * this.ph) * md) - lp[0]) * dampC;
         const d1 =
-          lp[1] + (this.fdn[1].read(this.fdnLen[1] * s * S + Math.sin(TP * (this.ph + 0.25)) * md) - lp[1]) * dampC;
+          lp[1] +
+          (this.fdn[1].read(this.fdnLen[1] * s * S + Math.sin(TP * (this.ph + 0.25)) * md) - lp[1]) * dampC;
         const d2 = lp[2] + (this.fdn[2].read(this.fdnLen[2] * s * S) - lp[2]) * dampC;
         const d3 = lp[3] + (this.fdn[3].read(this.fdnLen[3] * s * S) - lp[3]) * dampC;
         // Damping states sit inside a loop with feedback up to 0.9985 — the

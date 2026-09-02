@@ -1,4 +1,15 @@
-import { Base, ch, clamp, flush, ClockSync, DL, OnePole, SYNC_DIV, TP, type Params } from '../../engine/dsp-prelude';
+import {
+  Base,
+  ch,
+  clamp,
+  flush,
+  ClockSync,
+  DL,
+  OnePole,
+  SYNC_DIV,
+  lpCoeff,
+  type Params,
+} from '../../engine/dsp-prelude';
 
 class DDelay extends Base {
   d = new DL(sampleRate * 4);
@@ -26,7 +37,7 @@ class DDelay extends Base {
       const x = inp?.[i] ?? 0;
       const per = this.cs.tick(clk?.[i] ?? 0);
       const tone = clamp((p.tone ?? 4000) * Math.pow(2, (tocv?.[i] ?? 0) / 5), 150, 17000);
-      const tc = 1 - Math.exp((-TP * tone) / sampleRate);
+      const tc = lpCoeff(tone);
       // synced time (division of the incoming clock pulse) or free-run TIME knob
       const tt =
         sync > 0 && per > 0

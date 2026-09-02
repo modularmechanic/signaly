@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { activeProvider, listModels, setActiveProvider } from '../../features/llm/client';
+import { activeProvider, setActiveProvider } from '../../features/llm/active-provider';
 import { MAX_ROW_HP, MIN_ROW_HP, useSettingsStore } from '../../state/settings-store';
 import {
   clearKeys,
@@ -24,6 +24,8 @@ function ProviderRow({ p, onChanged }: { p: Provider; onChanged: () => void }): 
   const current = getModel(p) ?? '';
 
   const load = async (): Promise<void> => {
+    // Dynamic: the provider clients belong to the builder chunk, not the rack.
+    const { listModels } = await import('../../features/llm/client');
     const r = await listModels(p);
     if (Array.isArray(r)) {
       setModels(r);

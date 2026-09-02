@@ -1,7 +1,7 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
 
 class NoiseLab extends Base {
-  rs = 55555;
+  rng = new Lcg(55555);
   lp = 0;
   hpz = 0;
   f1 = 0;
@@ -18,12 +18,6 @@ class NoiseLab extends Base {
     return { color: 0, cut: 8000, dec: 0.15, dens: 20 };
   }
 
-  /** LCG so the noise field is reproducible per instance, unlike Math.random. */
-  rnd(): number {
-    this.rs = (this.rs * 1103515245 + 12345) & 0x7fffffff;
-    return this.rs / 0x3fffffff - 1;
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const gt = ch(I, 0),
       cc = ch(I, 1),
@@ -37,7 +31,7 @@ class NoiseLab extends Base {
     const sr = sampleRate;
     const decC = Math.exp(-1 / (Math.max(0.005, dec) * sr));
     for (let i = 0; i < out.length; i++) {
-      const w = this.rnd();
+      const w = this.rng.next();
       // color: -1 brown … 0 white … +1 blue (via pink pivots)
       this.b0 = 0.99765 * this.b0 + w * 0.099046;
       this.b1 = 0.963 * this.b1 + w * 0.2965;
@@ -66,12 +60,12 @@ class NoiseLab extends Base {
       const y = clamp(lpv, -1.5, 1.5);
       out[i] = y * 5;
       // dust — random impulses at DENSITY hz
-      dust[i] = Math.abs(this.rnd()) < dens / sr ? this.rnd() * 9 : 0;
+      dust[i] = Math.abs(this.rng.next()) < dens / sr ? this.rng.next() * 9 : 0;
       // stepped random voltage clocked at DENSITY hz
       this.rt += dens / sr;
       if (this.rt >= 1) {
         this.rt -= 1;
-        this.rndV = this.rnd() * 5;
+        this.rndV = this.rng.next() * 5;
       }
       rndO[i] = this.rndV;
       const g5 = gt?.[i] ?? 0;

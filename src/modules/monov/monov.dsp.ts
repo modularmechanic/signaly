@@ -1,4 +1,4 @@
-import { Base, blep, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, blep, ch, clamp, lpCoeff, type Params } from '../../engine/dsp-prelude';
 
 class MonoV extends Base {
   ph = 0;
@@ -63,7 +63,7 @@ class MonoV extends Base {
         25,
         sampleRate * 0.35,
       );
-      const gg = 1 - Math.exp((-TP * fc) / sampleRate);
+      const gg = lpCoeff(fc);
       const u = Math.tanh(osc - k * this.s4);
       this.s1 += gg * (u - this.s1);
       this.s2 += gg * (this.s1 - this.s2);

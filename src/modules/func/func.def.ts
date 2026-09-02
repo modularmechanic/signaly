@@ -23,6 +23,5 @@ export const def: ModuleDef = {
     { id: 'out', label: 'OUT', kind: 'c' },
     { id: 'eoc', label: 'EOC', kind: 'g' },
   ],
-  display: 'scope',
   panel,
 };

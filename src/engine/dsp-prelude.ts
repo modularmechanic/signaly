@@ -122,6 +122,9 @@ export class DL {
 export const onePoleCoeff = (tauMs: number): number =>
   tauMs > 0 ? 1 - Math.exp(-1000 / (tauMs * sampleRate)) : 1;
 
+/** One-pole LOW-PASS coefficient for a cutoff in HERTZ at the live sampleRate. */
+export const lpCoeff = (hz: number): number => 1 - Math.exp((-TP * hz) / sampleRate);
+
 /** Exponential smoother with a sample-rate-correct time constant. */
 export class OnePole {
   a: number;
@@ -164,3 +167,18 @@ export class ClockSync {
 /** Sync divisions as a multiple of ONE clock pulse; index 0 = FREE sentinel.
     Switch labels must line up: ['FREE','1/1','1/2','1/4.','1/4','1/8.','1/8','1/8T','1/16','1/16T']. */
 export const SYNC_DIV = [0, 4, 2, 1.5, 1, 0.75, 0.5, 1 / 3, 0.25, 1 / 6];
+
+/** Linear congruential noise: reproducible per instance, unlike Math.random. */
+export class Lcg {
+  s: number;
+
+  constructor(seed: number) {
+    this.s = seed;
+  }
+
+  /** Next value in -1..1. */
+  next(): number {
+    this.s = (this.s * 1103515245 + 12345) & 0x7fffffff;
+    return this.s / 0x3fffffff - 1;
+  }
+}

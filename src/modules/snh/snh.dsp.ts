@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
 
 class SnH extends Base {
   h1 = 0;
@@ -8,16 +8,11 @@ class SnH extends Base {
   lt1 = 0;
   lt2 = 0;
   ph = 0;
-  rs = 135797;
+  rng = new Lcg(135797);
   clkGate = 0;
 
   defaults(): Params {
     return { rate: 8, prob: 1, slew1: 0.001, slew2: 0.001 };
-  }
-
-  rnd(): number {
-    this.rs = (this.rs * 1103515245 + 12345) & 0x7fffffff;
-    return this.rs / 0x3fffffff - 1;
   }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
@@ -37,7 +32,7 @@ class SnH extends Base {
     const c2 = 1 - Math.exp(-1 / (Math.max(0.0005, slew2) * sampleRate));
     const pulse = (0.004 * sampleRate) | 0;
     for (let i = 0; i < o1.length; i++) {
-      const w = this.rnd() * 5;
+      const w = this.rng.next() * 5;
       const r = clamp(rate * Math.pow(2, ((rcv?.[i] ?? 0) / 5) * 3), 0.05, 200);
       this.ph += r / sampleRate;
       if (this.ph >= 1) {
@@ -49,8 +44,10 @@ class SnH extends Base {
       // each channel follows its own trigger when patched, else the internal clock
       const tv1 = t1?.[i] ?? (this.clkGate > 0 ? 5 : 0);
       const tv2 = t2?.[i] ?? (this.clkGate > 0 ? 5 : 0);
-      if (tv1 > 2.5 && this.lt1 <= 2.5 && (pb >= 1 || this.rnd() * 0.5 + 0.5 < pb)) this.h1 = in1?.[i] ?? w;
-      if (tv2 > 2.5 && this.lt2 <= 2.5 && (pb >= 1 || this.rnd() * 0.5 + 0.5 < pb)) this.h2 = in2?.[i] ?? w;
+      if (tv1 > 2.5 && this.lt1 <= 2.5 && (pb >= 1 || this.rng.next() * 0.5 + 0.5 < pb))
+        this.h1 = in1?.[i] ?? w;
+      if (tv2 > 2.5 && this.lt2 <= 2.5 && (pb >= 1 || this.rng.next() * 0.5 + 0.5 < pb))
+        this.h2 = in2?.[i] ?? w;
       this.lt1 = tv1;
       this.lt2 = tv2;
       this.s1 += (this.h1 - this.s1) * c1;

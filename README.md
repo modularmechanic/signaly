@@ -2,8 +2,6 @@
 
 A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 40 built-in Eurorack-style modules, patch cables, presets, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
 
-![screenshot placeholder](docs/screenshot.png)
-
 ## Quickstart
 
 Requires Node 24 or newer.
@@ -75,7 +73,7 @@ registerProcessor('myosc', MyOsc);
 
 Signals are volts: audio ±5, gates 0 or 5, pitch 1 V/oct with 0 V = C4. Parameters arrive on `this.p` between blocks. Allocate nothing inside `process()`.
 
-Symbols available in worklet scope, and nothing else: `Base`, `ch`, `clamp`, `TP`, `flush`, `blep`, `oscW`, `DL`, `OnePole`, `onePoleCoeff`, `ClockSync`, `SYNC_DIV`, `sampleRate`.
+Symbols available in worklet scope, and nothing else: `Base`, `ch`, `clamp`, `TP`, `flush`, `blep`, `oscW`, `DL`, `OnePole`, `onePoleCoeff`, `lpCoeff`, `Lcg`, `ClockSync`, `SYNC_DIV`, `sampleRate`.
 
 `<id>.panel.ts` — normalised 0..1 geometry:
 

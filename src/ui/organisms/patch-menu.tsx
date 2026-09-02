@@ -23,6 +23,13 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
 
   const refresh = (): void => setList(listPresets());
 
+  const save = (): void => {
+    const saved = savePreset(name);
+    setName('');
+    refresh();
+    note(`Saved ${saved.name}`);
+  };
+
   const load = (p: Preset): void => {
     applySnapshot(p.snapshot);
     note(`Loaded ${p.name}`);
@@ -62,7 +69,13 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
           </button>
         </header>
 
-        <div className="patch-save">
+        <form
+          className="patch-save"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save();
+          }}
+        >
           <input
             type="text"
             value={name}
@@ -71,16 +84,7 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
             aria-label="Patch name"
             onChange={(e) => setName(e.target.value)}
           />
-          <Button
-            onClick={() => {
-              const saved = savePreset(name);
-              setName('');
-              refresh();
-              note(`Saved ${saved.name}`);
-            }}
-          >
-            Save current rack
-          </Button>
+          <Button type="submit">Save current rack</Button>
           <Button onClick={() => fileInput.current?.click()}>Import…</Button>
           <input
             ref={fileInput}
@@ -90,7 +94,7 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
             aria-label="Import patch file"
             onChange={(e) => void importFile(e)}
           />
-        </div>
+        </form>
 
         <ul className="patch-list">
           {list.map((p) => (

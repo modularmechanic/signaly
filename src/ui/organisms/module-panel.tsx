@@ -9,6 +9,7 @@ import { useUiStore } from '../../state/ui-store';
 import { Screw } from '../atoms/screw';
 import { ModuleHeader } from '../molecules/module-header';
 import { PanelNodeView } from './module-panel-node';
+import { useFaceplateImage } from './use-faceplate-image';
 
 const pct = (n: number): string => `${(n * 100).toFixed(3)}%`;
 
@@ -23,6 +24,7 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
   useRackStore(selectModuleRevision(uid));
   const connected = useRackStore(selectConnectedJacks(uid));
   const selected = useUiStore((s) => s.selectedUid === uid);
+  const faceplate = useFaceplateImage(m.def.id);
 
   const spec = getSpec(m.def.id);
   const tint = CAT_COLOR[m.def.cat] ?? CAT_COLOR.CUSTOM;
@@ -44,7 +46,14 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
   return (
     <div
       className={`module-panel${m.def.dark ? ' dark' : ''}${selected ? ' selected' : ''}`}
-      style={{ '--cat': tint, '--hp-count': m.def.hp } as CSSProperties}
+      style={
+        {
+          '--cat': tint,
+          '--hp-count': m.def.hp,
+          backgroundImage: faceplate === null ? undefined : `url(${faceplate})`,
+          backgroundSize: '100% 100%',
+        } as CSSProperties
+      }
       role="group"
       aria-label={`${m.def.name} module`}
       tabIndex={0}

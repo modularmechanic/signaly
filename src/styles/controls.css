@@ -13,16 +13,19 @@
   height: 100%;
 }
 
+/* Stay inside the node box so two columns never collide; --label-fs buys the
+   width back on narrow panels instead of collapsing the word to "O…". */
 .knob-label {
+  width: max-content;
   max-width: 100%;
   overflow: hidden;
   color: var(--text);
-  font-size: 9px;
+  font-size: var(--label-fs, 9px);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.09em;
   text-align: center;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   text-transform: uppercase;
   white-space: nowrap;
   opacity: 0.84;
@@ -121,12 +124,7 @@
   min-height: 60px;
   height: 100%;
   border-radius: var(--r-sm);
-  background: linear-gradient(
-    90deg,
-    var(--bg-2) 6px,
-    var(--bg) 6px 10px,
-    var(--bg-2) 10px
-  );
+  background: linear-gradient(90deg, var(--bg-2) 6px, var(--bg) 6px 10px, var(--bg-2) 10px);
   box-shadow: inset 0 1px 3px var(--border);
   cursor: ns-resize;
   touch-action: none;
@@ -150,7 +148,11 @@
   height: 15px;
   border-radius: var(--r-sm);
   border: 1px solid var(--border);
-  background: linear-gradient(color-mix(in srgb, var(--surface-2) 70%, var(--text)), var(--surface) 45%, var(--bg-2));
+  background: linear-gradient(
+    color-mix(in srgb, var(--surface-2) 70%, var(--text)),
+    var(--surface) 45%,
+    var(--bg-2)
+  );
   box-shadow:
     0 2px 4px color-mix(in srgb, var(--bg) 82%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--text) 26%, transparent);

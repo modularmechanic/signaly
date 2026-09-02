@@ -1,5 +1,5 @@
-import { getKeys, getModel, PROVIDERS } from '../../storage/api-key-store';
-import { readJson, writeJson } from '../../storage/local-json';
+import { getKeys, getModel } from '../../storage/api-key-store';
+import { activeProvider } from './active-provider';
 import { generateFaceplateImage } from './faceplate-image';
 import { PROPOSAL_SCHEMA, SYSTEM_PROMPT } from './module-builder-prompt';
 import { parseProposal, type ModuleProposal } from './module-proposal';
@@ -7,26 +7,11 @@ import { errorMessage, scrub } from './providers/http';
 import { IMPL, type Provider, type ProviderId } from './providers/index';
 
 export type { Provider, ProviderId };
+export { activeProvider, setActiveProvider } from './active-provider';
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
   text: string;
-}
-
-const PREF_KEY = 'signaly.llm-provider.v1';
-
-const isProviderId = (v: unknown): v is ProviderId => PROVIDERS.includes(v as ProviderId);
-
-/** The user's pick when it still has a key, else the first provider that has one. */
-export function activeProvider(): ProviderId | null {
-  const keys = getKeys();
-  const pref = readJson<string>(PREF_KEY, '');
-  if (isProviderId(pref) && keys[pref]) return pref;
-  return PROVIDERS.find((p) => keys[p]) ?? null;
-}
-
-export function setActiveProvider(id: ProviderId): void {
-  writeJson(PREF_KEY, id);
 }
 
 export const canGenerateImages = (id: ProviderId): boolean => IMPL[id].image !== undefined;

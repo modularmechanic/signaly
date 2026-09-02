@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, lpCoeff, type Params } from '../../engine/dsp-prelude';
 
 // Four one-pole stages with tanh in the feedback path — the transistor ladder.
 class Ladder extends Base {
@@ -22,7 +22,7 @@ class Ladder extends Base {
     for (let i = 0; i < out.length; i++) {
       const x = ((inp?.[i] ?? 0) / 5) * drive;
       const fc = clamp(cut * Math.pow(2, cv?.[i] ?? 0), 15, sampleRate * 0.35);
-      const g = 1 - Math.exp((-TP * fc) / sampleRate);
+      const g = lpCoeff(fc);
       const k = 4.2 * clamp(res + (rcv?.[i] ?? 0) / 5, 0, 1);
       const u = Math.tanh(x - k * this.s4);
       this.s1 += g * (u - this.s1);

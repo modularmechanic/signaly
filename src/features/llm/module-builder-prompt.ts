@@ -124,10 +124,11 @@ DSP — exactly one class, no imports, no exports:
   Per-instance state belongs in constructor(o) { super(o); ... }.
 
 AVAILABLE SYMBOLS — nothing else exists in worklet scope:
-  Base ch clamp TP flush blep oscW DL OnePole onePoleCoeff ClockSync SYNC_DIV sampleRate
+  Base ch clamp TP flush blep oscW DL OnePole onePoleCoeff lpCoeff Lcg ClockSync SYNC_DIV sampleRate
   ch(I, n) -> Float32Array | null (null when that input is unpatched)
   oscW(wave, t, dt): 0 sin, 1 tri, 2 saw, 3 square; t is phase 0..1, dt = freq / sampleRate
   flush(x) kills denormal tails. DL(n) is a fractional delay line (push / read).
+  lpCoeff(hz) is a one-pole low-pass coefficient. new Lcg(seed).next() is reproducible -1..1 noise.
   OnePole(tauMs) smooths. ClockSync().tick(gate) returns the clock period in samples.
 
 FORBIDDEN: import, export, fetch, eval, Function, window, document, localStorage, globalThis, any DOM

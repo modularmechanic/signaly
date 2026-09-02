@@ -63,7 +63,7 @@ Storage: localStorage (versioned envelope) for JSON, IndexedDB (idb-keyval) for 
 - **Worklet URL**: `import workletUrl from './worklet-entry.ts?worker&url'`. The brief's `new URL(…, import.meta.url)` is documented in the source as broken under Vite build (raw `.ts` served as an asset, glob never expanded). Corrected.
 - `ui.display` collapses 12 `PanelDisplayVariant`s to `def.display?: 'scope'|'meter'|'steps'|'env'|'piano'|'text'`.
 - Dropped from `ModuleDef`: `v1ui`, `brand`, `subtype`, `extraOuts`, `ui`, `PanelBlueprint`, vibes, finishes. `cvIn` becomes a plain string.
-- Dropped from `Cable`: `color`. From `RackRow`: `rackId`. No racks/stacks/power. **Rows have fixed HP capacity**: `settings.rowWidthHp` (default 104, user-adjustable); `rack.ts` rejects an add/duplicate/move whose declared `def.hp` would overflow the target row (no effective-HP solver). <!-- Updated: Validation Session 1 - row capacity -->
+- Dropped from `Cable`: `color`. From `RackRow`: `rackId`. No racks/stacks/power. **Rows have fixed HP capacity**: `settings.rowWidthHp` (default 120, user-adjustable); `rack.ts` rejects an add/duplicate/move whose declared `def.hp` would overflow the target row (no effective-HP solver). <!-- Updated: Validation Session 1 - row capacity -->
 - No barrel `index.ts` in hot paths (defeats tree-shaking). No router lib — `ui-store.view: 'rack' | 'builder'`.
 - Provider model IDs are fetched at runtime (`/v1/models` etc.), never hardcoded.
 

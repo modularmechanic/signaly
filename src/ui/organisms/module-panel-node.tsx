@@ -27,10 +27,12 @@ export interface PanelNodeViewProps {
   parts?: Parts;
 }
 
-function LedNode({ m, label }: { m: ModuleInstance; label?: string }): ReactNode {
+/** `{t:'led', id, v}` from the DSP drives this LED; `{t:'step'}` keeps the seq/euklid blink. */
+function LedNode({ m, id, label }: { m: ModuleInstance; id: string; label?: string }): ReactNode {
   const [on, setOn] = useState(false);
-  useWorkletFeed<{ t: string }>(m, (msg) => {
+  useWorkletFeed<{ t: string; id?: string; v?: number }>(m, (msg) => {
     if (msg.t === 'step') setOn((v) => !v);
+    else if (msg.t === 'led' && msg.id === id) setOn(msg.v === 1);
   });
   return <Led on={on} label={label} />;
 }
@@ -97,7 +99,7 @@ export function PanelNodeView({ node, m, connected, parts }: PanelNodeViewProps)
       return def ? <Jack m={m} def={def} dir={dir} patched={connected.has(jackSlot(dir, id))} /> : null;
     }
     case 'led':
-      return <LedNode m={m} label={node.label} />;
+      return <LedNode m={m} id={id} label={node.label} />;
     case 'label':
       return node.label ? <Label text={node.label} kind={id === 'sub' ? 'sub' : 'title'} /> : null;
     case 'display':

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
 
 class Comb extends Base {
   dl = new DL(sampleRate / 8);
@@ -14,7 +14,7 @@ class Comb extends Base {
     const out = O[0]?.[0];
     if (!out) return true;
     const { freq = 220, fb = 0.7, damp = 6000, mix = 1 } = this.p;
-    const dc = 1 - Math.exp((-TP * clamp(damp, 200, 18000)) / sampleRate);
+    const dc = lpCoeff(clamp(damp, 200, 18000));
     const fbc = clamp(fb, -0.99, 0.99);
     for (let i = 0; i < out.length; i++) {
       const f = clamp(freq * Math.pow(2, vo?.[i] ?? 0), 12, 8000);

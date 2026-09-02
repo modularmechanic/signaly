@@ -3,7 +3,7 @@ import { KEYS, readJson, writeJson } from '../storage/local-json';
 
 export const MIN_ROW_HP = 20;
 export const MAX_ROW_HP = 208;
-export const DEFAULT_ROW_HP = 104;
+export const DEFAULT_ROW_HP = 120;
 
 export interface Settings {
   /** row capacity in HP; rack.ts rejects adds/moves that overflow it */

@@ -1,9 +1,9 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
 
 class Wasp extends Base {
   ic1 = 0;
   ic2 = 0;
-  rs = 12345;
+  rng = new Lcg(12345);
 
   defaults(): Params {
     return { cut: 900, res: 0.4, dirt: 0.4, cv: 0 };
@@ -26,8 +26,7 @@ class Wasp extends Base {
     const drive = 1 + dirt * 3;
     const dnorm = Math.tanh(drive);
     for (let i = 0; i < lpO.length; i++) {
-      this.rs = (this.rs * 1103515245 + 12345) & 0x7fffffff;
-      const bleed = (this.rs / 0x3fffffff - 1) * 0.006 * dirt;
+      const bleed = this.rng.next() * 0.006 * dirt;
       const f = clamp(cut * Math.pow(2, fcv?.[i] ?? 0), 20, sampleRate * 0.4);
       const g = Math.tan((Math.PI * f) / sampleRate);
       const x = Math.tanh(((inp?.[i] ?? 0) / 5 + bleed) * drive) / dnorm;

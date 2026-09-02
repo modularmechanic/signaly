@@ -5,6 +5,7 @@ class LFO extends Base {
   sh = 0;
   lr = 0;
   lc = 0;
+  led = 0;
 
   defaults(): Params {
     return { rate: 2 };
@@ -41,6 +42,12 @@ class LFO extends Base {
       sa[i] = (2 * t - 1) * 5;
       sq[i] = t < 0.5 ? 5 : -5;
       sh[i] = this.sh;
+    }
+    // Rate LED: 50% duty at the LFO rate, posted only on a change.
+    const lit = this.ph < 0.5 ? 1 : 0;
+    if (lit !== this.led) {
+      this.led = lit;
+      this.port.postMessage({ t: 'led', id: 'clk', v: lit });
     }
     return true;
   }

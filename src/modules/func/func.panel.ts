@@ -2,7 +2,6 @@ import type { PanelLayout } from '../../core/types';
 
 export const panel: PanelLayout = {
   nodes: [
-    { id: 'display', kind: 'display', x: 0.12, y: 0.154, w: 0.76, h: 0.023, label: 'SLOPE / SLEW / LFO' },
     { id: 'knob:rise', kind: 'knob', x: 0.29, y: 0.172, w: 0.42, h: 0.062, label: 'RISE' },
     { id: 'knob:fall', kind: 'knob', x: 0.29, y: 0.251, w: 0.42, h: 0.07, label: 'FALL' },
     { id: 'knob:inA', kind: 'knob', x: 0.29, y: 0.335, w: 0.42, h: 0.07, label: 'SIGNAL' },
