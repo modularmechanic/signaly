@@ -1,0 +1,363 @@
+/* Faceplate: rack rows, the category-tinted module panel, absolutely positioned
+   panel nodes, silkscreen and the phase-01 display primitives.
+   Phase 06 sets `--cat` (a CAT_COLOR hex) and `--hp-count` on `.module-panel`. */
+
+.rack-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--panel-h);
+}
+
+/* ---------- module faceplate ---------- */
+.module-panel {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(var(--hp-count, 8) * var(--hp));
+  height: var(--panel-h);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cat, var(--cat-utility)) 45%, var(--bg));
+  border-top: 4px solid var(--cat, var(--cat-utility));
+  border-radius: var(--r-sm);
+  color: var(--text);
+  background:
+    linear-gradient(115deg, color-mix(in srgb, var(--text) 5%, transparent), transparent 42%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cat, var(--cat-utility)) 34%, var(--surface)),
+      color-mix(in srgb, var(--cat, var(--cat-utility)) 19%, var(--bg-2))
+    );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--cat, var(--cat-utility)) 28%, var(--border-soft)),
+    0 4px 12px color-mix(in srgb, var(--bg) 72%, transparent);
+  contain: layout paint;
+}
+
+.module-panel.dark {
+  background:
+    linear-gradient(115deg, color-mix(in srgb, var(--text) 4%, transparent), transparent 42%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cat, var(--cat-utility)) 30%, var(--bg-2)),
+      color-mix(in srgb, var(--cat, var(--cat-utility)) 15%, var(--bg))
+    );
+}
+
+.module-panel.selected {
+  border-color: var(--focus);
+}
+
+.module-panel.dragging {
+  opacity: 0.35;
+}
+
+/* ---------- header ---------- */
+.module-head {
+  position: relative;
+  z-index: 2;
+  padding: 12px 4px 4px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cat, var(--cat-utility)) 42%, var(--border)),
+    transparent
+  );
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.module-head:active {
+  cursor: grabbing;
+}
+
+.module-name {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-shadow: 0 1px 2px var(--border);
+}
+
+.module-sub {
+  margin-top: 1px;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  opacity: 0.62;
+}
+
+/* ---------- panel nodes (phase 06 sets left/top/width/height from PanelNode) ---------- */
+.panel-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  container-type: size;
+}
+
+.panel-node > * {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.knob-group {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+  gap: 4px 2px;
+  justify-items: center;
+  padding: 2px;
+}
+
+/* ---------- screws + silkscreen ---------- */
+.screw {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--text) 92%, transparent),
+    var(--text-dim) 60%,
+    color-mix(in srgb, var(--text-dim) 60%, var(--bg))
+  );
+  box-shadow: inset 0 0 2px var(--border);
+  pointer-events: none;
+}
+
+.screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 1px;
+  left: 1px;
+  height: 1px;
+  background: var(--border);
+  transform: rotate(37deg);
+}
+
+.screw.tl {
+  top: 3px;
+  left: 5px;
+}
+.screw.tr {
+  top: 3px;
+  right: 5px;
+}
+.screw.bl {
+  bottom: 3px;
+  left: 5px;
+}
+.screw.br {
+  bottom: 3px;
+  right: 5px;
+}
+
+.panel-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.panel-label.sub {
+  font-size: 8px;
+  opacity: 0.62;
+}
+
+.panel-label.unit {
+  color: var(--amber);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* ---------- screens: scope + env (phase-01 EnvDisplay) ---------- */
+.scope-screen,
+.env-screen {
+  width: 100%;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--bg) 88%, var(--kind-c));
+  box-shadow: inset 0 0 8px var(--border);
+}
+
+.scope-screen canvas {
+  width: 100%;
+  height: 46px;
+}
+
+.env-screen canvas {
+  width: 100%;
+  height: 40px;
+}
+
+.env-vals {
+  display: flex;
+  justify-content: space-between;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.env-chip {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.env-chip span {
+  color: var(--text-dim);
+  font: 700 7px var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.env-chip b {
+  color: var(--env-c, var(--cat, var(--amber)));
+  font: 700 9px var(--font-mono);
+}
+
+/* ---------- LEDs (phase-01 Led) ---------- */
+.led-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.led {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    var(--led-c, var(--led)),
+    color-mix(in srgb, var(--led-c, var(--led)) 35%, var(--bg)) 70%
+  );
+  box-shadow:
+    inset 0 1px 2px var(--border),
+    0 0 6px var(--led-c, var(--led));
+  transition: opacity 0.05s linear;
+}
+
+.led-label {
+  color: var(--text-dim);
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- step grid (phase-01 StepGrid) ---------- */
+.step-grid {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 3px;
+}
+
+.step-grid > div {
+  min-width: 0;
+}
+
+/* ---------- channel VU (phase-01 ChannelMeter) ---------- */
+.channel-vu {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 10px;
+  height: 100%;
+  min-height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--bg) 82%, var(--kind-c));
+}
+
+.channel-vu-fill {
+  width: 100%;
+  height: 2%;
+  background: linear-gradient(var(--danger), var(--amber) 35%, var(--cat, var(--kind-c)));
+}
+
+/* ---------- mini piano (phase-01 MiniPiano) ---------- */
+.mini-piano {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 56px;
+  overflow: hidden;
+  padding-bottom: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+}
+
+.mpk {
+  border: 0;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    filter 0.06s linear,
+    background 0.06s linear;
+}
+
+.mpk.w {
+  flex: 1 1 0;
+  border-right: 1px solid var(--border);
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(var(--text), color-mix(in srgb, var(--text) 82%, var(--text-dim)));
+}
+
+.mpk.b {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  width: 18px;
+  height: 62%;
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(var(--surface-2), var(--bg));
+}
+
+.mpk:hover {
+  filter: brightness(1.12);
+}
+
+.mpk.on {
+  background: linear-gradient(
+    var(--mp-c, var(--cat, var(--amber))),
+    color-mix(in srgb, var(--mp-c, var(--cat, var(--amber))) 58%, var(--bg))
+  );
+}
+
+.mpk.root {
+  box-shadow:
+    inset 0 0 0 2px var(--text),
+    0 0 6px var(--mp-c, var(--cat, var(--amber)));
+}
+
+.mpk.playing {
+  z-index: 3;
+  box-shadow:
+    inset 0 0 0 2px var(--text),
+    0 0 10px var(--text);
+}
+
+.mpk:focus-visible {
+  box-shadow: var(--focus-ring);
+}

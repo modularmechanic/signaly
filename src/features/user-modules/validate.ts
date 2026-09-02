@@ -1,0 +1,186 @@
+import type {
+  Cat,
+  Display,
+  FmtName,
+  JackDef,
+  Kind,
+  KnobDef,
+  PanelLayout,
+  PanelNode,
+  PanelNodeKind,
+  SwitchDef,
+} from '../../core/types';
+import { CAT_ORDER } from '../../core/types';
+import type { UserDef } from './schema';
+import { bad, bool, list, num, obj, opt, pick, str, unit } from './validate-primitives';
+
+const SLUG = /^[a-z0-9-]{3,32}$/;
+export const FMT_NAMES: readonly string[] = [
+  'fHz',
+  'fMs',
+  'fPc',
+  'f1',
+  'fSemi',
+  'fInt',
+  'fKey',
+  'fChord',
+  'fShape',
+  'fRate',
+];
+export const DISPLAYS: readonly string[] = ['scope', 'meter', 'steps', 'env', 'piano', 'text'];
+export const JACK_KINDS: readonly string[] = ['a', 'p', 'g', 'c'];
+const NODE_KIND: readonly string[] = ['knob', 'fader', 'switch', 'led', 'in', 'out', 'display', 'label'];
+const FREE_PREFIX: readonly string[] = ['led', 'label', 'display'];
+const EPS = 1e-9;
+
+export function validateSlug(v: unknown): v is string {
+  return typeof v === 'string' && SLUG.test(v);
+}
+
+function jacks(v: unknown, at: string): JackDef[] {
+  const out: JackDef[] = [];
+  const seen = new Set<string>();
+  list(v, at, 8).forEach((raw, i) => {
+    const o = obj(raw, `${at}[${i}]`);
+    const id = str(o.id, `${at}[${i}].id`, 24);
+    if (seen.has(id)) bad(`${at} has a duplicate jack id "${id}"`);
+    seen.add(id);
+    out.push({
+      id,
+      label: str(o.label, `${at}[${i}].label`, 16),
+      kind: pick(o.kind, `${at}[${i}].kind`, JACK_KINDS) as Kind,
+    });
+  });
+  return out;
+}
+
+function knobs(v: unknown, ins: JackDef[]): KnobDef[] {
+  const out: KnobDef[] = [];
+  const seen = new Set<string>();
+  list(v, 'knobs', 16).forEach((raw, i) => {
+    const at = `knobs[${i}]`;
+    const o = obj(raw, at);
+    const id = str(o.id, `${at}.id`, 24);
+    if (seen.has(id)) bad(`knobs has a duplicate id "${id}"`);
+    seen.add(id);
+    const min = num(o.min, `${at}.min`);
+    const max = num(o.max, `${at}.max`);
+    if (min >= max) bad(`${at}.min must be less than ${at}.max`);
+    const def = num(o.def, `${at}.def`);
+    if (def < min || def > max) bad(`${at}.def must be within [${min}, ${max}]`);
+    const k: KnobDef = { id, label: str(o.label, `${at}.label`, 16), min, max, def };
+    const fmt = opt(o.fmt);
+    if (fmt !== undefined) k.fmt = pick(fmt, `${at}.fmt`, FMT_NAMES) as FmtName;
+    const curve = opt(o.curve);
+    if (curve !== undefined) k.curve = pick(curve, `${at}.curve`, ['lin', 'log']) as 'lin' | 'log';
+    const big = opt(o.big);
+    if (big !== undefined) k.big = bool(big, `${at}.big`);
+    const fader = opt(o.fader);
+    if (fader !== undefined) k.fader = bool(fader, `${at}.fader`);
+    const cvIn = opt(o.cvIn);
+    if (cvIn !== undefined) {
+      const j = str(cvIn, `${at}.cvIn`, 24);
+      if (!ins.some((x) => x.id === j)) bad(`${at}.cvIn "${j}" names no input jack`);
+      k.cvIn = j;
+    }
+    const att = opt(o.attenuates);
+    if (att !== undefined) {
+      const j = str(att, `${at}.attenuates`, 24);
+      if (!ins.some((x) => x.id === j && x.kind === 'c'))
+        bad(`${at}.attenuates "${j}" must name a 'c' input`);
+      k.attenuates = j;
+    }
+    out.push(k);
+  });
+  return out;
+}
+
+function switches(v: unknown): SwitchDef[] {
+  const out: SwitchDef[] = [];
+  const seen = new Set<string>();
+  list(v, 'sws', 8).forEach((raw, i) => {
+    const at = `sws[${i}]`;
+    const o = obj(raw, at);
+    const id = str(o.id, `${at}.id`, 24);
+    if (seen.has(id)) bad(`sws has a duplicate id "${id}"`);
+    seen.add(id);
+    const options = list(o.options, `${at}.options`, 16).map((x, n) => str(x, `${at}.options[${n}]`, 16));
+    if (options.length < 2) bad(`${at}.options needs at least 2 entries`);
+    const s: SwitchDef = { id, label: str(o.label, `${at}.label`, 16), options };
+    const d = opt(o.def);
+    if (d !== undefined) {
+      const n = num(d, `${at}.def`);
+      if (!Number.isInteger(n) || n < 0 || n >= options.length) bad(`${at}.def must index options`);
+      s.def = n;
+    }
+    out.push(s);
+  });
+  return out;
+}
+
+function panel(v: unknown, d: UserDef): PanelLayout {
+  const o = obj(v, 'panel');
+  const knobIds = new Set(d.knobs.map((k) => k.id));
+  const targets: Record<string, Set<string> | undefined> = {
+    knob: knobIds,
+    fader: knobIds,
+    switch: new Set((d.sws ?? []).map((s) => s.id)),
+    in: new Set(d.ins.map((j) => j.id)),
+    out: new Set(d.outs.map((j) => j.id)),
+  };
+  const nodes = list(o.nodes, 'panel.nodes', 64).map((raw, i): PanelNode => {
+    const at = `panel.nodes[${i}]`;
+    const n = obj(raw, at);
+    const id = str(n.id, `${at}.id`, 48);
+    const sep = id.indexOf(':');
+    const prefix = sep < 0 ? id : id.slice(0, sep);
+    const target = sep < 0 ? '' : id.slice(sep + 1);
+    const need = targets[prefix];
+    if (need) {
+      if (!need.has(target)) bad(`${at}.id "${id}" names no ${prefix}`);
+    } else if (!FREE_PREFIX.includes(prefix)) {
+      bad(`${at}.id "${id}" has an unknown prefix`);
+    }
+    const x = unit(n.x, `${at}.x`);
+    const y = unit(n.y, `${at}.y`);
+    const w = unit(n.w, `${at}.w`);
+    const h = unit(n.h, `${at}.h`);
+    if (x + w > 1 + EPS) bad(`${at} overflows the panel horizontally`);
+    if (y + h > 1 + EPS) bad(`${at} overflows the panel vertically`);
+    const node: PanelNode = { id, kind: pick(n.kind, `${at}.kind`, NODE_KIND) as PanelNodeKind, x, y, w, h };
+    const label = opt(n.label);
+    if (label !== undefined) node.label = str(label, `${at}.label`, 16);
+    return node;
+  });
+  return { nodes };
+}
+
+/** First failure wins, with a message the builder chat can show verbatim. */
+export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: false; error: string } {
+  try {
+    const r = obj(o, 'def');
+    const hp = num(r.hp, 'def.hp');
+    if (!Number.isInteger(hp) || hp < 1 || hp > 24) bad('def.hp must be an integer from 1 to 24');
+    const ins = jacks(r.ins, 'ins');
+    const def: UserDef = {
+      name: str(r.name, 'def.name', 24),
+      sub: str(r.sub, 'def.sub', 32),
+      hp,
+      cat: pick(r.cat, 'def.cat', CAT_ORDER) as Cat,
+      knobs: knobs(r.knobs, ins),
+      ins,
+      outs: jacks(r.outs, 'outs'),
+    };
+    const dark = opt(r.dark);
+    if (dark !== undefined) def.dark = bool(dark, 'def.dark');
+    const sws = opt(r.sws);
+    if (sws !== undefined) def.sws = switches(sws);
+    const display = opt(r.display);
+    if (display !== undefined) def.display = pick(display, 'def.display', DISPLAYS) as Display;
+    const p = opt(r.panel);
+    if (p !== undefined) def.panel = panel(p, def);
+    return { ok: true, def };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'invalid module definition' };
+  }
+}

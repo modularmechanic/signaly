@@ -1,0 +1,322 @@
+/* Interactive controls: knobs, faders, switches, buttons, selects.
+   Colours come from tokens.css only. `--cat` is set on the module panel. */
+
+.knob-cell,
+.fader-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.knob-label {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.84;
+}
+
+/* ---------- knob ---------- */
+.knob {
+  position: relative;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    color-mix(in srgb, var(--surface-2) 74%, var(--text)),
+    var(--surface) 55%,
+    var(--bg-2)
+  );
+  box-shadow:
+    0 2px 4px color-mix(in srgb, var(--bg) 78%, transparent),
+    inset 0 1px 1px color-mix(in srgb, var(--text) 26%, transparent),
+    0 0 0 2px var(--border);
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.knob-cell.big .knob {
+  width: 40px;
+  height: 40px;
+}
+
+/* Value ring + the >=44px touch target in one pseudo-element (never scale the art). */
+.knob::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 225deg,
+    var(--cat, var(--amber)) calc(var(--pct, 0) * 270deg),
+    color-mix(in srgb, var(--text) 18%, transparent) 0 270deg,
+    transparent 0
+  );
+  mask: radial-gradient(closest-side, transparent 0 78%, currentColor 80%);
+}
+
+.knob-cell.big .knob::before {
+  inset: -9px;
+}
+
+.knob-cap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5px;
+  height: 46%;
+  margin-left: -1.25px;
+  border-radius: 2px;
+  background: var(--text);
+  transform-origin: 50% 0;
+  transition: transform 0.06s linear;
+}
+
+/* Static CV marker: where the patched modulation currently pushes this knob. */
+.knob-cv {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 54%;
+  border-radius: 1px;
+  background: var(--kind-c);
+  box-shadow: 0 0 4px var(--kind-c);
+  opacity: 0.85;
+  transform: translate(-50%, -100%) rotate(calc(var(--cv, 0) * 270deg - 135deg));
+  transform-origin: 50% 100%;
+}
+
+.knob:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob-cap {
+    transition: none;
+  }
+}
+
+/* ---------- fader ---------- */
+.fader {
+  position: relative;
+  flex: 1 1 auto;
+  width: 16px;
+  min-height: 60px;
+  height: 100%;
+  border-radius: var(--r-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-2) 6px,
+    var(--bg) 6px 10px,
+    var(--bg-2) 10px
+  );
+  box-shadow: inset 0 1px 3px var(--border);
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.fader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 44px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.fader-cap {
+  position: absolute;
+  top: calc((1 - var(--pct, 0)) * (100% - 15px));
+  left: -5px;
+  width: 26px;
+  height: 15px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: linear-gradient(color-mix(in srgb, var(--surface-2) 70%, var(--text)), var(--surface) 45%, var(--bg-2));
+  box-shadow:
+    0 2px 4px color-mix(in srgb, var(--bg) 82%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--text) 26%, transparent);
+  pointer-events: none;
+}
+
+.fader-cap::after {
+  content: '';
+  position: absolute;
+  top: 6.5px;
+  right: 2px;
+  left: 2px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text);
+}
+
+.fader:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- switch (radiogroup) ---------- */
+.switch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.switch-label {
+  color: var(--text-dim);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.switch-opts {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+}
+
+.switch-opt {
+  position: relative;
+  padding: 3px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.switch-opt::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+.switch-opt.on {
+  background: var(--amber);
+  color: var(--text-invert);
+}
+
+.switch-opt:hover:not(.on) {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.switch-opt:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- button ---------- */
+.btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.btn.on {
+  background: var(--amber);
+  color: var(--text-invert);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--amber) 60%, transparent);
+}
+
+.btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- select ---------- */
+.select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.select-label {
+  color: var(--text-dim);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.select select {
+  max-width: 100%;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--amber);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.select select:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Coarse pointers: grow the art itself, the pseudo-target is already >=44px. */
+@media (pointer: coarse) {
+  .knob {
+    width: 36px;
+    height: 36px;
+  }
+
+  .knob-cell.big .knob {
+    width: 46px;
+    height: 46px;
+  }
+
+  .fader {
+    width: 20px;
+  }
+
+  .switch-opt,
+  .btn {
+    min-height: 28px;
+    padding: 6px 10px;
+  }
+}

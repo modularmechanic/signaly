@@ -1,0 +1,180 @@
+/* Patch points and the cable overlay. Signal kind is encoded three ways —
+   colour, socket ring line-style and a glyph — so hue is never the only channel. */
+
+.jack-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+  justify-content: center;
+}
+
+.jack-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.jack-cell.out {
+  flex-direction: column-reverse;
+}
+
+.jack-label {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 1px 4px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jack-cell.out .jack-label {
+  border-color: var(--border);
+  background: var(--jc, var(--kind-a));
+  color: var(--text-invert);
+}
+
+/* ---------- socket ---------- */
+.jack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid var(--jc, var(--kind-a));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--bg) 0 5px,
+    var(--surface-2) 5px 7px,
+    color-mix(in srgb, var(--text) 76%, var(--surface-2)) 7px 9px,
+    var(--text-dim) 9px 11px,
+    var(--surface) 11px
+  );
+  box-shadow:
+    0 1px 2px var(--border),
+    inset 0 0 3px var(--border);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* >=44px touch target without scaling the socket art */
+.jack::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.jack-glyph {
+  color: var(--jc, var(--kind-a));
+  font-size: 8px;
+  line-height: 1;
+  text-shadow: 0 0 3px var(--bg);
+  pointer-events: none;
+}
+
+/* kind: colour + socket line-style + glyph (the glyph comes from the atom).
+   `--jc` is set on the cell so the label inherits it too. */
+.jack-cell:has(.jack-a) {
+  --jc: var(--kind-a);
+}
+
+.jack-cell:has(.jack-p) {
+  --jc: var(--kind-p);
+}
+
+.jack-cell:has(.jack-g) {
+  --jc: var(--kind-g);
+}
+
+.jack-cell:has(.jack-c) {
+  --jc: var(--kind-c);
+}
+
+.jack-a {
+  border-style: solid;
+}
+
+.jack-p {
+  border-style: dashed;
+}
+
+.jack-g {
+  border-style: double;
+  border-width: 3px;
+}
+
+.jack-c {
+  border-style: dotted;
+}
+
+/* outputs sit on a filled kind-coloured pad, inputs on the bare faceplate */
+.jack.out {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--jc, var(--kind-a)) 80%, transparent),
+    0 1px 2px var(--border);
+}
+
+.jack.patched {
+  border-color: color-mix(in srgb, var(--jc, var(--kind-a)) 70%, var(--text));
+}
+
+/* set by patch-state while a drag/arm is looking for a partner */
+.jack.compat {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--amber) 60%, transparent);
+}
+
+.jack.hot,
+.jack[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 3px var(--amber),
+    0 0 12px var(--amber);
+}
+
+.jack:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- cable overlay ---------- */
+.cable-canvas {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ---------- patch status / tooltip line ---------- */
+.patch-tip {
+  position: fixed;
+  z-index: 60;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--bg));
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--amber);
+  font: 600 11px/1.2 var(--font-mono);
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--bg) 70%, transparent);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .jack {
+    width: 30px;
+    height: 30px;
+  }
+}
