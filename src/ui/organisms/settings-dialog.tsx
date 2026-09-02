@@ -159,7 +159,11 @@ export function SettingsDialog({ onClose }: { onClose: () => void }): ReactNode 
                   } catch {
                     /* storage disabled */
                   }
-                  window.location.reload();
+                  // Faceplate blobs live in IndexedDB; without this they outlive "permanently".
+                  void import('idb-keyval')
+                    .then((idb) => idb.clear())
+                    .catch(() => undefined)
+                    .finally(() => window.location.reload());
                 }}
               >
                 Delete everything, permanently

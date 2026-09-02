@@ -160,9 +160,10 @@ export function setParam(uid: number, id: string, v: number): void {
   const next = knob ? Math.max(knob.min, Math.min(knob.max, v)) : v;
   useRackStore.getState().setVal(uid, id, next);
   const att = knob?.attenuates;
-  // Attenuverter: drive the CV-input gain; the DSP never sees this knob.
+  // Attenuverter: drive the CV-input gain. Still push the param — a native module may render the
+  // value (volt's readout does), and no worklet DSP reads an attenuverting knob id.
   if (att && m.cvGains?.[att]) m.cvGains[att].node.gain.value = next;
-  else pushParam(m, getSpec(m.def.id)?.native, id, next);
+  pushParam(m, getSpec(m.def.id)?.native, id, next);
 }
 
 export function setSwitch(uid: number, id: string, i: number): void {

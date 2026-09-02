@@ -4,9 +4,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { KnobDef, ModuleDef } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { useRackStore } from '../../state/rack-store';
-import { Knob } from './knob';
+import { Knob, knobValue } from './knob';
 
 const CUT: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, def: 50, fmt: 'fHz' };
+const LOG: KnobDef = { id: 'cut', label: 'CUTOFF', min: 30, max: 16000, def: 800, fmt: 'fHz', curve: 'log' };
 
 const def: ModuleDef = {
   id: 'test-knob',
@@ -23,6 +24,27 @@ const def: ModuleDef = {
 let host: HTMLDivElement;
 let root: Root;
 let m: ModuleInstance;
+const extra: Array<[Root, HTMLDivElement]> = [];
+
+/** Mounts a throwaway knob at `v` and returns its slider element. */
+const renderAt = (d: KnobDef, v: number): HTMLElement => {
+  const h = document.createElement('div');
+  document.body.appendChild(h);
+  const r = createRoot(h);
+  extra.push([r, h]);
+  const mi: ModuleInstance = {
+    uid: 2,
+    def: { ...def, id: 'k2', knobs: [d] },
+    jacks: { in: {}, out: {} },
+    vals: { [d.id]: v },
+    sws: {},
+    ext: {},
+  };
+  act(() => r.render(<Knob m={mi} def={d} />));
+  const el = h.querySelector('[role="slider"]');
+  if (!el) throw new Error('no slider');
+  return el as HTMLElement;
+};
 
 const knob = (): HTMLElement => {
   const el = host.querySelector('[role="slider"]');
@@ -49,6 +71,10 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  for (const [r, h] of extra.splice(0)) {
+    act(() => r.unmount());
+    h.remove();
+  }
 });
 
 describe('Knob', () => {
@@ -99,5 +125,18 @@ describe('Knob', () => {
   it('ignores keys outside the slider set', () => {
     key({ key: 'a' });
     expect(m.vals.cut).toBe(50);
+  });
+
+  it('pointer angle and ring pct share one -135deg..+135deg sweep, lin and log', () => {
+    for (const d of [CUT, LOG]) {
+      for (const n of [0, 0.25, 0.5, 0.75, 1]) {
+        const el = renderAt(d, knobValue(d, n));
+        expect(Number(el.style.getPropertyValue('--pct'))).toBeCloseTo(n, 6);
+        const deg = /rotate\((-?[\d.]+)deg\)/.exec(
+          (el.querySelector('.knob-cap') as HTMLElement).style.transform,
+        )?.[1];
+        expect(Number(deg)).toBeCloseTo(-135 + n * 270, 1);
+      }
+    }
   });
 });

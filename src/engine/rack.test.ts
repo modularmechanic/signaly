@@ -112,8 +112,9 @@ describe('rack', () => {
     expect(f.jacks.in.cv?.node).toBe(cv?.node);
     setParam(f.uid, 'amt', 0.5);
     expect(cv?.node.gain.value).toBe(0.5);
-    // the attenuverter knob never reaches the DSP
-    expect(sentOf(f)).not.toContainEqual({ t: 'p', id: 'amt', v: 0.5 });
+    // The knob drives the CV gain AND is still pushed: a native module may render the value
+    // (volt's readout does), and no worklet DSP reads an attenuverting knob id.
+    expect(sentOf(f)).toContainEqual({ t: 'p', id: 'amt', v: 0.5 });
   });
 
   it('drops dependent cables when a module is removed', () => {

@@ -17,6 +17,7 @@ class DDelay extends Base {
   /** Delay-time glide, 20.8229 ms (the old raw 0.001/sample @48k). */
   t = new OnePole(20.8229, 0.375 * sampleRate);
   cs = new ClockSync();
+  led = 0;
 
   defaults(): Params {
     return { time: 0.375, fb: 0.35, mix: 0.35, tone: 4000, sync: 0 };
@@ -51,6 +52,13 @@ class DDelay extends Base {
       this.d.push(x + clamp(y * fb, -6, 6));
       out[i] = x * (1 - mix) + y * mix;
     }
+    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
+    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    if (lit !== this.led) {
+      this.led = lit;
+      this.port.postMessage({ t: 'led', id: 'clk', v: lit });
+    }
+
     return true;
   }
 }

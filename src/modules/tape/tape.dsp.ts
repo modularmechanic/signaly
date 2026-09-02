@@ -8,6 +8,7 @@ class Tape extends Base {
   lp = new OnePole(0.0838494);
   hp = new OnePole(5.19791);
   cs = new ClockSync();
+  led = 0;
   ph = 0;
   ph2 = 0;
 
@@ -51,6 +52,13 @@ class Tape extends Base {
       this.d.push(x + y * fb);
       out[i] = x * (1 - mix) + y * mix;
     }
+    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
+    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    if (lit !== this.led) {
+      this.led = lit;
+      this.port.postMessage({ t: 'led', id: 'clk', v: lit });
+    }
+
     return true;
   }
 }

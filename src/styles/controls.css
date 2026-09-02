@@ -89,9 +89,11 @@
   transform: translate(-50%, -50%);
 }
 
+/* Pointer: bottom edge pinned to the knob centre so rotate(0deg) points up —
+   same zero and 270deg sweep as the ::before ring and .knob-cv. */
 .knob-cap {
   position: absolute;
-  top: 50%;
+  bottom: 50%;
   left: 50%;
   width: 3px;
   height: 36%;
@@ -99,7 +101,7 @@
   border-radius: 1.5px;
   background: var(--pointer);
   box-shadow: 0 0 4px color-mix(in srgb, var(--cat, var(--amber)) 60%, transparent);
-  transform-origin: 50% 0;
+  transform-origin: 50% 100%;
   transition: transform 0.06s linear;
 }
 
@@ -171,7 +173,14 @@
   height: 100%;
   padding: 0 7px;
   background-image:
-    linear-gradient(to top, var(--cat, var(--amber)) 0 calc(var(--pct, 0) * 100%), transparent 0),
+    /* The cap's indicator line travels over (100% - 19px) and sits 9.5px inside the 19px cap,
+       so the fill must stop at that same line — not at pct * full height — or the two disagree
+       everywhere except the midpoint. Same shared-zero contract as .knob-cap and the value ring. */
+    linear-gradient(
+        to top,
+        var(--cat, var(--amber)) 0 calc(9.5px + var(--pct, 0) * (100% - 19px)),
+        transparent 0
+      ),
     linear-gradient(
       90deg,
       transparent 6px,

@@ -224,14 +224,24 @@ export function CableCanvas(): ReactNode {
       size();
       last = '';
     };
+
+    // A rack mutation only moves jacks; the canvas is viewport-sized and does not need resizing.
+    const reflow = (): void => {
+      invalidateJackRects();
+      last = '';
+    };
     window.addEventListener('resize', relayout);
     window.addEventListener('scroll', invalidateJackRects, true);
+    // Removing or reordering a module reflows the row without a resize or scroll event, so the
+    // cached jack rects would otherwise keep drawing every cable at its old position.
+    const unsubRack = useRackStore.subscribe(reflow);
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerleave', onLeave, { passive: true });
     window.addEventListener('click', onClick);
     const unregister = addDraw(draw);
     return () => {
       unregister();
+      unsubRack();
       window.removeEventListener('resize', relayout);
       window.removeEventListener('scroll', invalidateJackRects, true);
       window.removeEventListener('pointermove', onMove);

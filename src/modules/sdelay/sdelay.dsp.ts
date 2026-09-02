@@ -21,6 +21,7 @@ class SDelay extends Base {
   tL = new OnePole(GLIDE_MS, 0.375 * sampleRate);
   tR = new OnePole(GLIDE_MS, 0.5 * sampleRate);
   cs = new ClockSync();
+  led = 0;
 
   defaults(): Params {
     return {
@@ -86,6 +87,13 @@ class SDelay extends Base {
       L[i] = xL * (1 - mix) + (monoW + (yL - monoW) * width) * mix;
       R[i] = xR * (1 - mix) + (monoW + (yR - monoW) * width) * mix;
     }
+    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
+    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    if (lit !== this.led) {
+      this.led = lit;
+      this.port.postMessage({ t: 'led', id: 'clk', v: lit });
+    }
+
     return true;
   }
 }
