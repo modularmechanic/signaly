@@ -1,5 +1,5 @@
 import { useState, type ComponentType, type ReactNode } from 'react';
-import type { PanelNode } from '../../core/types';
+import { CAT_COLOR, type PanelNode } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { fmtValue } from '../../hooks/formatters';
 import { useParam, useWorkletFeed } from '../../hooks/module-api';
@@ -55,14 +55,22 @@ function EnvPanel({ m }: { m: ModuleInstance }): ReactNode {
     label: id.toUpperCase(),
     text: fmtValue(m.def.knobs.find((k) => k.id === id)?.fmt, v),
   });
-  return <EnvDisplay points={points} values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]} />;
+  return (
+    <EnvDisplay
+      points={points}
+      values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]}
+      color={CAT_COLOR[m.def.cat]}
+    />
+  );
 }
 
 function DisplayNode({ m, parts: Parts }: { m: ModuleInstance; parts?: Parts }): ReactNode {
   if (Parts) return <Parts m={m} />;
   switch (m.def.display) {
     case 'scope':
-      return <ScopeDisplay analyser={m.ext.analyser as AnalyserNode | undefined} />;
+      return (
+        <ScopeDisplay analyser={m.ext.analyser as AnalyserNode | undefined} color={CAT_COLOR[m.def.cat]} />
+      );
     case 'meter':
       return <MeterDisplay m={m} />;
     case 'steps':
