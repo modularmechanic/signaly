@@ -18,11 +18,15 @@ interface Pt {
 interface Seg {
   a: Pt;
   b: Pt;
+  kind: Kind;
   color: string;
+  alpha?: number;
 }
 
-const SAG = 10;
-const WIDTH = 4;
+const SAG = 14;
+const WIDTH = 3;
+/** kind is legible without colour: the highlight pass carries a per-kind dash */
+const DASH: Record<Kind, number[]> = { a: [], p: [10, 5], g: [3, 3], c: [1, 4] };
 
 /** One canvas for every cable. Never re-renders: endpoints and cables are read
     inside the shared render-bus draw, and an unchanged signature skips the repaint. */
@@ -38,13 +42,14 @@ export function CableCanvas(): ReactNode {
     const css = getComputedStyle(document.documentElement);
     const read = (name: string, fallback: string): string => css.getPropertyValue(name).trim() || fallback;
     const kindColor: Record<Kind, string> = {
-      a: read('--kind-a', '#e8871e'),
-      p: read('--kind-p', '#3b82f6'),
-      g: read('--kind-g', '#d6336c'),
-      c: read('--kind-c', '#2dc7c0'),
+      a: read('--kind-a', '#ffb02e'),
+      p: read('--kind-p', '#5ab4ff'),
+      g: read('--kind-g', '#ff5fa0'),
+      c: read('--kind-c', '#68f3bf'),
     };
-    const shade = read('--bg', '#101114');
-    const sheen = read('--border-soft', 'rgba(255,255,255,.28)');
+    const jacket = read('--bg', '#0a0a0b');
+    const plug = read('--metal-2', '#0f1012');
+    const pin = read('--edge', '#050506');
 
     let dpr = 1;
     const size = (): void => {
@@ -58,29 +63,43 @@ export function CableCanvas(): ReactNode {
 
     const rope = (s: Seg): void => {
       const mx = (s.a.x + s.b.x) / 2;
-      const my = (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.18;
+      const my = (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16;
+      const curve = (dy: number): void => {
+        ctx.beginPath();
+        ctx.moveTo(s.a.x, s.a.y + dy);
+        ctx.quadraticCurveTo(mx, my + dy, s.b.x, s.b.y + dy);
+        ctx.stroke();
+      };
       ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(s.a.x, s.a.y + 3);
-      ctx.quadraticCurveTo(mx, my + 3, s.b.x, s.b.y + 3);
-      ctx.strokeStyle = shade;
+      ctx.globalAlpha = s.alpha ?? 1;
+      ctx.strokeStyle = 'rgba(0,0,0,.55)';
+      ctx.lineWidth = WIDTH + 4;
+      curve(5);
+      ctx.strokeStyle = jacket;
       ctx.lineWidth = WIDTH + 2;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(s.a.x, s.a.y);
-      ctx.quadraticCurveTo(mx, my, s.b.x, s.b.y);
+      curve(0);
       ctx.strokeStyle = s.color;
       ctx.lineWidth = WIDTH;
-      ctx.stroke();
-      ctx.strokeStyle = sheen;
+      curve(0);
+      ctx.strokeStyle = 'rgba(255,255,255,.22)';
       ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx.setLineDash(DASH[s.kind]);
+      curve(-0.5);
+      ctx.setLineDash([]);
       for (const p of [s.a, s.b]) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, WIDTH, 0, Math.PI * 2);
-        ctx.fillStyle = s.color;
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = plug;
+        ctx.fill();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = pin;
         ctx.fill();
       }
+      ctx.globalAlpha = 1;
     };
 
     let last = '';
@@ -93,7 +112,7 @@ export function CableCanvas(): ReactNode {
         if (!out || !inp) continue;
         const a = jackCenter(out);
         const b = jackCenter(inp);
-        segs.push({ a, b, color: kindColor[out.kind] });
+        segs.push({ a, b, kind: out.kind, color: kindColor[out.kind] });
         sig += `|${c.id},${a.x | 0},${a.y | 0},${b.x | 0},${b.y | 0}`;
       }
       const drag = getDrag();
@@ -104,7 +123,9 @@ export function CableCanvas(): ReactNode {
         segs.push({
           a: fixed.dir === 'out' ? at : mouse,
           b: fixed.dir === 'out' ? mouse : at,
+          kind: drag.kind,
           color: kindColor[drag.kind],
+          alpha: 0.85,
         });
         sig += `|d${drag.x | 0},${drag.y | 0},${drag.kind}`;
       }

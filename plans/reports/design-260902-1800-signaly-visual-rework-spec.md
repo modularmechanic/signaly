@@ -149,21 +149,23 @@ CABLES (cable-canvas.tsx constants: SAG 14, WIDTH 3, sag factor 0.16)
 
 ## 5. Computed layout rules
 
-All fractions are of PANEL_H = 455px (1 HP = 18px). usablePx = hp*18 − 2*padPx.
+> Scale note (2026-09-02, after user feedback "everything is so small"): the grid was rescaled from 18px/455px to **--hp 26px / --panel-h 658px** (still 5.08:128.5). Rules 3, 9, 13 and 14 below are restated at the new scale; every other px figure quoted in §2, §4, §5 and §7 is at the old 18/455 scale — multiply by 1.44.
+
+All fractions are of PANEL_H = 658px (1 HP = 26px). usablePx = hp*26 − 2*padPx.
 1. Padding: PAD_X = 0.03 of width for hp ≤ 3, 0.06 otherwise (2 HP → 1px, 4 HP → 4px, 16 HP → 17px). Bottom pad = 0.018 (8px).
 2. Header band: y 0 → 0.09 (41px). Name baseline at 15px, sub at 27px. Screws at 4px corners, panel-x at top 3px right 12px (hidden at hp ≤ 3, shown on hover/focus-within elsewhere). Hairline rule at y = 0.09: 1px, width 100%, linear-gradient(90deg, transparent, var(--cat) 18% 82%, transparent). Nothing else is category-coloured in the header.
-3. Knob columns: cols = clamp(floor(usablePx / 46), 1, 4) → 2 HP:1, 4 HP:1, 6 HP:2, 8 HP:2, 10 HP:3, 12 HP:4, 16 HP:4. Column width = usable/cols; knob-cell centred in it.
+3. Knob columns: cols = clamp(floor(usablePx / 66), 1, 4) → 2 HP:1, 4 HP:1, 6 HP:2, 8 HP:2, 10 HP:3, 12 HP:4, 16 HP:4 (usablePx 49 / 92 / 137 / 183 / 229 / 275 / 366). Column width = usable/cols; knob-cell centred in it.
 4. Knob row heights: small row 0.15 (68px = 32 knob + 12 ring margin + 3 gap + 10 label + slack); big row 0.19 (86px). A big knob spans the full usable width on its own row (as now); its label sits below at the same 3px gap.
 5. Knob block placement: starts at y = 0.09 + 0.02 (9px breathing room under the rule). Row height per row = clamp(knobsH / weightedRows, 0.12, 0.15) where weightedRows = smallRows + 1.27*bigRows (big rows get 1.27× the small row height). knobsH = 1 − 0.11 − swH − displayH − jacksH − 0.018 − 0.02 (the 0.02 is the gap reserved above the jack block).
 6. Overflow: if knobsH / weightedRows < 0.12, do not shrink rows below 0.12 — instead let the panel-node container shrink the art: .knob { width: min(32px, 58cqh) } and the label truncates. The layout never emits rows taller than the band; the clamp in computePanel stays.
 7. Switch rows: row h = 0.075 (34px); switch cols = min(cols, 2) for hp < 10, cols otherwise. A switch with > 3 options spans the full row (spanRow = options.length > 3). Switch block sits directly below the knob block.
 8. Display block: h = 0.20 (91px) for hp ≥ 6; 0.16 (73px) for hp ≤ 4; full usable width; placed below switches, with 0.01 gap above.
-9. Jack columns: jackCols = clamp(floor(usablePx / 30), 1, 8) → 2 HP:1, 4 HP:2, 6 HP:3, 8 HP:4, 10 HP:5, 12 HP:6, 16 HP:8. Jack row h = 0.10 (45px = 26 socket + 3 gap + 11 label + slack).
+9. Jack columns: jackCols = clamp(floor(usablePx / 43), 1, 8) → 2 HP:1, 4 HP:2, 6 HP:3, 8 HP:4, 10 HP:5, 12 HP:6, 16 HP:8. Jack row h = 0.10 (66px = 37 socket + 4 gap + 12 label + slack); a label too long for its column wraps to a second line instead of ellipsising.
 10. Jack block is pinned to the bottom: jackBottom = 1 − 0.018; outputs occupy the last ceil(outs/jackCols) rows, inputs the ceil(ins/jackCols) rows immediately above; jackTop = jackBottom − jacksH. Leftover vertical space is absorbed between the content block and the jack block (rule 5), never below the outputs.
 11. Output strip: the output rows get a full-width recessed band behind them (CSS on .module-panel::after positioned with --out-top set by the layout? no — keep CSS-only: the output cell's label pill and second ring already mark outputs; no band). Inputs: label above socket; outputs: label below socket (existing column-reverse).
 12. Label placement: knob label below knob (3px gap), switch label above trough (2px), LED label below bead (3px), jack labels per rule 11. All labels centred, single line, ellipsis.
-13. 2 HP special-case (width 36px): rules 1/3/9 give 1 col, 1 jack col; header uses the container-query size (8px name, sub hidden); big knob art is capped at min(44px, 92cqw) → 33px so the ring stays inside the panel; jack labels at 7px.
-14. 16 HP (288px): 4 knob cols of 63px, 8 jack cols of 32px; display block 253×91px.
+13. 2 HP special-case (width 52px): rules 1/3/9 give 1 col, 1 jack col; header uses the container-query size (11.5px name, sub hidden below 85px); big knob art is capped at min(64px, 68cqw) → 33px so the ring stays inside the panel; jack labels at 10px.
+14. 16 HP (416px): 4 knob cols of 91.5px, 8 jack cols of 45.8px; display block 366×132px.
 15. Selected panel: 1px border var(--cat) plus box-shadow 0 0 0 1px color-mix(in srgb, var(--cat) 40%, transparent) — replaces the --focus border. Dragging: opacity 0.35 (unchanged).
 
 ## 6. Rack chrome

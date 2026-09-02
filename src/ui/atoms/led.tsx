@@ -9,7 +9,7 @@ export interface LedProps {
 
 export const Led: FC<LedProps> = ({ on, color, label }) => {
   const intensity = typeof on === 'number' ? on : on ? 1 : 0;
-  const style = { '--led-c': color ?? 'var(--led)', opacity: 0.15 + intensity * 0.85 } as CSSProperties;
+  const style = { '--led-c': color ?? 'var(--cat, var(--led))', opacity: 0.15 + intensity * 0.85 } as CSSProperties;
   return (
     <div className="led-cell">
       <div className="led" style={style} />

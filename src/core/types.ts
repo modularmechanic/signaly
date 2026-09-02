@@ -87,18 +87,18 @@ export interface ModuleDef {
 }
 
 export const CAT_COLOR: Record<Cat, string> = {
-  SOURCES: '#e05d3a',
-  FILTERS: '#e0a53a',
-  'ENV / FUNC': '#5aa876',
-  'AMP / MIX': '#7d8794',
-  FX: '#7a63c9',
-  VOICES: '#c94f6d',
-  'SEQ / CTRL': '#3f7fc4',
-  DRUMS: '#d98e2b',
-  METERS: '#3fb8b0',
-  OUTPUT: '#2e3138',
-  UTILITY: '#8a8f98',
-  CUSTOM: '#d16bd1',
+  SOURCES: '#ff6a3d',
+  FILTERS: '#ffc247',
+  'ENV / FUNC': '#4ade80',
+  'AMP / MIX': '#c8b48a',
+  FX: '#a78bfa',
+  VOICES: '#ff5c8a',
+  'SEQ / CTRL': '#5aa9ff',
+  DRUMS: '#ff9a3d',
+  METERS: '#2dd4bf',
+  OUTPUT: '#e5e7eb',
+  UTILITY: '#b0b6c0',
+  CUSTOM: '#e879f9',
 };
 
 export const CAT_ORDER: readonly Cat[] = [
@@ -117,6 +117,6 @@ export const CAT_ORDER: readonly Cat[] = [
 ];
 
 /** One HP in CSS pixels — must match `--hp` in styles/tokens.css. */
-export const HP_PX = 15;
+export const HP_PX = 26;
 /** Panel height in CSS pixels — must match `--panel-h` in styles/tokens.css. */
-export const PANEL_H = 380;
+export const PANEL_H = 658;

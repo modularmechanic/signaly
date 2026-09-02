@@ -51,6 +51,6 @@ describe('ModulePanel', () => {
     expect(host.querySelectorAll('.jack')).toHaveLength(svf.ins.length + svf.outs.length);
     const panel = host.querySelector<HTMLElement>('.module-panel');
     expect(panel?.style.getPropertyValue('--hp-count')).toBe(String(svf.hp));
-    expect(panel?.style.getPropertyValue('--cat')).toBe('#e0a53a');
+    expect(panel?.style.getPropertyValue('--cat')).toBe('#ffc247');
   });
 });
