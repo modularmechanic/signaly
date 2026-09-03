@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'dist',
   name: 'DIST',
   sub: 'DRIVE / FOLD / CLIP',
-  hp: 4,
+  hp: 6,
   cat: 'FX',
   worklet: 'dist',
   dark: true,

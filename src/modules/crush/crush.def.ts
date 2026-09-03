@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'crush',
   name: 'CRUSH',
   sub: 'BIT / RATE REDUCE',
-  hp: 2,
+  hp: 6,
   cat: 'FX',
   worklet: 'crush',
   dark: true,

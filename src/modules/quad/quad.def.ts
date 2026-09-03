@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'quad',
   name: 'QUAD VCO',
   sub: 'FOUR-OSC STACK',
-  hp: 10,
+  hp: 6,
   cat: 'SOURCES',
   worklet: 'quad',
   knobs: [

@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'monov',
   name: 'MONOVOX',
   sub: 'COMPLETE MONO VOICE',
-  hp: 6,
+  hp: 10,
   cat: 'VOICES',
   worklet: 'monov',
   dark: true,

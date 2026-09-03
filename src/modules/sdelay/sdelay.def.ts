@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'sdelay',
   name: 'STEREO DELAY',
   sub: 'PING-PONG · SYNC',
-  hp: 16,
+  hp: 14,
   cat: 'FX',
   worklet: 'sdelay',
   dark: true,

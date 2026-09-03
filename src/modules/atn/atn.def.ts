@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'atn',
   name: 'DUAL ATN',
   sub: 'ATTENUVERT + OFFSET',
-  hp: 4,
+  hp: 6,
   cat: 'ENV / FUNC',
   worklet: 'atn',
   knobs: [

@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'seq',
   name: 'SEQ-8',
   sub: 'STEP SEQUENCER',
-  hp: 17,
+  hp: 12,
   cat: 'SEQ / CTRL',
   worklet: 'seq',
   dark: true,

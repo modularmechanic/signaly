@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'noiselab',
   name: 'NOISE LAB',
   sub: 'COLOR · DUST · RANDOM',
-  hp: 6,
+  hp: 8,
   cat: 'SOURCES',
   worklet: 'noiselab',
   dark: true,

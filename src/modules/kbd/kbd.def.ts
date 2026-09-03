@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'kbd',
   name: 'KEYBOARD',
   sub: 'CV / GATE CONTROLLER',
-  hp: 6,
+  hp: 10,
   cat: 'SEQ / CTRL',
   native: 'kbd',
   knobs: [],

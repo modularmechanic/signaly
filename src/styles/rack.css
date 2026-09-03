@@ -128,7 +128,11 @@
   padding: 0;
   border: 0;
   border-radius: var(--r-sm);
-  background: transparent;
+  /* The header is full panel width and centres the module name under this button, so on a
+     narrow faceplate the name runs beneath it. The button only appears on hover, so it can
+     sit on its own opaque chip and stay legible over whatever is underneath. */
+  background: color-mix(in srgb, var(--panel) 92%, var(--metal-hi));
+  box-shadow: 0 0 0 1px var(--edge);
   color: var(--text-dim);
   font-size: 17px;
   line-height: 1;
@@ -148,10 +152,16 @@
   color: var(--danger);
 }
 
-/* no room for it on a 2-3 HP faceplate */
+/* A 2-3 HP faceplate has no room for the full-size button, but hiding it left Delete on a
+   focused panel as the ONLY way to remove those modules — unusable with a pointer alone.
+   Shrink it and tuck it against the edge instead. */
 @container (max-width: 85px) {
   .panel-x {
-    display: none;
+    top: 3px;
+    right: 3px;
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
   }
 }
 

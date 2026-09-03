@@ -80,9 +80,16 @@ describe('declared LEDs are driven', () => {
     it(`${spec.def.id} posts every LED it declares`, () => {
       const src = dspBySlug.get(spec.def.id) ?? '';
       expect(src, `${spec.def.id}: no ${spec.def.id}.dsp.ts to drive its LEDs`).not.toBe('');
+      // A module may post each id as a literal, or index a table of ids (the DRY form once a
+      // module has eight LEDs). Accept the table only when the file really does post an LED
+      // with a computed id, so "the id appears in a comment" still fails.
+      // Matches `id: LED_IDS[b]` and the `{ t: 'led', id, v }` shorthand, but not `id: 'b1'`.
+      const postsComputedId = /t:\s*'led',\s*id(?!\s*:\s*')/.test(src);
       for (const led of spec.def.leds ?? []) {
+        const literal = new RegExp(`t:\\s*'led',\\s*id:\\s*'${led}'`).test(src);
+        const inTable = postsComputedId && new RegExp(`'${led}'`).test(src);
         expect(
-          new RegExp(`t:\\s*'led',\\s*id:\\s*'${led}'`).test(src),
+          literal || inTable,
           `${spec.def.id}.dsp.ts never posts { t: 'led', id: '${led}' } — the LED can never light`,
         ).toBe(true);
       }

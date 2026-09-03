@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'vco',
   name: 'VCO',
   sub: 'ANALOG OSCILLATOR',
-  hp: 4,
+  hp: 8,
   cat: 'SOURCES',
   worklet: 'vco',
   knobs: [
