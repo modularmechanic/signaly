@@ -13,9 +13,10 @@ class Mix8 extends Base {
   lv = new Float64Array(NCH);
   pl = new Float64Array(NCH);
   pr = new Float64Array(NCH);
-  /** Post-fader send gain per channel, one bus each. */
+  /** Send gain per channel, one bus each; `pre` lifts both ahead of the fader. */
   s1 = new Float64Array(NCH);
   s2 = new Float64Array(NCH);
+  pre: boolean[] = Array.from({ length: NCH }, () => false);
   src: (Float32Array | null)[] = Array.from({ length: NCH }, () => null);
 
   constructor(o?: BaseOptions) {
@@ -36,6 +37,7 @@ class Mix8 extends Base {
       p[`hi${c}`] = 0;
       p[`snd1_${c}`] = 0;
       p[`snd2_${c}`] = 0;
+      p[`pre${c}`] = 0;
     }
     return p;
   }
@@ -62,9 +64,10 @@ class Mix8 extends Base {
     const s1r = O[1]?.[0];
     const s2l = O[2]?.[0];
     const s2r = O[3]?.[0];
-    // Aux sends and returns, console style: each channel feeds the send buses post-fader at its
-    // own send level, and whatever comes back on a return is ADDED to the main bus at the return
-    // level. The dry mix is never replaced — an unpatched return simply adds nothing.
+    // Aux sends and returns, console style: each channel feeds the send buses at its own send
+    // level, post-fader unless its PRE button is lit, and whatever comes back on a return is
+    // ADDED to the main bus at the return level. The dry mix is never replaced — an unpatched
+    // return simply adds nothing.
     const r1l = ch(I, NCH);
     const r1r = ch(I, NCH + 1);
     const r2l = ch(I, NCH + 2);
@@ -87,6 +90,7 @@ class Mix8 extends Base {
       this.pr[c] = Math.sin(a);
       this.s1[c] = clamp(p[`snd1_${c + 1}`] ?? 0, 0, 1);
       this.s2[c] = clamp(p[`snd2_${c + 1}`] ?? 0, 0, 1);
+      this.pre[c] = (p[`pre${c + 1}`] ?? 0) >= 0.5;
     }
     const mg = clamp(p.master ?? 0, 0, 1) ** 2;
 
@@ -100,7 +104,8 @@ class Mix8 extends Base {
       for (let c = 0; c < NCH; c++) {
         const s = this.src[c];
         if (!s) continue;
-        let y = (s[i] ?? 0) * (this.lv[c] ?? 0);
+        // EQ runs on the raw input; the fader scales after it, so a PRE send still hears the EQ.
+        let y = s[i] ?? 0;
         for (let b = 0; b < NB; b++) {
           const k = c * NB + b;
           const o = k * 5;
@@ -109,16 +114,19 @@ class Mix8 extends Base {
           this.z1[k] = flush((this.co[o + 1] ?? 0) * x - (this.co[o + 3] ?? 0) * y + (this.z2[k] ?? 0));
           this.z2[k] = flush((this.co[o + 2] ?? 0) * x - (this.co[o + 4] ?? 0) * y);
         }
-        const yl = y * (this.pl[c] ?? 0);
-        const yr = y * (this.pr[c] ?? 0);
+        const fl = y * (this.lv[c] ?? 0);
+        const yl = fl * (this.pl[c] ?? 0);
+        const yr = fl * (this.pr[c] ?? 0);
         bl += yl;
         br += yr;
+        const tl = this.pre[c] ? y * (this.pl[c] ?? 0) : yl;
+        const tr = this.pre[c] ? y * (this.pr[c] ?? 0) : yr;
         const g1 = this.s1[c] ?? 0;
         const g2 = this.s2[c] ?? 0;
-        a1l += yl * g1;
-        a1r += yr * g1;
-        a2l += yl * g2;
-        a2r += yr * g2;
+        a1l += tl * g1;
+        a1r += tr * g1;
+        a2l += tl * g2;
+        a2r += tr * g2;
       }
       if (s1l) s1l[i] = clamp(flush(a1l), -10, 10);
       if (s1r) s1r[i] = clamp(flush(a1r), -10, 10);

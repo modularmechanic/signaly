@@ -219,10 +219,9 @@
 
 .fader-cap {
   position: absolute;
-  /* The cap moves every pointermove of a drag. A transform stays on the compositor; the
-     `top` it replaced forced a layout pass per frame. */
-  top: 0;
-  transform: translateY(calc((1 - var(--pct, 0)) * (100% - 19px)));
+  /* `top` on purpose: a percentage inside translateY() is the cap's own 19px height, not the
+     track's, so a transform left the cap pinned at the top of every fader. */
+  top: calc((1 - var(--pct, 0)) * (100% - 19px));
   left: -7px;
   width: 35px;
   height: 19px;
