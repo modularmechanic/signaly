@@ -1,18 +1,8 @@
-import { Base, ch, clamp, Lcg, TP, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { readLinear, Base, ch, clamp, Lcg, TP, type InMsg, type Params } from '../../engine/dsp-prelude';
 
 const VOICES = 8;
 /** One full sweep of the loaded sample every this many seconds while not frozen. */
 const SCAN_SECONDS = 8;
-
-function readLinear(buf: Float32Array, pos: number): number {
-  const n = buf.length;
-  const p = pos < 0 ? 0 : pos > n - 1 ? n - 1 : pos;
-  const i0 = Math.floor(p);
-  const frac = p - i0;
-  const s0 = buf[i0] ?? 0;
-  const s1 = buf[i0 + 1] ?? s0;
-  return s0 + (s1 - s0) * frac;
-}
 
 /** Granular synthesis over a loaded, static sample — the GRAIN module's voice engine, but
     reading a fixed buffer by absolute position instead of a live capture ring. An internal

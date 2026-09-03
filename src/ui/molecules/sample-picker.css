@@ -13,15 +13,6 @@
   letter-spacing: 0.04em;
 }
 
-.sample-picker-btn input[type='file'] {
-  /* the label is the click target; the native input stays invisible */
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  overflow: hidden;
-}
-
 .sample-picker-info {
   display: flex;
   gap: 6px;

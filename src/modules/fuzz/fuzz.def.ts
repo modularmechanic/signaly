@@ -26,7 +26,7 @@ export const def: ModuleDef = {
     { id: 'level', label: 'LEVEL', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
     { id: 'fcvA', label: 'FUZZ CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
   ],
-  sws: [{ id: 'mode', label: 'MODE', options: ['GERMANIUM', 'SILICON'] }],
+  sws: [{ id: 'mode', label: 'MODE', options: ['GERM', 'SIL'] }],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },
     { id: 'fcv', label: 'FUZZ CV', kind: 'c' },

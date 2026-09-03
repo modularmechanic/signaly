@@ -67,6 +67,7 @@ export function SamplePicker({ sampleId, sampleName, onLoaded }: SamplePickerPro
   const [busy, setBusy] = useState(false);
   const loadedId = useRef<string | undefined>(undefined);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const commit = (id: string, name: string, dec: DecodedSample): void => {
     setMsg('');
@@ -116,19 +117,20 @@ export function SamplePicker({ sampleId, sampleName, onLoaded }: SamplePickerPro
 
   return (
     <div className="sample-picker">
-      <label className="sample-picker-btn">
-        <input
-          type="file"
-          accept="audio/*"
-          disabled={busy}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            e.target.value = '';
-            if (f) void pick(f);
-          }}
-        />
-        <Button disabled={busy}>{busy ? 'Loading…' : 'Load sample'}</Button>
-      </label>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="audio/*"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = '';
+          if (f) void pick(f);
+        }}
+      />
+      <Button disabled={busy} onClick={() => fileRef.current?.click()}>
+        {busy ? 'Loading…' : 'Load sample'}
+      </Button>
       {meta ? (
         <div className="sample-picker-info">
           <span className="sample-picker-name">{meta.name}</span>
@@ -137,7 +139,7 @@ export function SamplePicker({ sampleId, sampleName, onLoaded }: SamplePickerPro
       ) : (
         <div className="sample-picker-info sample-picker-empty">{msg || 'no sample'}</div>
       )}
-      <canvas ref={canvasRef} className="sample-picker-wave" width={220} height={40} />
+      <canvas ref={canvasRef} className="sample-picker-wave" width={220} height={40} aria-hidden="true" />
       {meta && msg ? <div className="sample-picker-msg">{msg}</div> : null}
     </div>
   );

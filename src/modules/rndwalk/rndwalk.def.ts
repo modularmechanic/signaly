@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'rndwalk',
   name: 'RANDOM WALK',
   sub: 'BROWNIAN CV',
-  hp: 4,
+  hp: 6,
   cat: 'SEQ / CTRL',
   look: 'patina',
   worklet: 'rndwalk',

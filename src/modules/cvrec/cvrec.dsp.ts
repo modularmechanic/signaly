@@ -36,7 +36,6 @@ class CvRec extends Base {
     const p = this.p;
     const steps = clamp(Math.round(p.bars ?? 4), 1, 16) * STEPS_PER_BAR;
     const recOn = (p.rec ?? 0) >= 0.5;
-    let dirty = false;
     for (let i = 0; i < out.length; i++) {
       const r = rst?.[i] ?? 0;
       if (r > 2.5 && this.lr <= 2.5) this.pos = 0;
@@ -44,17 +43,17 @@ class CvRec extends Base {
       const c = clk?.[i] ?? 0;
       if (c > 2.5 && this.lc <= 2.5) {
         if (recOn) {
-          this.buf[this.pos] = clamp(inp?.[i] ?? 0, -5, 5);
-          dirty = true;
+          const v = clamp(inp?.[i] ?? 0, -5, 5);
+          this.buf[this.pos] = v;
+          // One scalar per written step keeps m.ext.cvrec (owned by cvrec.serialize.ts) current
+          // for save/load without cloning the whole buffer off the audio thread.
+          this.port.postMessage({ t: 'rec', i: this.pos, v });
         }
         this.pos = (this.pos + 1) % steps;
       }
       this.lc = c;
       out[i] = this.buf[this.pos] ?? 0;
     }
-    // Mirrors the buffer to the main thread only when it actually changed, so save/load
-    // (owned by cvrec.serialize.ts on m.ext) sees the latest recording.
-    if (dirty) this.port.postMessage({ t: 'rec', pos: this.pos, buf: this.buf });
     return true;
   }
 }

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, TP, type Params } from '../../engine/dsp-prelude';
 
 // RBJ cookbook biquad coefficients, recomputed at block rate: a closed-form coefficient set
 // per mode rather than the analog-modelled integrator core the rest of the filter bank shares
@@ -21,6 +21,9 @@ class Steiner extends Base {
     const out = O[0]?.[0];
     if (!out) return true;
     const { cut = 800, res = 0.3, mode = 0 } = this.p;
+    // FREQ CV is sampled once per block on purpose: a direct-form biquad carries state computed
+    // under the previous coefficient set, so swapping coefficients every sample under audio-rate
+    // CV spikes. The integrator-core filters (MS-20, POLIVOKS, SVF) read cv per sample instead.
     const f0 = clamp(cut * Math.pow(2, cv?.[0] ?? 0), 20, sampleRate * 0.45);
     const w0 = (TP * f0) / sampleRate;
     const q = 0.55 + clamp(res, 0, 1) * 9;
@@ -59,7 +62,7 @@ class Steiner extends Base {
       this.x2 = this.x1;
       this.x1 = x;
       this.y2 = this.y1;
-      this.y1 = y;
+      this.y1 = flush(y);
       out[i] = clamp(y, -5, 5);
     }
     return true;

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, type Params } from '../../engine/dsp-prelude';
 
 const SWEEP_OCT = 4; // full SENS range sweeps the cutoff +/-4 octaves
 
@@ -30,7 +30,7 @@ class EnvFilt extends Base {
     for (let i = 0; i < out.length; i++) {
       const x = inp?.[i] ?? 0;
       const peak = Math.abs(x) / 5;
-      this.env += (peak - this.env) * (peak > this.env ? atkC : relC);
+      this.env = flush(this.env + (peak - this.env) * (peak > this.env ? atkC : relC));
       const fc = clamp(base * Math.pow(2, dir * sens * SWEEP_OCT * this.env), 20, sampleRate * 0.45);
       const g = Math.tan((Math.PI * fc) / sampleRate);
       const a1 = 1 / (1 + g * (g + k)),
@@ -39,8 +39,8 @@ class EnvFilt extends Base {
       const v3 = x - this.ic2;
       const v1 = a1 * this.ic1 + a2 * v3;
       const v2 = this.ic2 + a2 * this.ic1 + a3 * v3;
-      this.ic1 = 2 * v1 - this.ic1;
-      this.ic2 = 2 * v2 - this.ic2;
+      this.ic1 = flush(2 * v1 - this.ic1);
+      this.ic2 = flush(2 * v2 - this.ic2);
       out[i] = clamp(x * (1 - mix) + v2 * mix, -5, 5);
     }
     return true;

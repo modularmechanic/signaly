@@ -37,6 +37,8 @@ class DualBp extends Base {
     const out = O[0]?.[0];
     if (!out) return true;
     const { freq = 300, spread = 24, res = 0.5, mix = 0.5 } = this.p;
+    // FREQ CV is block-rate on purpose, same reason as STEINER: direct-form biquads, not the
+    // per-sample integrator core.
     const center = clamp(freq * Math.pow(2, cv?.[0] ?? 0), 20, sampleRate * 0.45);
     const q = 2 + clamp(res, 0, 1) * 10;
     const f1 = clamp(center / Math.pow(2, spread / 24), 20, sampleRate * 0.45);

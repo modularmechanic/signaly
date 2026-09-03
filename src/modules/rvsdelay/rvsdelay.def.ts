@@ -6,7 +6,7 @@ export const def: ModuleDef = {
   sub: 'REVERSE DELAY',
   hp: 6,
   cat: 'FX',
-  look: 'patina',
+  look: 'noir',
   worklet: 'rvsdelay',
   knobs: [
     { id: 'time', label: 'CHUNK', min: 0.03, max: 1, initial: 0.3, fmt: 'fMs', curve: 'log', big: true },

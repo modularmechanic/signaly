@@ -1,14 +1,4 @@
-import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
-
-function readLinear(buf: Float32Array, pos: number): number {
-  const n = buf.length;
-  const p = pos < 0 ? 0 : pos > n - 1 ? n - 1 : pos;
-  const i0 = Math.floor(p);
-  const frac = p - i0;
-  const s0 = buf[i0] ?? 0;
-  const s1 = buf[i0 + 1] ?? s0;
-  return s0 + (s1 - s0) * frac;
-}
+import { readLinear, Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
 
 /** Play a loaded sample on a trigger, 1 V/oct + PITCH, between START and END, forward or
     REVERSE, one-shot or LOOP. `msg({t:'sample', v})` hands over the decoded mono buffer — see

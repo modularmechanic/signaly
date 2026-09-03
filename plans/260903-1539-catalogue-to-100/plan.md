@@ -36,7 +36,7 @@ to miss:
 | divmult  | DIV / MULT  | SIX CLOCK RATIOS          | 6  | ÷8 ÷4 ÷2 ×2 ×3 ×4 from one clock, with reset                  |
 | cvrec    | CV REC      | RECORD AND LOOP A CV      | 8  | Record a CV or knob movement for up to 16 bars and loop it     |
 | shift    | SHIFT REG   | 4-STAGE ANALOG SHIFT      | 6  | Sample a CV on each clock and pass it down four outputs: canons |
-| rndwalk  | RANDOM WALK | BROWNIAN CV               | 4  | A value that drifts by a random step each clock, within bounds |
+| rndwalk  | RANDOM WALK | BROWNIAN CV               | 6  | A value that drifts by a random step each clock, within bounds |
 
 SEQ-16 and TRIG SEQ need a `parts.tsx` for the step grid; copy the mechanism from
 `src/modules/seq/` (`seq.parts.tsx`, `seq.serialize.ts`, `pushSeq`, the `steps` message the DSP

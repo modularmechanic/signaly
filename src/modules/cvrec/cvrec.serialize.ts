@@ -10,7 +10,7 @@ export interface CvRecExt {
 const seed = (): CvRecExt => ({ buf: new Array(CAP).fill(0) as number[] });
 
 /** The live recording on `m.ext.cvrec`, seeded on first read. Kept in sync with the
-    processor's own buffer via the `{t:'rec', buf}` messages it posts on every write. */
+    processor's own buffer via the `{t:'rec', i, v}` message it posts on every write. */
 export function getRec(m: ModuleInstance): CvRecExt {
   const ext = m.ext as { cvrec?: CvRecExt };
   ext.cvrec ??= seed();

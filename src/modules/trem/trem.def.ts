@@ -12,7 +12,7 @@ export const def: ModuleDef = {
     { id: 'rate', label: 'RATE', min: 0.05, max: 20, initial: 4, fmt: 'fHz', curve: 'log', big: true },
     { id: 'depth', label: 'DEPTH', min: 0, max: 1, initial: 0.7, fmt: 'fPc' },
   ],
-  sws: [{ id: 'shape', label: 'SHAPE', options: ['SINE', 'TRIANGLE', 'SQUARE'] }],
+  sws: [{ id: 'shape', label: 'SHAPE', options: ['SIN', 'TRI', 'SQR'] }],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },
     { id: 'sync', label: 'SYNC', kind: 'g' },
