@@ -179,20 +179,6 @@ wrong-version or wrong-shape payloads fall back silently; writes swallow quota/p
   localStorage's practical size budget. `clearImages()` is a plain named export; the "delete
   everything" path calls it instead of dynamically importing `idb-keyval` a second time.
 
-## Deployment
-
-Static output, no server: Vite writes the site to `dist/` and any file host serves it.
-
-`.github/workflows/gate.yml` is the single definition of a releasable tree — `format:check`, `lint`,
-`typecheck`, `test`, `build`, `npm audit --audit-level=high` — exposed as a `workflow_call` so it has
-exactly one copy. `ci.yml` calls it on every pull request and on the integration branch and stops
-there. `release.yml` calls it again on a published GitHub release, then builds with
-`--base="/<repo>/"` and publishes to Pages. **A merge never deploys; publishing a release does**, and a
-release is always cut from a tag, so the live site always corresponds to a tag. The base path is a
-command-line flag rather than config, so a local run stays at `/`. `react`/`react-dom` are split into
-their own chunk (`manualChunks` in `vite.config.ts`) so a content-only deploy does not make the
-browser re-fetch the framework.
-
 ## Security boundaries
 
 - CSP (`index.html`), as shipped: `default-src 'self'`; `script-src 'self' blob:` and
