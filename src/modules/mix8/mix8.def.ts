@@ -1,63 +1,55 @@
 import type { JackDef, KnobDef, ModuleDef, PanelNode, SwitchDef } from '../../core/types';
-import { EQ_F, EQ_Q, NB, NCH } from './mix8.eq';
+import { MID_F, NCH } from './mix8.eq';
 
 const chs = Array.from({ length: NCH }, (_, i) => i + 1);
-const bands = Array.from({ length: NB }, (_, i) => i + 1);
-const TAG = ['LO', 'LM', 'HM', 'HI'];
 
-/** Rendered by mix8.parts, not by a panel node — one set edits the SELected channel. */
-export const EQ_KNOBS: KnobDef[] = bands.flatMap((b) => [
-  {
-    id: `eq${b}f`,
-    label: `${TAG[b - 1]} F`,
-    min: 20,
-    max: 18000,
-    initial: EQ_F[b - 1] ?? 1000,
+const gain = (id: string, label: string): KnobDef => ({
+  id,
+  label,
+  min: -15,
+  max: 15,
+  initial: 0,
+  fmt: 'f1',
+});
+const level = (id: string, label: string, initial: number): KnobDef => ({
+  id,
+  label,
+  min: 0,
+  max: 1,
+  initial,
+  fmt: 'fPc',
+});
+
+// Labels carry the channel number: eight knobs all called PAN would be indistinguishable to a
+// screen reader, and the accessible name is the label.
+const knobs: KnobDef[] = [
+  ...chs.map((n): KnobDef => ({ ...level(`l${n}`, `CH ${n}`, 0.75), fader: true })),
+  { ...level('master', 'MAIN', 0.8), fader: true },
+  ...chs.map((n): KnobDef => ({ id: `p${n}`, label: `PAN ${n}`, min: -1, max: 1, initial: 0, fmt: 'f1' })),
+  ...chs.map((n) => gain(`hi${n}`, `HI ${n}`)),
+  ...chs.map((n) => gain(`mid${n}`, `MID ${n}`)),
+  ...chs.map((n): KnobDef => ({
+    id: `mf${n}`,
+    label: `MF ${n}`,
+    min: 200,
+    max: 5000,
+    initial: MID_F,
     fmt: 'fHz',
     curve: 'log',
-  },
-  { id: `eq${b}g`, label: `${TAG[b - 1]} G`, min: -18, max: 18, initial: 0, fmt: 'f1' },
-  { id: `eq${b}q`, label: `${TAG[b - 1]} Q`, min: 0.3, max: 8, initial: EQ_Q, fmt: 'f1', curve: 'log' },
-]);
-
-const knobs: KnobDef[] = [
-  ...chs.map((n): KnobDef => ({
-    id: `l${n}`,
-    label: `CH ${n}`,
-    min: 0,
-    max: 1,
-    initial: 0.75,
-    fmt: 'fPc',
-    fader: true,
   })),
-  { id: 'master', label: 'MAIN', min: 0, max: 1, initial: 0.8, fmt: 'fPc', fader: true },
-  ...chs.map((n): KnobDef => ({ id: `p${n}`, label: `PAN ${n}`, min: -1, max: 1, initial: 0, fmt: 'f1' })),
-  // Post-fader aux sends, one per channel per bus, down by default as on a console.
-  ...chs.map((n): KnobDef => ({
-    id: `snd1_${n}`,
-    label: `SND1 ${n}`,
-    min: 0,
-    max: 1,
-    initial: 0,
-    fmt: 'fPc',
-  })),
-  ...chs.map((n): KnobDef => ({
-    id: `snd2_${n}`,
-    label: `SND2 ${n}`,
-    min: 0,
-    max: 1,
-    initial: 0,
-    fmt: 'fPc',
-  })),
+  ...chs.map((n) => gain(`lo${n}`, `LO ${n}`)),
+  // Post-fader aux sends, down by default as on a console.
+  ...chs.map((n) => level(`snd1_${n}`, `S1 ${n}`, 0)),
+  ...chs.map((n) => level(`snd2_${n}`, `S2 ${n}`, 0)),
   // Return levels blend the effect back into the main bus in parallel with the dry mix.
-  { id: 'ret1', label: 'RET 1', min: 0, max: 1, initial: 0.8, fmt: 'fPc' },
-  { id: 'ret2', label: 'RET 2', min: 0, max: 1, initial: 0.8, fmt: 'fPc' },
-  ...EQ_KNOBS,
+  level('ret1', 'RET 1', 0.8),
+  level('ret2', 'RET 2', 0.8),
 ];
 
+// One option renders as a lit push-button toggle: the M and S of every desk.
 const sws: SwitchDef[] = [
-  { id: 'sel', label: 'EQ CH', options: chs.map(String), initial: 0 },
-  ...chs.map((n): SwitchDef => ({ id: `m${n}`, label: `MUTE ${n}`, options: ['OFF', 'ON'], initial: 0 })),
+  ...chs.map((n): SwitchDef => ({ id: `m${n}`, label: `MUTE ${n}`, options: ['M'], initial: 0 })),
+  ...chs.map((n): SwitchDef => ({ id: `s${n}`, label: `SOLO ${n}`, options: ['S'], initial: 0 })),
 ];
 
 const ins: JackDef[] = [
@@ -77,54 +69,97 @@ const outs: JackDef[] = [
   { id: 'outr', label: 'OUT R', kind: 'a' },
 ];
 
-// Authored geometry: the computed grid caps at 4 knob columns, which turns 8 channel
-// strips into stacked rows of 4 and leaves ~25px per row once the jacks and the EQ
-// display have taken their bands. A console is columns, so the columns are authored.
+// Authored geometry: a console is eight identical strips read top to bottom — input, EQ, sends,
+// pan, mute/solo, fader — with the master fader beside them and every send/return jack in one
+// strip along the bottom. The computed grid caps at four knob columns and cannot express that.
 const COL_W = 0.0925;
+const HALF = COL_W / 2;
 const col = (i: number): number => 0.018 + i * 0.0965;
 const MASTER_X = 0.845;
 const MASTER_W = 0.137;
+const KNOB_H = 0.075; // 49 px of 658: clear of the 37 px floor under which the label is dropped
 
-const row = (y: number, h: number, id: string, kind: PanelNode['kind'], i: number): PanelNode => ({
+const cell = (
+  id: string,
+  kind: PanelNode['kind'],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): PanelNode => ({
   id,
   kind,
-  x: col(i),
+  x,
   y,
-  w: COL_W,
+  w,
   h,
 });
+const strip = (y: number, h: number, kind: PanelNode['kind'], id: (n: number) => string): PanelNode[] =>
+  chs.map((n, i) => cell(id(n), kind, col(i), y, COL_W, h));
+const pair = (
+  y: number,
+  kind: PanelNode['kind'],
+  l: (n: number) => string,
+  r: (n: number) => string,
+): PanelNode[] =>
+  chs.flatMap((n, i) => [
+    cell(l(n), kind, col(i), y, HALF, kind === 'switch' ? 0.05 : KNOB_H),
+    cell(r(n), kind, col(i) + HALF, y, HALF, kind === 'switch' ? 0.05 : KNOB_H),
+  ]);
 
-const jacks = (list: JackDef[], pre: 'in' | 'out', y: number, cols: number): PanelNode[] =>
-  list.map((j, i) => ({
-    id: `${pre}:${j.id}`,
-    kind: pre,
-    x: 0.018 + (i * 0.964) / cols,
-    y,
-    w: 0.964 / cols,
-    h: 0.1,
-  }));
+// Bottom strip: four send outs, two return pairs each with its level, then the main outs.
+const BOTTOM = [
+  'out:s1l',
+  'out:s1r',
+  'out:s2l',
+  'out:s2r',
+  'in:r1l',
+  'in:r1r',
+  'knob:ret1',
+  'in:r2l',
+  'in:r2r',
+  'knob:ret2',
+  'out:outl',
+  'out:outr',
+];
+const BW = 0.964 / BOTTOM.length;
 
-// A console strip reads top to bottom: fader, pan, sends, mute. Knob rows are 0.08 of the 658 px
-// panel (53 px), clear of the 37 px floor under which controls.css drops the label. The master
-// column has spare height under its fader, which is where the two return levels live.
 const nodes: PanelNode[] = [
-  ...chs.map((n, i) => row(0.098, 0.19, `fader:l${n}`, 'fader', i)),
-  { id: 'fader:master', kind: 'fader', x: MASTER_X, y: 0.098, w: MASTER_W, h: 0.19 },
-  ...chs.map((n, i) => row(0.292, 0.08, `knob:p${n}`, 'knob', i)),
-  ...chs.map((n, i) => row(0.376, 0.08, `knob:snd1_${n}`, 'knob', i)),
-  ...chs.map((n, i) => row(0.46, 0.08, `knob:snd2_${n}`, 'knob', i)),
-  { id: 'knob:ret1', kind: 'knob', x: MASTER_X, y: 0.292, w: MASTER_W, h: 0.08 },
-  { id: 'knob:ret2', kind: 'knob', x: MASTER_X, y: 0.376, w: MASTER_W, h: 0.08 },
-  ...chs.map((n, i) => row(0.544, 0.056, `switch:m${n}`, 'switch', i)),
-  { id: 'display:text', kind: 'display', x: 0.018, y: 0.606, w: 0.964, h: 0.148 },
-  ...jacks(ins, 'in', 0.76, 12),
-  ...jacks(outs, 'out', 0.864, 6),
+  ...strip(0.115, 0.085, 'in', (n) => `in:in${n}`),
+  ...pair(
+    0.205,
+    'knob',
+    (n) => `knob:hi${n}`,
+    (n) => `knob:mid${n}`,
+  ),
+  ...pair(
+    0.285,
+    'knob',
+    (n) => `knob:mf${n}`,
+    (n) => `knob:lo${n}`,
+  ),
+  ...pair(
+    0.365,
+    'knob',
+    (n) => `knob:snd1_${n}`,
+    (n) => `knob:snd2_${n}`,
+  ),
+  ...strip(0.445, KNOB_H, 'knob', (n) => `knob:p${n}`),
+  ...pair(
+    0.525,
+    'switch',
+    (n) => `switch:m${n}`,
+    (n) => `switch:s${n}`,
+  ),
+  ...strip(0.58, 0.3, 'fader', (n) => `fader:l${n}`),
+  cell('fader:master', 'fader', MASTER_X, 0.365, MASTER_W, 0.515),
+  ...BOTTOM.map((id, k) => cell(id, id.split(':')[0] as PanelNode['kind'], 0.018 + k * BW, 0.885, BW, 0.095)),
 ];
 
 export const def: ModuleDef = {
   id: 'mix8',
   name: 'MIX 8',
-  sub: 'STEREO · 4-BAND EQ',
+  sub: 'STEREO CONSOLE · 3-BAND EQ',
   hp: 36,
   cat: 'AMP / MIX',
   worklet: 'mix8',
@@ -132,6 +167,5 @@ export const def: ModuleDef = {
   sws,
   ins,
   outs,
-  display: 'text',
   panel: { nodes },
 };

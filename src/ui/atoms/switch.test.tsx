@@ -69,3 +69,38 @@ describe('Switch', () => {
     expect(document.activeElement).toBe(opts()[2]);
   });
 });
+
+describe('Switch with one option', () => {
+  const TOGGLE: SwitchDef = { id: 'm1', label: 'MUTE 1', options: ['M'] };
+  const toggleDef: ModuleDef = { ...def, id: 'test-toggle', sws: [TOGGLE] };
+  let tHost: HTMLDivElement;
+  let tRoot: Root;
+  let tm: ModuleInstance;
+
+  beforeEach(() => {
+    tm = { uid: 2, def: toggleDef, jacks: { in: {}, out: {} }, vals: {}, sws: { m1: 0 }, ext: {} };
+    useRackStore.getState().addModuleInstance(tm, 0);
+    tHost = document.createElement('div');
+    document.body.appendChild(tHost);
+    tRoot = createRoot(tHost);
+    act(() => tRoot.render(<Switch m={tm} def={TOGGLE} />));
+  });
+
+  afterEach(() => {
+    act(() => tRoot.unmount());
+    tHost.remove();
+  });
+
+  it('renders a single lit push-button that toggles 0 and 1, not a radiogroup', () => {
+    expect(tHost.querySelector('[role="radiogroup"]')).toBeNull();
+    const btn = tHost.querySelector<HTMLButtonElement>('button.switch-toggle');
+    expect(btn?.textContent).toBe('M');
+    expect(btn?.getAttribute('aria-label')).toBe('MUTE 1');
+    expect(btn?.getAttribute('aria-pressed')).toBe('false');
+    act(() => btn?.click());
+    expect(useRackStore.getState().modules[2]?.sws.m1).toBe(1);
+    expect(tHost.querySelector('button.switch-toggle')?.getAttribute('aria-pressed')).toBe('true');
+    act(() => tHost.querySelector<HTMLButtonElement>('button.switch-toggle')?.click());
+    expect(useRackStore.getState().modules[2]?.sws.m1).toBe(0);
+  });
+});
