@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'tape',
   name: 'TAPE ECHO',
   sub: 'WOW + SATURATION · SYNC',
-  hp: 14,
+  hp: 10,
   cat: 'FX',
   look: 'tape',
   worklet: 'tape',

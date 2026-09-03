@@ -21,10 +21,16 @@
   font: 500 var(--label-fs, 9px) / 1.1 var(--font-ui);
   letter-spacing: 0.14em;
   text-align: center;
-  /* ellipsis, not clip: a silently chopped THRESHOLD reads as a different word (THRESHO). */
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  /* A legend that does not fit stacks onto a second line, as printed panels do, and only
+     ellipsises past that. Twenty type faces of different widths made single-line ellipsis
+     ("PITCH …", "FEEDBA…") the common case on half-width cells. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: break-word;
+  text-overflow: ellipsis;
 }
 
 /* ---------- knob ---------- */
@@ -271,6 +277,10 @@
 
 .switch-opts {
   display: flex;
+  /* Legends wider than the trough wrap onto a second row rather than being clipped:
+     "LORENZ LOGISTI" was the visible failure. */
+  flex-wrap: wrap;
+  justify-content: center;
   max-width: 100%;
   overflow: hidden;
   gap: 0;
