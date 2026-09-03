@@ -18,6 +18,11 @@ const LED_W = 0.12;
 const DISPLAY_GAP = 0.01;
 export const BOTTOM_PAD = 0.018;
 const ROW_MAX = 0.15;
+/** 40 px of a 658 px panel. `controls.css` shrinks the knob under 63 px and DELETES the label
+    under 37 px, so a row thinner than this ships an unlabelled control. A module whose rows
+    cannot reach it is too dense for its width — `panel-fit.test.ts` fails it rather than
+    letting it render nameless knobs. */
+const ROW_MIN = 0.061;
 const BIG_ROW = 1.27;
 
 const cache = new Map<string, PanelLayout>();
@@ -148,12 +153,16 @@ function computePanel(def: ModuleDef): PanelLayout {
 
   let y = HEADER_H + HEADER_GAP;
   if (weighted > 0) {
+    const rowH = clamp(knobsH / weighted, ROW_MIN, ROW_MAX);
+    // Spare height used to pool into one dead band above the pinned jacks — NOISE wasted 482 px
+    // of its 658. Split it above and below so the control block sits centred instead.
+    y += Math.max(0, knobsH - rowH * weighted) / 2;
     y = grid(
       nodes,
       def.knobs,
       cols,
       y,
-      Math.min(ROW_MAX, knobsH / weighted),
+      rowH,
       box,
       (k) => ({
         id: `${k.fader ? 'fader' : 'knob'}:${k.id}`,

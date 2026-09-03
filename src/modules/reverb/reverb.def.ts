@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'reverb',
   name: 'REVERB',
   sub: 'MULTI-ALGORITHM',
-  hp: 10,
+  hp: 14,
   cat: 'FX',
   worklet: 'reverb',
   dark: true,

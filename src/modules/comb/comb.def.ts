@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'comb',
   name: 'COMB',
   sub: 'TUNED COMB FILTER',
-  hp: 2,
+  hp: 4,
   cat: 'FILTERS',
   worklet: 'comb',
   knobs: [

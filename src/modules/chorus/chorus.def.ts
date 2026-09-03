@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'chorus',
   name: 'CHORUS',
   sub: 'STEREO BBD ENSEMBLE',
-  hp: 4,
+  hp: 6,
   cat: 'FX',
   worklet: 'chorus',
   knobs: [

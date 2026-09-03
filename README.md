@@ -4,7 +4,7 @@
 
 Live at **https://modularmechanic.github.io/signaly/**
 
-A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 41 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
+A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 71 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
 
 ## Quickstart
 
@@ -115,34 +115,3 @@ Security note, stated plainly: a pure client-side app cannot hide a key from a s
 User DSP runs in an AudioWorklet, which by spec has no DOM and no network. That scope plus the CSP is the actual sandbox. The `FORBIDDEN` regex in `dsp-transpile.ts` is defence in depth and is deliberately not sound — `globalThis["eval"]`, aliasing `eval` to a variable, and dynamic `import()` all get past it; treating it as the boundary would be a mistake.
 
 Since modules can be exported and imported, running a module file from a third party is a real thing you can do, so decide whether you trust the source. The damage ceiling is that a hostile or merely broken module wedges the audio thread and with it your own tab; reloading the page clears it. Nothing reaches the network, the page, or your API keys from inside worklet scope.
-
-## Deploy
-
-The site is static: `npm run build` writes `dist/`, and anything that serves files can host it.
-
-The live site is https://modularmechanic.github.io/signaly/. GitHub Pages is wired up in
-`.github/workflows/`. One gate, two entry points:
-
-- `gate.yml` is the single definition of "releasable" — `format:check`, `lint`, `typecheck`, `test`,
-  `build`, `npm audit --audit-level=high`. It is a `workflow_call`, never run on its own.
-- `ci.yml` calls the gate on every pull request and on the integration branch. A red check blocks the
-  merge. It does not deploy.
-- `release.yml` calls the gate again, then builds and publishes to Pages. **Publishing a GitHub
-  release is the only thing that deploys the site** — a merge never does, and a release is always cut
-  from a tag, so what is live is always a tag. The gate re-runs on the release because the tag may
-  point at a commit that passed `ci.yml` weeks ago against a different dependency tree.
-
-A project site is served from `https://<user>.github.io/<repo>/`, so the release builds with
-`npx vite build --base="/<repo>/"` — the base comes from the repo name, and nothing in the app assumes
-`/`, so a local build stays at `/`. A repo named `<user>.github.io` is a user site served from `/`;
-that is the one `PAGES_BASE` line to change. Enable Pages with source **GitHub Actions** and leave
-**Enforce HTTPS** on: `crypto.randomUUID`, `AudioWorklet` and `navigator.storage` all need a secure
-context.
-
-Browser floor: the build targets Vite's default, `baseline-widely-available`. Below that the app shows its
-error boundary rather than a blank page. The faceplate crop needs `OffscreenCanvas.convertToBlob`
-(Safari 16.4+) and reports a message of its own when it is missing.
-
-## Deliberately absent
-
-No backend, no accounts, no public module sharing, no multiplayer, no 3D, no MIDI learn, no streaming LLM output, no end-to-end tests. Storage is one thin module per concern so a backend can replace it later without touching the engine or UI.

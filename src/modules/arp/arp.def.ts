@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'arp',
   name: 'ARP',
   sub: 'CLOCKED ARPEGGIATOR',
-  hp: 6,
+  hp: 10,
   cat: 'SEQ / CTRL',
   worklet: 'arp',
   dark: true,

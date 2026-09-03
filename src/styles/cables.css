@@ -32,8 +32,11 @@
   text-align: center;
   text-transform: uppercase;
   /* A long label wraps onto a second line rather than ellipsising: a jack you cannot
-     name is worse than a two-line legend. */
-  overflow-wrap: anywhere;
+     name is worse than a two-line legend. Break between words only — `anywhere` split
+     tokens mid-word and turned START/STOP into "START/S" over "TOP". */
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 
 .jack-cell.out .jack-label {

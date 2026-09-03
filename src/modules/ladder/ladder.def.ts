@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'ladder',
   name: 'LADDER',
   sub: '4-POLE TRANSISTOR',
-  hp: 2,
+  hp: 4,
   cat: 'FILTERS',
   worklet: 'ladder',
   dark: true,

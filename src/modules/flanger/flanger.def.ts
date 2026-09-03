@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'flanger',
   name: 'FLANGER',
   sub: 'THRU-ZERO-ISH',
-  hp: 6,
+  hp: 8,
   cat: 'FX',
   worklet: 'flanger',
   knobs: [

@@ -6,7 +6,7 @@ export const def: ModuleDef = {
   id: 'clock',
   name: 'CLOCK',
   sub: 'MASTER TEMPO',
-  hp: 6,
+  hp: 8,
   cat: 'SEQ / CTRL',
   worklet: 'clock',
   dark: true,

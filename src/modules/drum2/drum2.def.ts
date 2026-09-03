@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'drum2',
   name: 'DRUM 2',
   sub: 'TRANSIENT VOICE',
-  hp: 2,
+  hp: 8,
   cat: 'DRUMS',
   worklet: 'drum2',
   dark: true,

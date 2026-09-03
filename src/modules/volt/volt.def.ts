@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'volt',
   name: 'VOLTS',
   sub: 'CV + LEVEL METER',
-  hp: 2,
+  hp: 4,
   cat: 'METERS',
   native: 'volt',
   dark: true,

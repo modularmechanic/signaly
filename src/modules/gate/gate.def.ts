@@ -5,7 +5,7 @@ export const def: ModuleDef = {
   id: 'gate',
   name: 'GATE',
   sub: 'NOISE GATE',
-  hp: 6,
+  hp: 8,
   cat: 'AMP / MIX',
   worklet: 'gate',
   display: 'meter',

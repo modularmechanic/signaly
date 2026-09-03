@@ -21,7 +21,8 @@
   font: 500 var(--label-fs, 9px) / 1.1 var(--font-ui);
   letter-spacing: 0.14em;
   text-align: center;
-  text-overflow: clip;
+  /* ellipsis, not clip: a silently chopped THRESHOLD reads as a different word (THRESHO). */
+  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -351,6 +352,8 @@
 }
 
 .select select {
+  /* Without this the OS paints its own dropdown chevron on top of the faceplate. */
+  appearance: none;
   max-width: 100%;
   padding: 3px 6px;
   border: 1px solid var(--edge);

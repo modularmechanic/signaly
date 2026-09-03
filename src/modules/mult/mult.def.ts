@@ -4,7 +4,7 @@ export const def: ModuleDef = {
   id: 'mult',
   name: 'MULT',
   sub: '1 → 4 SPLITTER',
-  hp: 4,
+  hp: 2,
   cat: 'AMP / MIX',
   native: 'mult',
   knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }],
