@@ -1,0 +1,217 @@
+/* Faceplate materials. `data-plate` is set on `.module-panel` from the module's kit
+   (src/core/look.ts), and a block only ever redeclares custom properties plus the plate's own
+   background layers — every rule in panel.css / controls.css / cables.css then inherits the
+   right ink without being restated.
+
+   Contrast of each ink against its own plate (verified, not estimated):
+
+     plate    --text  --text-dim  --amber  knob label
+     alu       8.8      5.0        4.6       7.8
+     cream    12.6      6.0        6.1      10.9
+     white    15.3      6.6        7.0      13.0
+     copper    9.3      5.3        7.4       8.2
+     slate     9.0      5.2        6.7       8.0
+     graph     9.0      5.3        6.6       8.0
+     pcb      10.6      5.8        8.6       9.3
+     carbon   14.5      5.7       11.2      11.9
+     black    15.0      6.0       11.6      12.4
+     ano      >8.6     >4.7       >6.7      >7.6  (worst case over all 12 CAT_COLOR tints)
+
+   The light plates mix the category accent 32% into their own ink before using it as a ring
+   or hairline, which keeps the worst accent at 3.4:1 or better as a non-text indicator. */
+
+.module-panel[data-plate] {
+  --cat-line: var(--cat, var(--cat-utility));
+  /* `def.dark` predates the kits and used to be the only way a module could look different.
+     It now only shades a dark plate; on a light finish it would drag the plate toward black
+     while the printing stays dark ink, which is the one thing the finish must not do. */
+  --panel-dark: color-mix(in srgb, var(--panel) 88%, var(--edge));
+  --bevel-hi: rgba(255, 255, 255, 0.14);
+  --bevel-lo: rgba(0, 0, 0, 0.42);
+
+  /* Shared layer recipes. A plate composes them into one background-image, so a faceplate is
+     still a single paint no matter how many materials the rack is showing. */
+  --bevel: linear-gradient(
+    90deg,
+    var(--bevel-hi) 0 1px,
+    var(--bevel-lo) 1px 2px,
+    transparent 2px calc(100% - 2px),
+    var(--bevel-lo) calc(100% - 2px) calc(100% - 1px),
+    var(--bevel-hi) calc(100% - 1px)
+  );
+  --topcut: linear-gradient(180deg, var(--bevel-hi), transparent 13px);
+  --sheen: linear-gradient(101deg, transparent 26%, rgba(255, 255, 255, 0.08) 46%, transparent 64%);
+  /* two out-of-phase pitches: one repeating stripe alone reads as corrugation, not grain */
+  --brush-v:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.045) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0 1px,
+      transparent 1px 3px,
+      rgba(0, 0, 0, 0.03) 3px 4px,
+      transparent 4px 7px
+    );
+  --brush-h:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.035) 0 1px,
+      transparent 1px 3px,
+      rgba(0, 0, 0, 0.04) 3px 5px,
+      transparent 5px 8px
+    );
+  --weave:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.03) 0 2px,
+      transparent 2px 4px,
+      rgba(0, 0, 0, 0.055) 4px 6px,
+      transparent 6px 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.022) 0 2px,
+      transparent 2px 4px,
+      rgba(0, 0, 0, 0.045) 4px 6px,
+      transparent 6px 8px
+    );
+  --satin: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 3px);
+  --paint: linear-gradient(180deg, rgba(0, 0, 0, 0.045), transparent 34%, rgba(0, 0, 0, 0.085));
+}
+
+/* Recessed parts stay black on every finish — a screen, a switch trough and a selector are
+   holes in the plate, not printing on it — so they rebind to the lit ink. Without this the
+   cream plate's espresso ink lands on the black LCD and VOLTS reads nothing at all. */
+:is(.module-panel[data-plate='alu'], .module-panel[data-plate='cream'], .module-panel[data-plate='white'])
+  :is(
+    .scope-screen,
+    .env-screen,
+    .text-screen,
+    .mini-piano,
+    .channel-vu,
+    .switch-opts,
+    .switch-toggle,
+    .btn,
+    .select select
+  ) {
+  --text: var(--text-base);
+  --text-dim: var(--text-dim-base);
+  --amber: var(--amber-base);
+}
+
+/* Light plates: dark printing, black-oxide screws, a groove instead of a lit track. */
+.module-panel[data-plate='alu'],
+.module-panel[data-plate='cream'],
+.module-panel[data-plate='white'] {
+  --grain: var(--grain-dark);
+  --panel-dark: var(--panel);
+  --track: rgba(0, 0, 0, 0.28);
+  --border-soft: rgba(0, 0, 0, 0.15);
+  --bevel-hi: rgba(255, 255, 255, 0.55);
+  --bevel-lo: rgba(0, 0, 0, 0.22);
+}
+
+.module-panel[data-plate='alu'] .screw,
+.module-panel[data-plate='cream'] .screw,
+.module-panel[data-plate='white'] .screw {
+  background: radial-gradient(circle at 35% 30%, var(--metal-hi) 0, var(--metal) 46%, var(--edge) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* ---------- the ten materials ---------- */
+.module-panel[data-plate='alu'] {
+  --panel: var(--fp-alu);
+  --text: var(--fp-alu-ink);
+  --text-dim: var(--fp-alu-dim);
+  --amber: var(--fp-alu-amber);
+  --cat-line: color-mix(in srgb, var(--cat, var(--cat-utility)) 32%, var(--fp-alu-ink));
+  background-image: var(--bevel), var(--topcut), var(--sheen), var(--brush-v);
+}
+
+.module-panel[data-plate='cream'] {
+  --panel: var(--fp-cream);
+  --text: var(--fp-cream-ink);
+  --text-dim: var(--fp-cream-dim);
+  --amber: var(--fp-cream-amber);
+  --cat-line: color-mix(in srgb, var(--cat, var(--cat-utility)) 32%, var(--fp-cream-ink));
+  background-image: var(--bevel), var(--topcut), var(--paint);
+}
+
+.module-panel[data-plate='white'] {
+  --panel: var(--fp-white);
+  --text: var(--fp-white-ink);
+  --text-dim: var(--fp-white-dim);
+  --amber: var(--fp-white-amber);
+  --cat-line: color-mix(in srgb, var(--cat, var(--cat-utility)) 32%, var(--fp-white-ink));
+  background-image: var(--bevel), var(--topcut), var(--sheen), var(--paint);
+}
+
+.module-panel[data-plate='copper'] {
+  --panel: var(--fp-copper);
+  --text: var(--fp-copper-ink);
+  --text-dim: var(--fp-copper-dim);
+  --bevel-hi: rgba(255, 214, 170, 0.22);
+  background-image: var(--bevel), var(--topcut), var(--sheen), var(--brush-v);
+}
+
+.module-panel[data-plate='slate'] {
+  --panel: var(--fp-slate);
+  --text: var(--fp-slate-ink);
+  --text-dim: var(--fp-slate-dim);
+  background-image: var(--bevel), var(--topcut), var(--paint);
+}
+
+.module-panel[data-plate='graph'] {
+  --panel: var(--fp-graph);
+  --text: var(--fp-graph-ink);
+  --text-dim: var(--fp-graph-dim);
+  background-image: var(--bevel), var(--topcut), var(--brush-h);
+}
+
+.module-panel[data-plate='carbon'] {
+  --panel: var(--fp-carbon);
+  --bevel-lo: rgba(0, 0, 0, 0.6);
+  background-image: var(--bevel), var(--topcut), var(--weave);
+}
+
+.module-panel[data-plate='black'] {
+  --bevel-hi: rgba(255, 255, 255, 0.1);
+  --bevel-lo: rgba(0, 0, 0, 0.5);
+  background-image: var(--bevel), var(--topcut);
+}
+
+/* the plate is the circuit board: solder mask, fibreglass weave, a gold silk border */
+.module-panel[data-plate='pcb'] {
+  --panel: var(--fp-pcb);
+  --text: var(--fp-pcb-ink);
+  --text-dim: var(--fp-pcb-dim);
+  --cat-line: color-mix(in srgb, var(--cat, var(--cat-utility)) 70%, var(--fp-gold));
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 0 1px,
+      transparent 1px 3px,
+      color-mix(in srgb, var(--fp-gold) 60%, transparent) 3px 4px,
+      transparent 4px calc(100% - 4px),
+      color-mix(in srgb, var(--fp-gold) 60%, transparent) calc(100% - 4px) calc(100% - 3px),
+      transparent calc(100% - 3px) calc(100% - 1px),
+      rgba(0, 0, 0, 0.4) calc(100% - 1px)
+    ),
+    var(--topcut), var(--weave);
+}
+
+.module-panel[data-plate='ano'] {
+  --panel: color-mix(in srgb, var(--cat, var(--cat-utility)) 17%, var(--fp-ano));
+  --text-dim: var(--fp-ano-dim);
+  --bevel-hi: rgba(255, 255, 255, 0.18);
+  background-image:
+    var(--bevel), var(--topcut),
+    linear-gradient(
+      162deg,
+      color-mix(in srgb, var(--cat, var(--cat-utility)) 9%, transparent),
+      transparent 58%
+    ),
+    var(--satin);
+}

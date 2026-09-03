@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CLOCKED ARPEGGIATOR',
   hp: 10,
   cat: 'SEQ / CTRL',
+  look: 'grid',
   worklet: 'arp',
   dark: true,
   knobs: [

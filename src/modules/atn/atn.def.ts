@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'ATTENUVERT + OFFSET',
   hp: 6,
   cat: 'ENV / FUNC',
+  look: 'lab',
   worklet: 'atn',
   knobs: [
     { id: 'a1', label: 'ATT 1', min: -1, max: 1, initial: 1, fmt: 'f1' },

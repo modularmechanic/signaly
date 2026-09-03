@@ -7,6 +7,7 @@ export const def: ModuleDef = {
   sub: 'SEQUENTIAL ROUTER',
   hp: 4,
   cat: 'SEQ / CTRL',
+  look: 'signal',
   worklet: 'sswitch',
   dark: true,
   knobs: [{ id: 'steps', label: 'STEPS', min: 2, max: 4, initial: 4, fmt: 'fInt', big: true }],

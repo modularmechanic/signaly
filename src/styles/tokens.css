@@ -23,6 +23,40 @@
   --pointer: #f4f5f7;
   --screen: #050607;
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+  /* same speckle in black, for the light faceplate finishes where white speckle vanishes */
+  --grain-dark: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.09 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+
+  /* Faceplate finishes — one material per family, base + silkscreen inks. Contrast against
+     each plate is verified in faceplates.css's header table; do not lighten an ink here
+     without re-checking it. Mapped to modules by the kit table in src/core/look.ts. */
+  --fp-alu: #b2b6bb; /* brushed natural aluminium */
+  --fp-alu-ink: #15171a;
+  --fp-alu-dim: #3d424a;
+  --fp-alu-amber: #5e4108;
+  --fp-cream: #e6dfd0; /* painted ivory steel */
+  --fp-cream-ink: #221d16;
+  --fp-cream-dim: #55504a;
+  --fp-cream-amber: #6b4a10;
+  --fp-pcb: #14332a; /* FR4 solder mask */
+  --fp-pcb-ink: #f0e2b4;
+  --fp-pcb-dim: #b9a878;
+  --fp-gold: #c9a227;
+  --fp-graph: #3c4046; /* bead-blasted graphite */
+  --fp-graph-ink: #eceef1;
+  --fp-graph-dim: #b3b9c1;
+  --fp-ano: #1b1c1f; /* anodised base, tinted 17% by --cat */
+  --fp-ano-dim: #a6adb7;
+  --fp-copper: #4a3323; /* patinated bronze */
+  --fp-copper-ink: #f1e3d2;
+  --fp-copper-dim: #c3aa92;
+  --fp-slate: #33404d; /* painted blue-grey steel */
+  --fp-slate-ink: #e8edf2;
+  --fp-slate-dim: #aab8c6;
+  --fp-carbon: #17181b; /* woven carbon laminate */
+  --fp-white: #eceff1; /* powder-coated white */
+  --fp-white-ink: #16191c;
+  --fp-white-dim: #4d545c;
+  --fp-white-amber: #6b4a10;
 
   /* derived machined shades — the only other literals in the stylesheet set, so every
      other file can stay on var()/color-mix()/rgba() alone. */
@@ -31,9 +65,13 @@
   --metal-lo: #16171a;
   --chrome: #9ea3ab;
 
-  /* text */
-  --text: #e6e8eb;
-  --text-dim: #8d939c;
+  /* text. The `-base` trio is the lit ink for a black ground: a light faceplate finish
+     rebinds --text/--text-dim/--amber to its own printed ink, and the recessed parts that
+     stay black on every finish (screens, switch troughs, selectors) rebind back to these. */
+  --text-base: #e6e8eb;
+  --text-dim-base: #8d939c;
+  --text: var(--text-base);
+  --text-dim: var(--text-dim-base);
   --text-invert: #0a0a0b;
 
   /* lines + focus */
@@ -43,7 +81,8 @@
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus);
 
   /* accents */
-  --amber: #f3c77a;
+  --amber-base: #f3c77a;
+  --amber: var(--amber-base);
   --led: #ffd166;
   --danger: #ff5d5d;
 

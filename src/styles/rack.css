@@ -77,6 +77,21 @@
   margin-bottom: 10px;
 }
 
+/* Horizontal scroll viewport for one row. Padding is a buffer only — it keeps the panel
+   drop shadow (.module-panel's box-shadow reaches ~20px past its box) from being clipped
+   by the overflow box, without touching .rack-row's own padding, which is calibrated to
+   its rail background. Vertical overflow is left to compute to `auto`: nothing genuinely
+   overflows past this buffer, so no vertical scrollbar ever appears. */
+.rack-row-scroll {
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.rack-row-scroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
 .row-head {
   display: flex;
   align-items: center;
@@ -356,6 +371,14 @@
   border: 1px solid var(--border-soft);
   border-radius: var(--r-sm);
   background: var(--surface);
+}
+
+.patch-heading {
+  margin: 12px 0 4px;
+  color: var(--text-dim);
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .patch-list {

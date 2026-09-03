@@ -1,9 +1,12 @@
-// Shared by the worklet DSP and the panel curve: no main-thread or worklet globals in here.
+// MIX 8's per-channel three-band EQ. Worklet-safe: no main-thread globals in here.
 
 export const NCH = 8;
-export const NB = 4;
-/** Band 0 is a low shelf, band 3 a high shelf, 1 and 2 are peaking — classic console voicing. */
-export const EQ_F = [90, 400, 2000, 8000];
+/** Band 0 is a low shelf at LO_F, band 1 a peaking mid with its own frequency knob, band 2 a high
+    shelf at HI_F — the classic console channel strip. */
+export const NB = 3;
+export const LO_F = 90;
+export const MID_F = 1000;
+export const HI_F = 8000;
 export const EQ_Q = 0.9;
 
 /** RBJ cookbook coefficients, normalised by a0, written as b0,b1,b2,a1,a2 at `co[at]`. */
@@ -51,23 +54,4 @@ export function biquad(
   co[at + 2] = b2 / a0;
   co[at + 3] = a1 / a0;
   co[at + 4] = a2 / a0;
-}
-
-/** Magnitude of the biquad at `co[at]` in dB — drives the panel curve. */
-export function magDb(co: Float64Array, at: number, f: number, sr: number): number {
-  const w = (2 * Math.PI * f) / sr;
-  const c1 = Math.cos(w);
-  const s1 = Math.sin(w);
-  const c2 = Math.cos(2 * w);
-  const s2 = Math.sin(2 * w);
-  const b0 = co[at] ?? 0;
-  const b1 = co[at + 1] ?? 0;
-  const b2 = co[at + 2] ?? 0;
-  const a1 = co[at + 3] ?? 0;
-  const a2 = co[at + 4] ?? 0;
-  const nr = b0 + b1 * c1 + b2 * c2;
-  const ni = -(b1 * s1 + b2 * s2);
-  const dr = 1 + a1 * c1 + a2 * c2;
-  const di = -(a1 * s1 + a2 * s2);
-  return 10 * Math.log10(Math.max(1e-12, (nr * nr + ni * ni) / Math.max(1e-12, dr * dr + di * di)));
 }

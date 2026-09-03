@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STEP SEQUENCER',
   hp: 12,
   cat: 'SEQ / CTRL',
+  look: 'press',
   worklet: 'seq',
   dark: true,
   knobs: [

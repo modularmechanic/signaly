@@ -79,3 +79,27 @@ the suite out on CI once already.
   values in `CAT_COLOR`.
 - `tests/module-catalog.test.ts` asserts the exact id set. It has to be updated when modules land;
   phase 08 owns that file, so leave it alone and report your ids.
+
+## Added 2026-09-03 for the catalogue-to-100 expansion
+
+- **`look` is required.** Every def names one of the twenty kits in `src/core/look.ts`:
+  `analog atelier console noir board anodic bronze slateware carbon chalk lab tape stage voice
+  signal ether grid patina arc press`. Pick one that suits the module and spread them across a
+  batch. The category default exists only for user-authored modules.
+- **The fit test is a gate**: `npx vitest run src/modules/panel-fit.test.ts` after every def. Raise
+  `hp` or drop a control rather than let a panel overflow. Knob rows need 37 px or their label
+  is deleted; a 0.075 row on the 658 px panel is 49 px.
+- **Custom UI lives in `<id>.parts.tsx`** and takes the `display` slot: declare `display: 'text'`
+  on the def and export `parts`; the parts component replaces the display node. See
+  `src/modules/seq/seq.parts.tsx`. Read knobs with `useParam`, worklet messages with
+  `useWorkletFeed`, and send with `usePortSend`. Never `setState` per frame; drive visuals
+  through CSS custom properties.
+- **Per-module state that must survive save and load** goes on `m.ext` through a `serialize`
+  spec (`save`, `load`, `validate` — validate runs on untrusted JSON and must never throw). See
+  `src/modules/seq/seq.serialize.ts`.
+- **Custom worklet messages**: override `msg(m: InMsg)` in the DSP class. `{ t: 'p' }` is
+  reserved for params. Transfer large buffers as transferables and post a fresh copy each time.
+- **One-option switches** render as a lit push-button toggle (0/1) — use them for M/S-style
+  buttons, not for on/off pairs.
+- Builders run on a shared tree with other agents: touch only your own module directories and
+  the files your batch is told it owns; run `git status --short` before editing anything shared.

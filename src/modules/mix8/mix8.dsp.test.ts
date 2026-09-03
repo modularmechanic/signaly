@@ -56,37 +56,48 @@ function unity(): Proc {
     d.p[`l${c}`] = 1;
     d.p[`p${c}`] = 0;
     d.p[`m${c}`] = 0;
+    d.p[`s${c}`] = 0;
   }
   return d;
+}
+
+/** Run enough blocks for the biquads to settle, then return the main-out peak. */
+function settled(d: Proc, ins: Record<number, Float32Array>, blocks = 6): { l: number; r: number } {
+  const O = makeOuts();
+  for (let b = 0; b < blocks; b++) d.process(makeIns(ins), O);
+  return { l: peak(O[4]?.[0]), r: peak(O[5]?.[0]) };
 }
 
 describe('mix8.dsp', () => {
   it('passes a channel at unity to both outputs', () => {
     const d = unity();
-    const O = makeOuts();
-    d.process(makeIns({ 0: tone(5) }), O);
-    // equal-power centre: 5V in -> 5 * cos(pi/4) on each leg
-    expect(peak(O[4]?.[0])).toBeGreaterThan(3.4);
-    expect(peak(O[4]?.[0])).toBeLessThan(3.6);
-    expect(peak(O[5]?.[0])).toBeGreaterThan(3.4);
+    const { l, r } = settled(d, { 0: tone(5) }, 1);
+    expect(l).toBeGreaterThan(3.4); // centre pan is cos(π/4) ≈ 0.707 a side
+    expect(r).toBeGreaterThan(3.4);
   });
 
   it('mutes a channel', () => {
     const d = unity();
-    d.p.m1 = 1;
-    const O = makeOuts();
-    d.process(makeIns({ 0: tone(5) }), O);
-    expect(peak(O[4]?.[0])).toBe(0);
-    expect(peak(O[5]?.[0])).toBe(0);
+    send(d, 'm1', 1);
+    expect(settled(d, { 0: tone(5) }, 1).l).toBe(0);
+  });
+
+  it('solo is exclusive: a soloed channel silences every other one', () => {
+    const d = unity();
+    d.p.p1 = -1; // ch 1 hard left
+    d.p.p2 = 1; // ch 2 hard right
+    send(d, 's2', 1);
+    const { l, r } = settled(d, { 0: tone(5), 1: tone(5) }, 1);
+    expect(l).toBeLessThan(1e-6); // ch 1 is not soloed, so it is gone (cos(π/2) leaks 6e-17)
+    expect(r).toBeGreaterThan(4.9); // ch 2 still plays
   });
 
   it('pans hard left', () => {
     const d = unity();
     d.p.p1 = -1;
-    const O = makeOuts();
-    d.process(makeIns({ 0: tone(5) }), O);
-    expect(peak(O[4]?.[0])).toBeGreaterThan(4.9);
-    expect(peak(O[5]?.[0])).toBeLessThan(1e-6);
+    const { l, r } = settled(d, { 0: tone(5) }, 1);
+    expect(l).toBeGreaterThan(4.9);
+    expect(r).toBeLessThan(1e-6);
   });
 
   it('is transparent with every EQ band at 0 dB', () => {
@@ -97,73 +108,92 @@ describe('mix8.dsp', () => {
     d.process(makeIns({ 0: x }), O);
     d.process(makeIns({ 0: x }), O);
     const out = O[4]?.[0] as Float32Array;
-    for (let i = 0; i < N; i++) expect(Math.abs((out[i] ?? 0) - (x[i] ?? 0))).toBeLessThan(1e-4);
+    let worst = 0;
+    for (let i = 0; i < N; i++) worst = Math.max(worst, Math.abs((out[i] ?? 0) - (x[i] ?? 0)));
+    expect(worst).toBeLessThan(1e-4);
   });
 
-  it('keeps one EQ state per channel behind the SEL switch', () => {
+  it('keeps one EQ per channel: a mid boost on channel 2 leaves channel 1 flat', () => {
     const d = unity();
     d.p.p1 = -1;
     d.p.p2 = -1;
-    send(d, 'sel', 1); // edit channel 2
-    send(d, 'eq2f', F);
-    send(d, 'eq2g', -18);
-    send(d, 'eq2q', 2);
-    const x = tone(4);
-    const O = makeOuts();
-    d.process(makeIns({ 0: x }), O);
-    d.process(makeIns({ 0: x }), O);
-    // channel 1 was never selected, so its EQ is still flat
-    for (let i = 0; i < N; i++) expect(Math.abs((O[4]?.[0]?.[i] ?? 0) - (x[i] ?? 0))).toBeLessThan(1e-4);
-    const P = makeOuts();
-    for (let b = 0; b < 6; b++) d.process(makeIns({ 1: x }), P);
-    expect(peak(P[4]?.[0])).toBeLessThan(peak(x) * 0.6); // channel 2 got the -18 dB cut
+    send(d, 'mf2', F); // put channel 2's mid band right on the test tone
+    send(d, 'mid2', 12);
+    const x = tone(2);
+    const one = settled(d, { 0: x }).l;
+    const two = settled(unity(), { 1: x }).l;
+    const dd = unity();
+    dd.p.p2 = -1;
+    send(dd, 'mf2', F);
+    send(dd, 'mid2', 12);
+    const boosted = settled(dd, { 1: x }).l;
+    expect(Math.abs(one - peak(x))).toBeLessThan(1e-3); // channel 1 untouched
+    expect(boosted).toBeGreaterThan(two * 3); // +12 dB is ×3.98
   });
 
-  it('dumps the selected channel EQ back to the panel', () => {
+  it('re-bakes the mid band when its frequency knob moves', () => {
     const d = unity();
-    const seen: { t?: string; ch?: number; v?: number[] }[] = [];
-    d.port.postMessage = (m: unknown): void => void seen.push(m as { t?: string });
-    send(d, 'sel', 3);
-    expect(seen).toHaveLength(1);
-    expect(seen[0]?.t).toBe('eqdump');
-    expect(seen[0]?.ch).toBe(3);
-    expect(seen[0]?.v).toHaveLength(12);
+    d.p.p1 = -1;
+    send(d, 'mid1', 12);
+    send(d, 'mf1', 300); // boost is far below the 1500 Hz tone: little effect
+    const away = settled(d, { 0: tone(2) }).l;
+    send(d, 'mf1', F); // now centred on it
+    const on = settled(d, { 0: tone(2) }).l;
+    expect(on).toBeGreaterThan(away * 2);
   });
 
-  it('bypasses an insert whose return is unpatched', () => {
+  it('sends nothing until a channel send is opened', () => {
     const d = unity();
     d.p.p1 = -1;
     const O = makeOuts();
     d.process(makeIns({ 0: tone(5) }), O);
-    expect(peak(O[0]?.[0])).toBeGreaterThan(4.9); // send 1 carries the bus
-    expect(peak(O[2]?.[0])).toBeGreaterThan(4.9); // send 2 sees it unchanged
-    expect(peak(O[4]?.[0])).toBeGreaterThan(4.9); // and the master is not muted
+    expect(peak(O[0]?.[0])).toBe(0); // send 1 silent
+    expect(peak(O[2]?.[0])).toBe(0); // send 2 silent
+    expect(peak(O[4]?.[0])).toBeGreaterThan(4.9); // the dry mix is unaffected
   });
 
-  it('takes the bus from a patched return', () => {
+  it('feeds a send post-fader at the channel send level', () => {
     const d = unity();
+    d.p.p1 = -1; // hard left, so send 1 L carries the whole channel
+    d.p.l1 = 0.5; // fader at half: square-law taper gives 0.25
+    d.p.snd1_1 = 0.5;
+    const O = makeOuts();
+    d.process(makeIns({ 0: tone(4) }), O);
+    // 4 V × 0.25 (fader) × 0.5 (send) = 0.5 V on send 1 L, nothing on send 2
+    expect(peak(O[0]?.[0])).toBeGreaterThan(0.49);
+    expect(peak(O[0]?.[0])).toBeLessThan(0.51);
+    expect(peak(O[2]?.[0])).toBe(0);
+  });
+
+  it('adds a return to the dry mix at the return level instead of replacing it', () => {
+    const d = unity();
+    d.p.p1 = -1;
+    d.p.ret1 = 0.5;
     const ret = new Float32Array(N).fill(2);
     const O = makeOuts();
     d.process(makeIns({ 0: tone(5), 8: ret, 9: ret }), O);
-    expect(peak(O[4]?.[0])).toBeGreaterThan(1.9);
-    expect(peak(O[4]?.[0])).toBeLessThan(2.1);
+    // dry 5 V peak on L plus 2 V × 0.5 return — the dry signal survives the patched return
+    expect(peak(O[4]?.[0])).toBeGreaterThan(5.9);
+    expect(peak(O[4]?.[0])).toBeLessThan(6.1);
+    // R has no dry (panned hard left) so it shows the return alone
+    expect(peak(O[5]?.[0])).toBeGreaterThan(0.99);
+    expect(peak(O[5]?.[0])).toBeLessThan(1.01);
   });
 
   it('stays finite at extreme settings', () => {
     const d = unity();
     for (let c = 1; c <= 8; c++) {
-      d.p[`p${c}`] = c % 2 ? -1 : 1;
-      send(d, 'sel', c - 1);
-      for (let b = 1; b <= 4; b++) {
-        send(d, `eq${b}f`, b === 1 ? 20 : 18000);
-        send(d, `eq${b}g`, 18);
-        send(d, `eq${b}q`, 0.3);
-      }
+      send(d, `lo${c}`, 15);
+      send(d, `mid${c}`, 15);
+      send(d, `mf${c}`, c % 2 ? 200 : 5000);
+      send(d, `hi${c}`, -15);
+      d.p[`snd1_${c}`] = 1;
+      d.p[`snd2_${c}`] = 1;
     }
-    const loud = new Float32Array(N).fill(5);
-    const I = makeIns(Object.fromEntries(Array.from({ length: 8 }, (_, i) => [i, loud])));
+    const ins: Record<number, Float32Array> = {};
+    for (let c = 0; c < 8; c++) ins[c] = tone(5);
     const O = makeOuts();
-    for (let b = 0; b < 20; b++) d.process(I, O);
+    for (let b = 0; b < 20; b++) d.process(makeIns(ins), O);
     for (const o of O) for (const v of o[0] ?? []) expect(Number.isFinite(v)).toBe(true);
     expect(peak(O[4]?.[0])).toBeLessThanOrEqual(10);
   });

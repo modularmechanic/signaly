@@ -4,12 +4,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-Panel geometry rework and a catalogue that grows from 41 to 71 modules:
+Panel geometry rework, a console-style MIX 8, live CV markers, row scrolling, twenty maker kits,
+and a catalogue that grows from 41 to 100 modules:
 `plans/260903-1032-panel-rework-and-30-modules/`. Panel evidence is measured in
 `plans/reports/audit-260903-1032-module-panel-visual.md`.
 
 ### Added
 
+- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key and sound family (subtractive + granular, FM + plucked, wavetable drones, four-voice chords through the valve, drums + lo-fi). `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
+
+- **Twenty-nine more modules, to 100.** Sequencing: SEQ-16, TRIG SEQ (four lanes, polymeter), CHORD,
+  BERNOULLI, DIV/MULT, CV REC (records and loops a CV, persisted in the patch), SHIFT REG, RANDOM WALK.
+  Effects: GRAIN DELAY, SHIMMER, TREMOLO, ENV FILTER, LO-FI, REVERSE, FREQ SHIFT. Distortion: TUBE (a
+  valve drawn in SVG whose plates, heater and glass light with DRIVE and whose TYPE switch selects
+  12AX7, 12AU7, 6L6, EL34 or KT88 curves), FUZZ, RECTIFY, SATURATE, OVERDRIVE. Filters: MS-20,
+  STEINER, FIXED BANK, DUAL BP, POLIVOKS, DJ FILTER. Sampler: SAMPLER loads a WAV or MP3 from disk,
+  SLICER chops it, CLOUD scatters grains over it, on new IndexedDB sample storage and a shared picker
+  with a 20 MB / 60 s guard; a saved patch keeps the sample id and reloads the audio
+- **Twenty maker kits.** Every module names a `look` that resolves to a faceplate finish, knob hardware,
+  switch hardware, name-plate treatment, silkscreen, type face and socket body, so the rack reads as
+  kit from twenty makers instead of one product (`src/core/look.ts`)
+- **MIX 8 is a console strip**: input, three-band EQ per channel, two aux sends, pan, M and S, fader;
+  returns add into the mix at their level instead of replacing it. A one-option switch renders as a
+  lit push-button toggle
+- **Knob CV markers follow the live control voltage** at about 30 Hz, read from the attenuverter gain
+  node on the main thread, so nothing changes in the audio thread
+- **Rows scroll horizontally** when wider than the viewport, with a focusable, named scroll region
 - **Thirty new modules**, none ported from the earlier project, chosen to fill the gaps a Eurorack
   user would notice. Sources: WAVETABLE, FM OP, SUPER, CHAOS, GRAIN. Filters: DIODE, LPG, MORPH,
   RESON. Function: AD, SLEW, LOGIC, COMPARE. Amp and mix: XFADE, RING, MATRIX. Effects: PHASER,

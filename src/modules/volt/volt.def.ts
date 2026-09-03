@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CV + LEVEL METER',
   hp: 4,
   cat: 'METERS',
+  look: 'lab',
   native: 'volt',
   dark: true,
   knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }],

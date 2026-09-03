@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'COMPLETE MONO VOICE',
   hp: 10,
   cat: 'VOICES',
+  look: 'chalk',
   worklet: 'monov',
   dark: true,
   knobs: [

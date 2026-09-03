@@ -1,0 +1,226 @@
+/* The valve in TUBE's display slot. `--heat` (0..1, from DRIVE) drives every glow through
+   opacity and gradient stops — a style change, never a re-render, no filters, no blur.
+   Metal and glass come from tokens.css; the three fire colours are the physics of a heated
+   filament and belong to this drawing alone. */
+.tube-svg {
+  --fire: #ff8a2a;
+  --ember: #ff3d12;
+  --white-hot: #ffe6c2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---------- emitted light ---------- */
+.halo-core {
+  stop-color: var(--fire);
+  stop-opacity: 0.78;
+}
+
+.halo-mid {
+  stop-color: var(--fire);
+  stop-opacity: 0.16;
+}
+
+.halo-edge {
+  stop-color: var(--fire);
+  stop-opacity: 0;
+}
+
+/* Squared, so an idle valve sits dark and the light only comes on as it is driven. */
+.tube-halo-far {
+  opacity: calc(var(--heat) * var(--heat));
+  transition: opacity 0.12s linear;
+}
+
+.tube-halo-near {
+  opacity: calc(var(--heat) * 0.7);
+  transition: opacity 0.12s linear;
+}
+
+/* ---------- socket and pins ---------- */
+.socket {
+  fill: var(--metal-lo);
+  stroke: color-mix(in srgb, var(--fire) calc(var(--heat) * 55%), var(--edge));
+  stroke-width: 1;
+  transition: stroke 0.12s linear;
+}
+
+.socket-ring {
+  fill: none;
+  stroke: var(--chrome);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+
+.pins line {
+  stroke: var(--chrome);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* ---------- inside the glass ---------- */
+.rod {
+  fill: var(--chrome);
+  opacity: 0.7;
+}
+
+.mica {
+  /* the spacers catch the heater's light: warm when driven */
+  fill: color-mix(in srgb, var(--fire) calc(var(--heat) * 45%), color-mix(in srgb, var(--chrome) 62%, white));
+  opacity: 0.9;
+  transition: fill 0.12s linear;
+}
+
+.mica-hole {
+  fill: var(--edge);
+}
+
+.plate-a,
+.plate-c {
+  stop-color: var(--metal-lo);
+}
+
+.plate-b {
+  stop-color: var(--metal-hi);
+}
+
+.plates rect {
+  stroke: var(--edge);
+  stroke-width: 0.6;
+}
+
+.ribs path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 0.7;
+}
+
+/* The heater seen through each plate's side slot: dull orange idle, white-hot driven. */
+.slots rect {
+  fill: color-mix(in srgb, var(--white-hot) calc(var(--heat) * 100%), var(--fire));
+  opacity: calc(0.14 + var(--heat) * 0.86);
+  transition:
+    fill 0.12s linear,
+    opacity 0.12s linear;
+}
+
+.heater-a {
+  stop-color: var(--fire);
+  stop-opacity: 0.95;
+}
+
+.heater-b {
+  stop-color: var(--fire);
+  stop-opacity: 0;
+}
+
+.heater-glow {
+  opacity: calc(var(--heat) * 0.85);
+  transition: opacity 0.12s linear;
+}
+
+/* Plate edges go cherry once the valve is really working. */
+.plate-heat rect {
+  fill: var(--ember);
+  opacity: calc(var(--heat) * var(--heat) * 0.45);
+  transition: opacity 0.12s linear;
+}
+
+/* ---------- the glass ---------- */
+.glass-a {
+  stop-color: white;
+  stop-opacity: 0.02;
+}
+
+.glass-b {
+  stop-color: white;
+  stop-opacity: 0.22;
+}
+
+.glass-c {
+  stop-color: white;
+  stop-opacity: 0.03;
+}
+
+.glass-d {
+  stop-color: white;
+  stop-opacity: 0.11;
+}
+
+.glass {
+  stroke: color-mix(in srgb, var(--chrome) 62%, transparent);
+  stroke-width: 1.2;
+}
+
+/* Warm cast inside the envelope once the heater is up: the glass reads as lit from within. */
+.glass-heat {
+  fill: var(--fire);
+  opacity: calc(var(--heat) * 0.2);
+  transition: opacity 0.12s linear;
+}
+
+/* Dark rims where the cylinder turns away, and one specular arc across the dome. */
+.rim {
+  fill: none;
+  stroke: var(--edge);
+  stroke-opacity: 0.55;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.rim-side {
+  stroke-opacity: 0.38;
+  stroke-width: 2.6;
+}
+
+.dome-hilite {
+  fill: none;
+  stroke: white;
+  stroke-opacity: 0.5;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.tip {
+  fill: var(--chrome);
+  opacity: 0.8;
+}
+
+.getter-a {
+  stop-color: var(--chrome);
+  stop-opacity: 0.95;
+}
+
+.getter-b {
+  stop-color: var(--edge);
+  stop-opacity: 0.9;
+}
+
+.hilite {
+  fill: none;
+  stroke: white;
+  stroke-opacity: 0.42;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.hilite-soft {
+  fill: white;
+  opacity: 0.07;
+}
+
+.print {
+  fill: var(--text);
+  opacity: 0.38;
+  font: 600 7.5px var(--font-mono);
+  letter-spacing: 0.2em;
+}
+
+/* Octal power tubes (6L6, EL34, KT88) are taller and fatter than a 9-pin miniature. One
+   drawing scaled from the socket, not five drawings. */
+.tube-svg[data-family='power'] .tube-body {
+  transform: scale(1.1, 1.16);
+  transform-origin: 70px 179px;
+}

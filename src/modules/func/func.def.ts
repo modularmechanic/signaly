@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SLOPE / SLEW / LFO',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'chalk',
   worklet: 'func',
   dark: true,
   knobs: [

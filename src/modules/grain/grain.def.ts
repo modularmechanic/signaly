@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'GRANULAR TEXTURE',
   hp: 10,
   cat: 'SOURCES',
+  look: 'patina',
   worklet: 'grain',
   knobs: [
     { id: 'size', label: 'SIZE', min: 0.005, max: 0.5, initial: 0.06, fmt: 'fMs', curve: 'log', big: true },

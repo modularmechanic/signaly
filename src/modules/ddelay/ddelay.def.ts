@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'DIGITAL · SYNC',
   hp: 10,
   cat: 'FX',
+  look: 'noir',
   worklet: 'ddelay',
   knobs: [
     {

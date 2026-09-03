@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SHIFTER / HARMONIZER',
   hp: 8,
   cat: 'FX',
+  look: 'press',
   worklet: 'pitch',
   knobs: [
     {

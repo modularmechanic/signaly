@@ -9,11 +9,29 @@ export interface SwitchProps {
   def: SwitchDef;
 }
 
-/** Radiogroup up to 4 options, a native select beyond that. */
+/** One option is a lit push-button toggle (0/1), 2–4 a radiogroup, a native select beyond that. */
 export function Switch({ m, def }: SwitchProps): ReactNode {
   const [i, setI] = useSwitch(m, def.id);
   const count = def.options.length;
   const current = def.options[i] ?? def.options[0] ?? '';
+
+  if (count === 1) {
+    // The M and S of a console strip: the legend IS the button, and the label is only its name.
+    const on = i >= 1;
+    return (
+      <div className="switch switch-toggle-wrap" data-switch-id={def.id}>
+        <button
+          type="button"
+          className={'switch-opt switch-toggle' + (on ? ' on' : '')}
+          aria-pressed={on}
+          aria-label={def.label}
+          onClick={() => setI(on ? 0 : 1)}
+        >
+          {current}
+        </button>
+      </div>
+    );
+  }
 
   if (count > 4) {
     return (

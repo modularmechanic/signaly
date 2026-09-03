@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STRANGE ATTRACTOR',
   hp: 4,
   cat: 'SOURCES',
+  look: 'arc',
   worklet: 'chaos',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.01, max: 40, initial: 2, fmt: 'fHz', curve: 'log', big: true },

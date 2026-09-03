@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'BOOLEAN GATES',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'board',
   worklet: 'logic',
   knobs: [{ id: 'thr', label: 'THRESHOLD', min: 0.1, max: 5, initial: 2.5, fmt: 'f1', big: true }],
   ins: [

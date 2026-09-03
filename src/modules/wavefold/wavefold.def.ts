@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'BUCHLA FOLDER',
   hp: 4,
   cat: 'FX',
+  look: 'bronze',
   worklet: 'wavefold',
   dark: true,
   knobs: [

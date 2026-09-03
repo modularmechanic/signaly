@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'COLOR · DUST · RANDOM',
   hp: 8,
   cat: 'SOURCES',
+  look: 'anodic',
   worklet: 'noiselab',
   dark: true,
   knobs: [

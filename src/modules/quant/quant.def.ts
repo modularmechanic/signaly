@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SCALE QUANTISER',
   hp: 6,
   cat: 'SEQ / CTRL',
+  look: 'board',
   worklet: 'quant',
   dark: true,
   knobs: [

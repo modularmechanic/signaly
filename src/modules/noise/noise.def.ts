@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'WHITE / PINK',
   hp: 2,
   cat: 'SOURCES',
+  look: 'arc',
   worklet: 'noise',
   knobs: [],
   ins: [],

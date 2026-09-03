@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'ENVELOPE',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'atelier',
   worklet: 'adsr',
   knobs: [
     { id: 'a', label: 'ATTACK', min: 0.001, max: 3, initial: 0.01, fmt: 'fMs', curve: 'log' },

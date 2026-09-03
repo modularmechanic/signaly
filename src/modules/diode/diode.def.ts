@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: '4-POLE DIODE LADDER',
   hp: 4,
   cat: 'FILTERS',
+  look: 'bronze',
   worklet: 'diode',
   dark: true,
   knobs: [

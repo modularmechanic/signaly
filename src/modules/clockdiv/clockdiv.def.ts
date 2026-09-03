@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CLOCK DIVIDER',
   hp: 2,
   cat: 'SEQ / CTRL',
+  look: 'signal',
   worklet: 'clockdiv',
   dark: true,
   knobs: [{ id: 'div', label: 'DIVIDE', min: 1, max: 64, initial: 4, fmt: 'fInt', big: true }],

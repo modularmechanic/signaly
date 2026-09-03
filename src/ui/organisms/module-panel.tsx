@@ -1,4 +1,5 @@
 import type { CSSProperties, DragEvent, KeyboardEvent, ReactNode } from 'react';
+import { kitOf, knobLookOf, switchLookOf } from '../../core/look';
 import { CAT_COLOR } from '../../core/types';
 import { removeModule } from '../../engine/rack';
 import type { ModuleInstance } from '../../engine/types';
@@ -13,6 +14,9 @@ import { useFaceplateImage } from './use-faceplate-image';
 
 const pct = (n: number): string => `${(n * 100).toFixed(3)}%`;
 
+/** 'knob:oct' -> 'oct'. Panel node ids are `<kind>:<def id>`. */
+const defId = (nodeId: string): string => nodeId.slice(nodeId.indexOf(':') + 1);
+
 export interface ModulePanelProps {
   m: ModuleInstance;
 }
@@ -26,6 +30,7 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
   const faceplate = useFaceplateImage(m.def.id);
 
   const spec = getSpec(m.def.id);
+  const kit = kitOf(m.def);
   const tint = CAT_COLOR[m.def.cat] ?? CAT_COLOR.CUSTOM;
   // The computed fallback layout repeats the module name; the header already shows it.
   const nodes = layoutPanel(m.def).nodes;
@@ -54,6 +59,11 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
         } as CSSProperties
       }
       role="group"
+      data-plate={kit.plate}
+      data-head={kit.head}
+      data-silk={kit.silk}
+      data-type={kit.type}
+      data-jack={kit.jack}
       aria-label={`${m.def.name} module`}
       tabIndex={0}
       data-uid={uid}
@@ -75,10 +85,20 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
       >
         ×
       </button>
+      {/* The hardware look lives on the node, never on the faceplate: exactly one ancestor
+          carries data-knob / data-sw, so `[data-knob='x'] .knob` can never match two rules. */}
       {nodes.map((n) => (
         <div
           key={n.id}
           className="panel-node"
+          data-knob={knobLookOf(
+            m.def,
+            m.def.knobs.find((k) => k.id === defId(n.id)),
+          )}
+          data-sw={switchLookOf(
+            m.def,
+            m.def.sws?.find((sw) => sw.id === defId(n.id)),
+          )}
           style={{ left: pct(n.x), top: pct(n.y), width: pct(n.w), height: pct(n.h) }}
         >
           <PanelNodeView node={n} m={m} connected={connected} parts={spec?.parts} />

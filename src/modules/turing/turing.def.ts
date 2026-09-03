@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'LOOPING SHIFT REGISTER',
   hp: 8,
   cat: 'SEQ / CTRL',
+  look: 'board',
   worklet: 'turing',
   dark: true,
   knobs: [

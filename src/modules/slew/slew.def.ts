@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'DUAL SLEW LIMITER',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'atelier',
   worklet: 'slew',
   knobs: [
     { id: 'r1', label: 'RISE 1', min: 0.001, max: 8, initial: 0.05, fmt: 'fMs', curve: 'log' },

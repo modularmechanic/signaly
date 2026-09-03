@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'ATTACK / DECAY',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'chalk',
   worklet: 'ad',
   knobs: [
     {

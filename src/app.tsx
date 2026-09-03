@@ -5,6 +5,12 @@ import './styles/panel.css';
 import './styles/controls.css';
 import './styles/cables.css';
 import './styles/rack.css';
+// Material and hardware layers come last: they refine what the three sheets above lay out and
+// rely on source order to win at equal specificity.
+import './styles/faceplates.css';
+import './styles/knobs.css';
+import './styles/silkscreen.css';
+import './styles/hardware.css';
 import { useSettingsStore } from './state/settings-store';
 import { useUiStore } from './state/ui-store';
 import { RackPage } from './ui/pages/rack-page';

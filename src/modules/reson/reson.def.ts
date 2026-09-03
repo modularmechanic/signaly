@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'THREE PEAK RESONATOR',
   hp: 6,
   cat: 'FILTERS',
+  look: 'anodic',
   worklet: 'reson',
   knobs: [
     {

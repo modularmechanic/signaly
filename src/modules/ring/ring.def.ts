@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'RING MODULATOR',
   hp: 4,
   cat: 'AMP / MIX',
+  look: 'anodic',
   worklet: 'ring',
   knobs: [
     { id: 'depth', label: 'DEPTH', min: 0, max: 1, initial: 1, fmt: 'fPc', big: true, cvIn: 'dcv' },

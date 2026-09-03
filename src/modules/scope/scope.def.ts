@@ -8,6 +8,7 @@ export const def: ModuleDef = {
   sub: 'OSCILLOSCOPE',
   hp: 10,
   cat: 'METERS',
+  look: 'press',
   native: 'scope',
   dark: true,
   knobs: [

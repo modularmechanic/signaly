@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'PITCH SHIFT · ±24',
   hp: 4,
   cat: 'UTILITY',
+  look: 'signal',
   native: 'voct',
   dark: true,
   knobs: [

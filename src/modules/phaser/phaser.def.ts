@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'ALL-PASS SWEEP',
   hp: 6,
   cat: 'FX',
+  look: 'ether',
   worklet: 'phaser',
   knobs: [
     {

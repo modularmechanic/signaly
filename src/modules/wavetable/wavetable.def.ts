@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SCANNING OSCILLATOR',
   hp: 8,
   cat: 'SOURCES',
+  look: 'board',
   worklet: 'wavetable',
   knobs: [
     { id: 'tune', label: 'TUNE', min: -3, max: 3, initial: 0, fmt: 'fInt', big: true },

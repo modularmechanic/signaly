@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STEREO BBD ENSEMBLE',
   hp: 6,
   cat: 'FX',
+  look: 'ether',
   worklet: 'chorus',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.05, max: 5, initial: 0.5, fmt: 'fHz', curve: 'log', cvIn: 'rcv' },

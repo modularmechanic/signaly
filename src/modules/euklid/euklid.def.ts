@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'RANDOM EUCLIDEAN GEN',
   hp: 10,
   cat: 'SEQ / CTRL',
+  look: 'grid',
   worklet: 'euklid',
   dark: true,
   knobs: [

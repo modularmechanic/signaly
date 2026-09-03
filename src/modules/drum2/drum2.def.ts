@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'TRANSIENT VOICE',
   hp: 8,
   cat: 'DRUMS',
+  look: 'stage',
   worklet: 'drum2',
   dark: true,
   knobs: [

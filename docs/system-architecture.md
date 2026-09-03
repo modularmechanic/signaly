@@ -1,6 +1,6 @@
 # System Architecture
 
-Signaly is a 2D modular synthesizer that runs entirely in the browser: 71 built-in Eurorack-style
+Signaly is a 2D modular synthesizer that runs entirely in the browser: 100 built-in Eurorack-style
 modules, patch cables, saved patches, and a BYOK LLM module builder. No backend, no accounts.
 
 ## Stack
@@ -36,7 +36,7 @@ flowchart TB
     end
     subgraph storage["storage"]
         ST1["local-json.ts — localStorage envelope"]
-        ST2["image-store.ts — IndexedDB (idb-keyval)"]
+        ST2["image-store.ts / sample-store.ts — IndexedDB (idb-keyval)"]
     end
     subgraph modules["modules/<id>"]
         M1["registry.ts — import.meta.glob per module folder"]
@@ -68,9 +68,9 @@ flowchart TB
   single `requestAnimationFrame` pump in `hooks/render-bus.ts` (`addDraw`/`runDraws`), started
   lazily on first subscriber and stopped when the last one leaves.
 - **A worklet input cannot tell "no cable" from "a cable carrying silence".** `ch(I, n)` returns
-  `null` for an unpatched input but a zero-filled buffer for a patched, silent one. MIX 8's insert
-  returns use that as the bypass test, so an unpatched return correctly bypasses while a patched but
-  silent return mutes the bus. This is accepted behaviour, and matches a real console insert.
+  `null` for an unpatched input but a zero-filled buffer for a patched, silent one. Nothing depends
+  on the difference today: MIX 8's returns are aux returns that add into the main bus at their
+  level, so an unpatched return and a patched silent one both contribute nothing.
 - **Worklet bundle is loaded via `?worker&url`.** `audio-context.ts` imports
   `worklet-entry.ts?worker&url` — `new URL(..., import.meta.url)` is documented as broken under a
   Vite build (the raw `.ts` ships as an asset and the glob never expands).
@@ -96,7 +96,8 @@ A module is a folder under `src/modules/<id>/`, picked up by `modules/registry.t
 
 Panel geometry is computed by `layoutPanel(def)` from the definition. There is no per-module
 `<id>.panel.ts` file — every one of them was deleted. A built-in may still author its own 0..1
-`PanelLayout` as `ModuleDef.panel`, but only as a documented exception (currently `mix8`); see
+`PanelLayout` as `ModuleDef.panel`, but only as a documented exception (`mix8`, whose console
+strips the four-column grid cannot express, and `tube`, whose valve is the panel's subject); see
 `docs/adr/0001-panel-geometry-computed-by-default.md`.
 
 Panel node ids follow a fixed prefix convention: `knob:<id>`, `fader:<id>`, `switch:<id>`,
@@ -124,8 +125,8 @@ wired to an analyser that nothing drew.
 
 Two related feeds share the same untyped shape. A `led:<id>` panel node lights on
 `{ t: 'led', id, v }` and toggles on any `{ t: 'step' }` (`lfo`, `clockdiv`, `seq`, `euklid`). And a
-module's `<id>.parts.tsx`, when present, **replaces** the `display` node entirely — `mix8` and `seq`
-declare a `display` kind that is never rendered because their parts component takes the slot.
+module's `<id>.parts.tsx`, when present, **replaces** the `display` node entirely — `seq` declares a
+`display` kind that is never rendered because its parts component takes the slot.
 
 ## User-module pipeline
 

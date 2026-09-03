@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'THRU-ZERO-ISH',
   hp: 8,
   cat: 'FX',
+  look: 'arc',
   worklet: 'flanger',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.02, max: 4, initial: 0.25, fmt: 'fHz', curve: 'log', cvIn: 'rcv' },

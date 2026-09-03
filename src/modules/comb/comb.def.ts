@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'TUNED COMB FILTER',
   hp: 4,
   cat: 'FILTERS',
+  look: 'board',
   worklet: 'comb',
   knobs: [
     { id: 'freq', label: 'FREQ', min: 25, max: 4000, initial: 220, fmt: 'fHz', curve: 'log', big: true },

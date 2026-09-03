@@ -137,7 +137,7 @@ function computePanel(def: ModuleDef): PanelLayout {
   const leds = def.leds ?? [];
   // >3 options, or a trough whose legends cannot fit one switch column, takes the whole row
   const spanSw = (s: { options: string[] }): number =>
-    s.options.length > 3 || s.options.reduce((n, o) => n + o.length * 7.1 + 6, 6) > usablePx / swCols ? 1 : 0;
+    s.options.length > 3 || s.options.reduce((n, o) => n + o.length * 8.2 + 6, 6) > usablePx / swCols ? 1 : 0;
   // The header band (0..HEADER_H) is reserved for <ModuleHeader>; no node is emitted for it.
   const nodes: PanelNode[] = [];
 

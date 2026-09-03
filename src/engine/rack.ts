@@ -175,7 +175,9 @@ export function setSwitch(uid: number, id: string, i: number): void {
   if (!m || !Object.hasOwn(m.sws, id)) return;
   const def = m.def.sws?.find((s) => s.id === id);
   if (!def) return;
-  const next = Math.max(0, Math.min(def.options.length - 1, Math.round(i)));
+  // A one-option switch is a push-button toggle: its legend is the single option, its value 0 or 1.
+  const top = def.options.length === 1 ? 1 : def.options.length - 1;
+  const next = Math.max(0, Math.min(top, Math.round(i)));
   useRackStore.getState().setSw(uid, id, next);
   pushParam(m, getSpec(m.def.id)?.native, id, next);
 }

@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STEREO · LIMITER · METERS',
   hp: 6,
   cat: 'OUTPUT',
+  look: 'console',
   native: 'out',
   dark: true,
   knobs: [{ id: 'level', label: 'LEVEL', min: 0, max: 1.4, initial: 0.5, fmt: 'fPc', big: true }],

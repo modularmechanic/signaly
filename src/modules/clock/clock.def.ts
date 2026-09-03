@@ -8,6 +8,7 @@ export const def: ModuleDef = {
   sub: 'MASTER TEMPO',
   hp: 8,
   cat: 'SEQ / CTRL',
+  look: 'press',
   worklet: 'clock',
   dark: true,
   knobs: [

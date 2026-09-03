@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'MULTI-ALGORITHM',
   hp: 14,
   cat: 'FX',
+  look: 'noir',
   worklet: 'reverb',
   dark: true,
   knobs: [

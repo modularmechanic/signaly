@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'RATCHET GENERATOR',
   hp: 4,
   cat: 'SEQ / CTRL',
+  look: 'signal',
   worklet: 'burst',
   dark: true,
   knobs: [

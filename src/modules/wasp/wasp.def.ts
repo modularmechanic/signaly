@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CMOS MULTIMODE',
   hp: 4,
   cat: 'FILTERS',
+  look: 'carbon',
   worklet: 'wasp',
   dark: true,
   knobs: [

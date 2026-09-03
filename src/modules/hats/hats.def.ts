@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'METALLIC HI-HAT',
   hp: 6,
   cat: 'DRUMS',
+  look: 'carbon',
   worklet: 'hats',
   dark: true,
   knobs: [
