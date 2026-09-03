@@ -1,6 +1,6 @@
 # System Architecture
 
-Signaly is a 2D modular synthesizer that runs entirely in the browser: 71 built-in Eurorack-style
+Signaly is a 2D modular synthesizer that runs entirely in the browser: 100 built-in Eurorack-style
 modules, patch cables, saved patches, and a BYOK LLM module builder. No backend, no accounts.
 
 ## Stack
@@ -36,7 +36,7 @@ flowchart TB
     end
     subgraph storage["storage"]
         ST1["local-json.ts — localStorage envelope"]
-        ST2["image-store.ts — IndexedDB (idb-keyval)"]
+        ST2["image-store.ts / sample-store.ts — IndexedDB (idb-keyval)"]
     end
     subgraph modules["modules/<id>"]
         M1["registry.ts — import.meta.glob per module folder"]
@@ -96,7 +96,8 @@ A module is a folder under `src/modules/<id>/`, picked up by `modules/registry.t
 
 Panel geometry is computed by `layoutPanel(def)` from the definition. There is no per-module
 `<id>.panel.ts` file — every one of them was deleted. A built-in may still author its own 0..1
-`PanelLayout` as `ModuleDef.panel`, but only as a documented exception (currently `mix8`); see
+`PanelLayout` as `ModuleDef.panel`, but only as a documented exception (`mix8`, whose console
+strips the four-column grid cannot express, and `tube`, whose valve is the panel's subject); see
 `docs/adr/0001-panel-geometry-computed-by-default.md`.
 
 Panel node ids follow a fixed prefix convention: `knob:<id>`, `fader:<id>`, `switch:<id>`,

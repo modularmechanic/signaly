@@ -4,7 +4,7 @@
 
 Live at **https://modularmechanic.github.io/signaly/**
 
-A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 71 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
+A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 100 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
 
 ## Quickstart
 
