@@ -16,6 +16,10 @@ export interface UserModule {
 
 export const MAX_DSP_BYTES = 64 * 1024;
 
+/** An imported record must not name an arbitrary idb key — only a `newImageId()` UUID. */
+const isImageId = (v: unknown): v is string =>
+  typeof v === 'string' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
+
 export const userModuleId = (slug: string): string => `user:${slug}`;
 
 /** Bumped on every edit: a live AudioContext can never un-register a processor name. */
@@ -43,7 +47,7 @@ export function fromRecord(rec: UserModuleRecord): UserModule | { error: string 
     slug: rec.slug,
     def: v.def,
     dsp: rec.dsp,
-    faceplateImageId: typeof rec.faceplateImageId === 'string' ? rec.faceplateImageId : undefined,
+    faceplateImageId: isImageId(rec.faceplateImageId) ? rec.faceplateImageId : undefined,
     createdAt: Number.isFinite(rec.createdAt) ? rec.createdAt : Date.now(),
     updatedAt: Number.isFinite(rec.updatedAt) ? rec.updatedAt : Date.now(),
   };

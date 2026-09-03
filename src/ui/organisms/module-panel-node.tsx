@@ -1,5 +1,5 @@
 import { useState, type ComponentType, type ReactNode } from 'react';
-import { CAT_COLOR, type PanelNode } from '../../core/types';
+import { CAT_COLOR, type KnobDef, type PanelNode } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { fmtValue } from '../../hooks/formatters';
 import { useParam, useWorkletFeed } from '../../hooks/module-api';
@@ -35,6 +35,14 @@ function LedNode({ m, id, label }: { m: ModuleInstance; id: string; label?: stri
     else if (msg.t === 'led' && msg.id === id) setOn(msg.v === 1);
   });
   return <Led on={on} label={label} />;
+}
+
+/** `cvIn` marker: the attenuverter on that jack says how far CV can push this knob. */
+function KnobNode({ m, def }: { m: ModuleInstance; def: KnobDef }): ReactNode {
+  const att = def.cvIn === undefined ? undefined : m.def.knobs.find((k) => k.attenuates === def.cvIn);
+  const [amt] = useParam(m, att?.id ?? '');
+  const span = att ? Math.max(Math.abs(att.min), Math.abs(att.max)) : 0;
+  return <Knob m={m} def={def} cv={span > 0 ? amt / span : undefined} />;
 }
 
 function EnvPanel({ m }: { m: ModuleInstance }): ReactNode {
@@ -94,7 +102,7 @@ export function PanelNodeView({ node, m, connected, parts }: PanelNodeViewProps)
     case 'fader': {
       const def = m.def.knobs.find((k) => k.id === id);
       if (!def) return null;
-      return node.kind === 'fader' ? <Fader m={m} def={def} /> : <Knob m={m} def={def} />;
+      return node.kind === 'fader' ? <Fader m={m} def={def} /> : <KnobNode m={m} def={def} />;
     }
     case 'switch': {
       const def = m.def.sws?.find((sw) => sw.id === id);

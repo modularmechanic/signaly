@@ -63,3 +63,29 @@ describe('module contract', () => {
     it(`${spec.def.id} satisfies the def contract`, () => checkDef(spec.def));
   }
 });
+
+/** '../src/modules/lfo/lfo.dsp.ts' -> 'lfo'. Read at build time; vitest runs these through vite. */
+const dspBySlug = new Map(
+  Object.entries(
+    import.meta.glob<string>('../src/modules/*/*.dsp.ts', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }),
+  ).map(([path, src]) => [path.split('/').at(-2) ?? '', src]),
+);
+
+describe('declared LEDs are driven', () => {
+  for (const spec of specs.filter((s) => (s.def.leds ?? []).length > 0)) {
+    it(`${spec.def.id} posts every LED it declares`, () => {
+      const src = dspBySlug.get(spec.def.id) ?? '';
+      expect(src, `${spec.def.id}: no ${spec.def.id}.dsp.ts to drive its LEDs`).not.toBe('');
+      for (const led of spec.def.leds ?? []) {
+        expect(
+          new RegExp(`t:\\s*'led',\\s*id:\\s*'${led}'`).test(src),
+          `${spec.def.id}.dsp.ts never posts { t: 'led', id: '${led}' } — the LED can never light`,
+        ).toBe(true);
+      }
+    });
+  }
+});

@@ -16,6 +16,16 @@ export interface ChatTurn {
 
 export const canGenerateImages = (id: ProviderId): boolean => IMPL[id].image !== undefined;
 
+/** Image generation is not tied to the chat provider: a user chatting with Claude, which cannot
+    generate images, should still get faceplates from a Gemini key they already hold. Gemini first
+    because its image generation is free; OpenAI's browser CORS posture is also unverified. */
+const IMAGE_ORDER: readonly ProviderId[] = ['gemini', 'openai'];
+
+export function imageProvider(): ProviderId | null {
+  const keys = getKeys();
+  return IMAGE_ORDER.find((id) => canGenerateImages(id) && !!keys[id]) ?? null;
+}
+
 interface Session {
   id: ProviderId;
   key: string;
@@ -68,12 +78,16 @@ export async function listModels(id: ProviderId): Promise<string[] | { error: st
   }
 }
 
-/** `imageModel` defaults to the chat model — pass one when the provider splits the two. */
+/** `imageModel` defaults to that provider's chosen model — pass one when the two differ. */
 export async function generateFaceplate(
   prompt: string,
   imageModel?: string,
 ): Promise<Blob | { unsupported: true } | { error: string }> {
-  const s = session();
-  if ('error' in s) return s;
-  return generateFaceplateImage(s.id, s.key, imageModel ?? s.model, prompt);
+  const id = imageProvider();
+  if (!id) return { unsupported: true };
+  const key = getKeys()[id];
+  if (!key) return { error: `Add your ${id} API key in Settings.` };
+  const model = imageModel ?? getModel(id);
+  if (!model) return { error: `Pick a ${id} model in Settings.` };
+  return generateFaceplateImage(id, key, model, prompt);
 }

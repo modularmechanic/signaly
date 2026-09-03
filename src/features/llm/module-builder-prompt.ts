@@ -1,4 +1,5 @@
 import { CAT_ORDER, KIND_NAME } from '../../core/types';
+import { MIN_ROW_HP } from '../../state/settings-store';
 import { DISPLAYS, FMT_NAMES } from '../user-modules/validate';
 
 type Schema = Record<string, unknown>;
@@ -95,7 +96,7 @@ SLUG: matches [a-z0-9-]{3,32}, kebab-case, descriptive.
 
 DEF — the panel and ports:
   name: <=24 chars. sub: <=32 chars, the small line under the name.
-  hp: integer 1..24 panel width (1 HP = 26px, panel is 658px tall). 4-8 HP suits most modules.
+  hp: integer 1..${MIN_ROW_HP} panel width (1 HP = 26px, panel is 658px tall). 4-8 HP suits most modules.
   cat: one of ${CAT_ORDER.join(' | ')}
   dark?: boolean, dark faceplate.
   knobs: <=16 of { id, label(<=16), min, max, initial, fmt?, curve?, big?, fader?, cvIn?, attenuates? }

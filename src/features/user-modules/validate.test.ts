@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MIN_ROW_HP } from '../../state/settings-store';
 import { validateSlug, validateUserDef } from './validate';
 
 const good = (): Record<string, unknown> => ({
@@ -63,7 +64,10 @@ describe('validateUserDef', () => {
 
   it('rejects a non-object', () => expect(errorOf(null)).toMatch(/must be an object/));
   it('rejects an unknown cat', () => expect(errorOf(withDef({ cat: 'BLEEP' }))).toMatch(/def.cat/));
-  it('rejects hp out of range', () => expect(errorOf(withDef({ hp: 25 }))).toMatch(/def.hp/));
+  it('accepts hp up to the narrowest row and rejects wider', () => {
+    expect(validateUserDef(withDef({ hp: MIN_ROW_HP })).ok).toBe(true);
+    expect(errorOf(withDef({ hp: MIN_ROW_HP + 1 }))).toMatch(/def.hp/);
+  });
   it('rejects a name over 24 chars', () =>
     expect(errorOf(withDef({ name: 'x'.repeat(25) }))).toMatch(/def.name/));
 

@@ -7,14 +7,15 @@
       is equally unverified.
 - [ ] OpenAI `images/generations` browser CORS posture was inferred, not confirmed — no live key was
       available in any session, so the one real call never happened. Gemini image gen is the fallback.
-- [ ] Nothing stops a user module declaring an `hp` wider than the 120 HP row floor. Such a module can
-      never be placed: every row is at most 240 HP but the floor guarantees only 120. The module
-      browser used to warn when an entry did not fit the target row (`freeHp` prop, "only N HP free"),
-      and that hint was deliberately removed in `5f32a27` once adding stopped being blocked — so the
-      failure would now be silent and unexplained. Options: clamp `hp` in the user-module schema,
-      or restore a hint for the one case that can still fail.
 
 ### Closed
+- [x] A user module wider than the 120 HP row floor could never be placed — resolved by clamping `hp`
+      in validation. `validateUserDef` now bounds `hp` to 1..`MIN_ROW_HP` (120), importing the constant
+      from `src/state/settings-store.ts` so the two cannot drift, and says why: a module has to fit the
+      narrowest row a rack can be set to. The old bound was a magic 24, which matched neither the floor
+      (120) nor the ceiling (240) and was narrower than the 36 HP built-in MIX 8. The bound is the floor,
+      not `MAX_ROW_HP`, because 240 HP rows are optional — only 120 is guaranteed. No browser hint was
+      restored: nothing that validates can now fail to place.
 - [x] CVD-safe signal palette — resolved twice. Phase 05 measured the original Okabe-Ito derivation
       with Viénot/Brettel dichromacy matrices and CIE76: protan 25.5, deutan 29.7, but tritan 3.5
       (pitch collapsed onto CV). The Blackline rework then re-derived the whole palette for a black

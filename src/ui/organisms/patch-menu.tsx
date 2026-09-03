@@ -10,15 +10,13 @@ import {
   savePatch,
   type Patch,
 } from '../../storage/patch-store';
-import { useUiStore } from '../../state/ui-store';
 import { Button } from '../atoms/button';
-
-const note = (text: string): void => useUiStore.getState().setNotice(text);
 
 export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
   const [list, setList] = useState<Patch[]>(() => listPatches());
   const [name, setName] = useState('');
-  const feedback = useUiStore((s) => s.notice);
+  // Own line, not the rack's global notice — that one still holds "Added VCO" from before.
+  const [feedback, note] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
 
   const refresh = (): void => setList(listPatches());
@@ -117,7 +115,9 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
           ))}
           {list.length === 0 && <li className="patch-empty">No saved patches yet.</li>}
         </ul>
-        {feedback !== null && <p className="patch-feedback">{feedback}</p>}
+        <p className="patch-feedback" aria-live="polite">
+          {feedback}
+        </p>
       </div>
     </div>
   );

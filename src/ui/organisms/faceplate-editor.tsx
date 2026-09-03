@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { HP_PX, PANEL_H } from '../../core/types';
 import { cropToFaceplate } from '../../features/faceplate/image-crop';
-import { activeProvider, canGenerateImages, generateFaceplate } from '../../features/llm/client';
+import { generateFaceplate, imageProvider } from '../../features/llm/client';
 import { userModuleId, type UserModule } from '../../features/user-modules/schema';
 import { layoutPanel } from '../../modules/panel-layout';
 import { getImage, newImageId, saveImage } from '../../storage/image-store';
@@ -56,8 +56,9 @@ export function FaceplateEditor({ um, onChange }: FaceplateEditorProps): ReactNo
 
   const out = { w: um.def.hp * HP_PX, h: PANEL_H };
   const aspect = out.w / out.h;
-  const provider = activeProvider();
-  const canGen = provider !== null && canGenerateImages(provider);
+  // Any stored key that can generate images will do — not just the one used for chat.
+  const imageBy = imageProvider();
+  const canGen = imageBy !== null;
   const imageId = um.faceplateImageId;
   const rect = src ? (mode === 'crop' && drag) || cropPreset(mode, src.w, src.h, aspect) : NO_RECT;
   const appliedUrl = applied && applied.id === imageId ? applied.url : '';
@@ -152,7 +153,11 @@ export function FaceplateEditor({ um, onChange }: FaceplateEditorProps): ReactNo
         <input id="fp-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
         <Button
           disabled={busy || !canGen || !prompt.trim()}
-          title={canGen ? undefined : 'The active provider cannot generate images.'}
+          title={
+            canGen
+              ? `Generates with ${imageBy}.`
+              : 'Add a Gemini or OpenAI key in Settings to generate images.'
+          }
           onClick={() => void generate()}
         >
           Generate

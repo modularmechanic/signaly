@@ -37,7 +37,7 @@ export interface SerializeSpec {
   save(m: ModuleInstance): unknown;
   load(m: ModuleInstance, o: unknown): void;
   /** boundary check for untrusted `ext` before `load`; must never throw */
-  validate?(o: unknown): boolean;
+  validate(o: unknown): boolean;
 }
 
 export interface ModuleSpec {

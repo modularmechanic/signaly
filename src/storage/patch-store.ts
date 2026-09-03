@@ -107,5 +107,6 @@ export function downloadPatch(patch: Patch): void {
   a.href = url;
   a.download = `${patch.name.replace(/[^\w.-]+/g, '-')}.signaly.json`;
   a.click();
-  URL.revokeObjectURL(url);
+  // Firefox cancels an in-flight download if the object URL dies in the same task.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }

@@ -19,7 +19,8 @@ function download(um: UserModule): void {
   a.href = url;
   a.download = `${um.slug}.signaly-module.json`;
   a.click();
-  URL.revokeObjectURL(url);
+  // Firefox cancels an in-flight download if the object URL dies in the same task.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 /** An imported file is exactly as untrusted as an LLM proposal: shape, then full validation. */

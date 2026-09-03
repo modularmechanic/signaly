@@ -41,35 +41,11 @@ export function useSwitch(m: ModuleInstance, id: string): [number, (i: number) =
   return useSyncedValue(external, commit);
 }
 
-/** Typed lazy slot on `m.ext` for state that must outlive renders (analyser, ring buffer).
-    Guarded on the instance, so StrictMode's double render initialises once. */
-export function useModuleExt<T>(m: ModuleInstance, init: () => T): T {
-  const bag = m.ext as { __moduleExt?: T };
-  if (bag.__moduleExt === undefined) bag.__moduleExt = init();
-  return bag.__moduleExt;
-}
-
 /** Run `fn` every frame on the shared render bus. */
 export function useRenderFrame(fn: () => void): void {
   const fnRef = useRef(fn);
   fnRef.current = fn;
   useEffect(() => addDraw(() => fnRef.current()), []);
-}
-
-/** Single-owner subscription to `m.node.port` messages. No-op for native modules.
-    Do NOT mix with useWorkletFeed on the same module. */
-export function useWorkletMessages<M = unknown>(m: ModuleInstance, handler: (msg: M) => void): void {
-  const handlerRef = useRef(handler);
-  handlerRef.current = handler;
-  const node = m.node;
-  useEffect(() => {
-    if (!node) return;
-    const onMessage = (e: MessageEvent<M>): void => handlerRef.current(e.data);
-    node.port.onmessage = onMessage;
-    return () => {
-      if (node.port.onmessage === onMessage) node.port.onmessage = null;
-    };
-  }, [node]);
 }
 
 /** Multi-subscriber worklet feed: one shared dispatcher per node fans out to a Set on m.ext. */

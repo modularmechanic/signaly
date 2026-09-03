@@ -130,7 +130,7 @@ export function applySnapshot(s: RackSnapshot): void {
       Object.entries(ms.vals).forEach(([id, v]) => setParam(inst.uid, id, v));
       Object.entries(ms.sws).forEach(([id, i]) => setSwitch(inst.uid, id, i));
       const serialize = getSpec(ms.mtype)?.serialize;
-      if (serialize && ms.ext !== undefined && (serialize.validate?.(ms.ext) ?? true)) {
+      if (serialize && ms.ext !== undefined && serialize.validate(ms.ext)) {
         try {
           serialize.load(inst, ms.ext);
         } catch {

@@ -56,10 +56,20 @@ const valid = (): RackSnapshot => ({
   rows: [[1], [2]],
 });
 
+const loaded: unknown[] = [];
+
 beforeAll(() => {
   vi.stubGlobal('AudioWorkletNode', FakeWorkletNode);
   registerSpec({ def: SRC });
   registerSpec({ def: DST });
+  registerSpec({
+    def: { ...SRC, id: 'sext', worklet: 'sext' },
+    serialize: {
+      save: () => 'good',
+      load: (_m, o) => void loaded.push(o),
+      validate: (o) => o === 'good',
+    },
+  });
 });
 
 beforeEach(() => {
@@ -96,6 +106,19 @@ describe('snapshot', () => {
     const modules = Object.values(useRackStore.getState().modules);
     expect(modules).toHaveLength(1);
     expect(useRackStore.getState().cables).toHaveLength(0);
+  });
+
+  it('only hands ext to load when the serializer validates it', () => {
+    const ext = (o: unknown): RackSnapshot => ({
+      modules: [{ mtype: 'sext', uid: 1, vals: {}, sws: {}, ext: o }],
+      cables: [],
+      rows: [[1]],
+    });
+    loaded.length = 0;
+    applySnapshot(ext({ evil: true }));
+    expect(loaded).toEqual([]);
+    applySnapshot(ext('good'));
+    expect(loaded).toEqual(['good']);
   });
 
   it('rejects malformed input', () => {

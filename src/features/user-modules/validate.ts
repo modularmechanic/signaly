@@ -19,6 +19,7 @@ import {
   JACK_ROW_H,
   jackColsFor,
 } from '../../modules/panel-layout';
+import { MIN_ROW_HP } from '../../state/settings-store';
 import type { UserDef } from './schema';
 import { bad, bool, list, num, obj, opt, pick, str, unit } from './validate-primitives';
 
@@ -194,12 +195,15 @@ export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: 
   try {
     const r = obj(o, 'def');
     const hp = num(r.hp, 'def.hp');
-    if (!Number.isInteger(hp) || hp < 1 || hp > 24) bad('def.hp must be an integer from 1 to 24');
+    if (!Number.isInteger(hp) || hp < 1 || hp > MIN_ROW_HP)
+      bad(
+        `def.hp must be an integer from 1 to ${MIN_ROW_HP}: a module has to fit the narrowest row a rack can be set to (${MIN_ROW_HP} HP), or it could never be placed`,
+      );
     const ins = jacks(r.ins, 'ins');
     const outs = jacks(r.outs, 'outs');
     if (!jacksFit(hp, ins.length, outs.length)) {
       let need = hp;
-      while (need < 24 && !jacksFit(need, ins.length, outs.length)) need++;
+      while (need < MIN_ROW_HP && !jacksFit(need, ins.length, outs.length)) need++;
       bad(
         jacksFit(need, ins.length, outs.length)
           ? `def.hp ${hp} is too narrow for ${ins.length} in and ${outs.length} out jacks — use at least ${need} HP`
