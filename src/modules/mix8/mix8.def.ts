@@ -107,7 +107,8 @@ const pair = (
     cell(r(n), kind, col(i) + HALF, y, HALF, kind === 'switch' ? 0.05 : KNOB_H),
   ]);
 
-// Bottom strip: four send outs, two return pairs each with its level, then the main outs.
+// Bottom strip is jacks only, grouped: the four send outs, the four return ins, the main outs.
+// The return LEVELS live in the master section above the main fader, as on a desk.
 const BOTTOM = [
   'out:s1l',
   'out:s1r',
@@ -115,10 +116,8 @@ const BOTTOM = [
   'out:s2r',
   'in:r1l',
   'in:r1r',
-  'knob:ret1',
   'in:r2l',
   'in:r2r',
-  'knob:ret2',
   'out:outl',
   'out:outr',
 ];
@@ -152,6 +151,8 @@ const nodes: PanelNode[] = [
     (n) => `switch:s${n}`,
   ),
   ...strip(0.58, 0.3, 'fader', (n) => `fader:l${n}`),
+  cell('knob:ret1', 'knob', MASTER_X, 0.205, MASTER_W, KNOB_H),
+  cell('knob:ret2', 'knob', MASTER_X, 0.285, MASTER_W, KNOB_H),
   cell('fader:master', 'fader', MASTER_X, 0.365, MASTER_W, 0.515),
   ...BOTTOM.map((id, k) => cell(id, id.split(':')[0] as PanelNode['kind'], 0.018 + k * BW, 0.885, BW, 0.095)),
 ];
