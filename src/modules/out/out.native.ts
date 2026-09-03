@@ -35,7 +35,7 @@ export const native: NativeSpec = {
     const inR = ac.createGain();
     const gl = ac.createGain();
     const gr = ac.createGain();
-    gl.gain.value = gr.gain.value = (m.vals.level ?? 0.9) / 5;
+    gl.gain.value = gr.gain.value = (m.vals.level ?? 0.5) / 5;
 
     const curve = softClip();
     const shL = ac.createWaveShaper();

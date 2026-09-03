@@ -127,6 +127,38 @@ describe('Knob', () => {
     expect(m.vals.cut).toBe(50);
   });
 
+  it('a drag latches its axis instead of flipping mid-gesture', () => {
+    const el = knob() as HTMLElement & { setPointerCapture: () => void };
+    el.setPointerCapture = (): void => undefined;
+    el.hasPointerCapture = (): boolean => false;
+    const at = (type: string, x: number, y: number): void =>
+      act(() => {
+        el.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: x, clientY: y }));
+      });
+    at('pointerdown', 0, 0);
+    at('pointermove', 10, 9); // x wins by a hair -> x mapping
+    expect(m.vals.cut).toBeCloseTo(56, 6);
+    at('pointermove', 10, 40); // y now dominates, but the axis is latched
+    expect(m.vals.cut).toBeCloseTo(56, 6);
+    at('pointerup', 10, 40);
+  });
+
+  it('a move inside the slop radius does not pick an axis yet', () => {
+    const el = knob() as HTMLElement & { setPointerCapture: () => void };
+    el.setPointerCapture = (): void => undefined;
+    el.hasPointerCapture = (): boolean => false;
+    const at = (type: string, x: number, y: number): void =>
+      act(() => {
+        el.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: x, clientY: y }));
+      });
+    at('pointerdown', 0, 0);
+    at('pointermove', 2, 2);
+    expect(m.vals.cut).toBe(50);
+    at('pointermove', 2, 40); // first move past the slop -> y mapping
+    expect(m.vals.cut).toBeCloseTo(50 - 40 * 0.006 * 100, 6);
+    at('pointerup', 2, 40);
+  });
+
   it('pointer angle and ring pct share one -135deg..+135deg sweep, lin and log', () => {
     for (const d of [CUT, LOG]) {
       for (const n of [0, 0.25, 0.5, 0.75, 1]) {

@@ -55,6 +55,9 @@ export function DspCodePanel({ um, onRegister }: DspCodePanelProps): ReactNode {
       saveUserModule(toRecord(next));
       setMsg(`Saved ${next.slug}.`);
       setNotice(`Saved ${next.slug}.`);
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'unexpected error');
+      setOk(false);
     } finally {
       setBusy(false);
     }

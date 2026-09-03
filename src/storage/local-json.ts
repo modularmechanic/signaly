@@ -12,7 +12,10 @@ interface Envelope<T> {
 
 let askedToPersist = false;
 
-/** Parse a versioned envelope; any malformed / wrong-version payload yields `fallback`. */
+/** Array / plain object / primitive — a stored value of another kind must never reach a caller. */
+const kind = (v: unknown): string => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v);
+
+/** Parse a versioned envelope; any malformed / wrong-version / wrong-shape payload yields `fallback`. */
 export function readJson<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -20,7 +23,7 @@ export function readJson<T>(key: string, fallback: T): T {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) return fallback;
     const env = parsed as Partial<Envelope<T>>;
-    return env.v === 1 && env.data !== undefined ? env.data : fallback;
+    return env.v === 1 && kind(env.data) === kind(fallback) ? (env.data as T) : fallback;
   } catch {
     return fallback;
   }

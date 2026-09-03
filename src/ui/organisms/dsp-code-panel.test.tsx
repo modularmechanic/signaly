@@ -72,6 +72,17 @@ describe('DspCodePanel', () => {
     expect(button('Save').disabled).toBe(true);
   });
 
+  it('reports a registration that throws instead of losing it', async () => {
+    vi.mocked(verifyDsp).mockResolvedValue(null);
+    await click('Verify');
+    act(() =>
+      root.render(<DspCodePanel um={um} onRegister={() => Promise.reject(new Error('worklet exploded'))} />),
+    );
+    await click('Save');
+    expect(host.querySelector('.editor-msg')?.textContent).toBe('worklet exploded');
+    expect(button('Save').disabled).toBe(true);
+  });
+
   it('editing the source invalidates a passed verification', async () => {
     vi.mocked(verifyDsp).mockResolvedValue(null);
     await click('Verify');

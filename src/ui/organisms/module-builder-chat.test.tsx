@@ -57,6 +57,31 @@ describe('ModuleBuilderChat', () => {
     expect(button('Retry with this error')).toBeTruthy();
     expect(vi.mocked(generateModule)).toHaveBeenCalledTimes(1);
   });
+
+  it('reports a registration that throws instead of losing it', async () => {
+    vi.mocked(generateModule).mockResolvedValue({
+      slug: 'fold',
+      dsp: 'export function process() {}',
+      def: {
+        name: 'FOLD',
+        sub: 'fixture',
+        hp: 4,
+        cat: 'UTILITY',
+        knobs: [],
+        ins: [],
+        outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
+      },
+    });
+    act(() =>
+      root.render(<ModuleBuilderChat onModule={() => Promise.reject(new Error('worklet exploded'))} />),
+    );
+    typePrompt('a wavefolder');
+    await act(async () => {
+      button('Send').click();
+    });
+    expect(host.querySelector('.chat-msg.error .chat-text')?.textContent).toBe('worklet exploded');
+    expect(button('Send').disabled).toBe(true);
+  });
 });
 
 describe('BuilderPage without a key', () => {

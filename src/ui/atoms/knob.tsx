@@ -60,7 +60,7 @@ export interface KnobProps {
 
 export function Knob({ m, def, cv }: KnobProps): ReactNode {
   const [val, setVal] = useParam(m, def.id);
-  const drag = useRef<{ n: number; x: number; y: number } | null>(null);
+  const drag = useRef<{ n: number; x: number; y: number; ax?: 'x' | 'y' } | null>(null);
   const n = knobNorm(def, val);
   const commit = (v: number): void => setVal(knobQuantize(def, v));
 
@@ -74,7 +74,12 @@ export function Knob({ m, def, cv }: KnobProps): ReactNode {
     if (!d) return;
     const dx = e.clientX - d.x;
     const dy = e.clientY - d.y;
-    const delta = Math.abs(dx) > Math.abs(dy) ? -dx : dy;
+    // Latched past a slop radius, else a diagonal drag flips mapping every move.
+    if (d.ax === undefined) {
+      if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+      d.ax = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    }
+    const delta = d.ax === 'x' ? -dx : dy;
     commit(knobValue(def, clamp(d.n - delta * 0.006 * (e.shiftKey ? 0.15 : 1), 0, 1)));
   };
   const onPointerUp = (e: PointerEvent<HTMLDivElement>): void => {

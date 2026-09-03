@@ -24,5 +24,10 @@ describe('formatters', () => {
     expect(isIntFmt('fInt')).toBe(true);
     expect(isIntFmt('fRate')).toBe(true);
     expect(isIntFmt('fHz')).toBe(false);
+    expect(isIntFmt(undefined)).toBe(false);
+  });
+
+  it('every table-index format steps by whole indices', () => {
+    for (const f of ['fKey', 'fChord', 'fShape', 'fRate'] as const) expect(isIntFmt(f)).toBe(true);
   });
 });

@@ -1,4 +1,6 @@
 const MAX_ERR = 300;
+/** Generous on purpose: a slow model — image generation especially — is not a hung request. */
+const TIMEOUT_MS = 60_000;
 
 type Headers = Record<string, string>;
 
@@ -18,12 +20,21 @@ function pickMessage(data: unknown): string | null {
 // The URL is never quoted back: Gemini carries the key in its query string.
 async function request(url: string, init: RequestInit, what: string): Promise<unknown> {
   let res: Response;
+  let text: string;
   try {
-    res = await fetch(url, init);
-  } catch {
-    return Promise.reject(new Error(`${what} could not be reached — check the network and the key`));
+    // Without a deadline an unanswered request leaves the caller's UI pending with no way out.
+    res = await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    text = await res.text();
+  } catch (e) {
+    const timedOut = (e as { name?: string } | null)?.name === 'TimeoutError';
+    return Promise.reject(
+      new Error(
+        timedOut
+          ? `${what} timed out after ${TIMEOUT_MS / 1000}s — try again`
+          : `${what} could not be reached — check the network and the key`,
+      ),
+    );
   }
-  const text = await res.text();
   let data: unknown = null;
   try {
     data = text ? JSON.parse(text) : null;

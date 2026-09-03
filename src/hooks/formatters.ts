@@ -26,4 +26,5 @@ export const FMT: Record<FmtName, (v: number) => string> = {
 export const fmtValue = (name: FmtName | undefined, v: number): string => FMT[name ?? 'f1'](v);
 
 /** Integer-stepped knobs (rounded while dragging). */
-export const isIntFmt = (name: FmtName | undefined): boolean => name === 'fInt' || name === 'fRate';
+const INT_FMT = new Set<FmtName>(['fInt', 'fRate', 'fKey', 'fChord', 'fShape']);
+export const isIntFmt = (name: FmtName | undefined): boolean => name !== undefined && INT_FMT.has(name);

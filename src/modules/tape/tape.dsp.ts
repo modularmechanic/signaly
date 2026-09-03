@@ -28,9 +28,12 @@ class Tape extends Base {
     if (!out) return true;
     const p = this.p;
     const sync = p.sync ?? 0;
+    let lit = 0;
     for (let i = 0; i < out.length; i++) {
       const x = inp?.[i] ?? 0;
-      const per = this.cs.tick(clk?.[i] ?? 0);
+      const c = clk?.[i] ?? 0;
+      const per = this.cs.tick(c);
+      if (c > 2.5) lit = 1;
       this.ph += 0.6 / sampleRate;
       if (this.ph > 1) this.ph -= 1; // wow
       this.ph2 += 6.3 / sampleRate;
@@ -52,8 +55,8 @@ class Tape extends Base {
       this.d.push(x + y * fb);
       out[i] = x * (1 - mix) + y * mix;
     }
-    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
-    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    // Sync LED: posted at block rate on change only, but the gate is detected
+    // anywhere in the block so a pulse starting mid-block still lights it.
     if (lit !== this.led) {
       this.led = lit;
       this.port.postMessage({ t: 'led', id: 'clk', v: lit });

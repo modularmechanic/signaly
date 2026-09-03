@@ -56,12 +56,13 @@ class Gate extends Base {
       if (openNow) this.holdCtr = holdSamples;
       else if (this.holdCtr > 0) this.holdCtr--;
 
-      const target = openNow || this.holdCtr > 0 ? 1 : rangeGain;
+      const open = openNow || this.holdCtr > 0;
+      const target = open ? 1 : rangeGain;
       this.gain += (target - this.gain) * (target > this.gain ? atkC : relC);
 
       outl[i] = l * this.gain;
       outr[i] = r * this.gain;
-      gout[i] = this.gain > 0.5 ? 5 : 0;
+      gout[i] = open ? 5 : 0;
     }
 
     this.msgCtr = (this.msgCtr + 1) % MSG_EVERY;

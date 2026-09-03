@@ -23,6 +23,7 @@ export function BuilderWorkspace(): ReactNode {
   const [preview, setPreview] = useState<Preview | null>(null);
   const setView = useUiStore((s) => s.setView);
   const alive = useRef(true);
+  const gen = useRef(0);
 
   // register() awaits a verify that can outlive the page; without this the continuation
   // would add a row and a module nobody can see, let alone remove.
@@ -44,23 +45,31 @@ export function BuilderWorkspace(): ReactNode {
 
   // The single registration path: transpile + verify + load live, then preview.
   const register = useCallback(async (um: UserModule): Promise<string | null> => {
+    // Two registrations can overlap (the library loads without waiting): only the latest one wins.
+    const mine = ++gen.current;
     setDraft(um);
     const r = await registerUserModule(um);
-    if (!alive.current) return null;
+    if (!alive.current || mine !== gen.current) return null;
     if (!r.ok) {
       setPreview(null);
       return r.error;
     }
     const rowId = addRow();
     const rows = useRackStore.getState().rows;
-    const inst = addModule(
-      r.id,
-      rows.findIndex((row) => row.id === rowId),
-    );
+    let inst: ModuleInstance | null;
+    try {
+      inst = addModule(
+        r.id,
+        rows.findIndex((row) => row.id === rowId),
+      );
+    } catch {
+      // A worklet whose processor never registered throws on construction.
+      inst = null;
+    }
     if (!inst) {
       removeRow(rowId);
       setPreview(null);
-      return 'the preview row could not hold the module';
+      return 'the module could not start — its DSP failed to load';
     }
     setPreview({ inst, rowId });
     return null;

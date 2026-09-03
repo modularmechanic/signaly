@@ -34,5 +34,5 @@ export function PianoDisplay({ m }: { m: ModuleInstance }): ReactNode {
     window.setTimeout(() => kbd.trigOff(BASE + pc), 180);
   };
 
-  return <MiniPiano active={active} onToggle={toggle} />;
+  return <MiniPiano active={active} octave={Math.floor(BASE / 12) - 1} onToggle={toggle} />;
 }

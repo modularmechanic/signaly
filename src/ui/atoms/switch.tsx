@@ -30,7 +30,10 @@ export function Switch({ m, def }: SwitchProps): ReactNode {
     const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
     if (d === 0 || count === 0) return;
     e.preventDefault();
-    setI((i + d + count) % count);
+    const next = (i + d + count) % count;
+    setI(next);
+    // APG: focus follows selection in a radiogroup, or a screen reader announces nothing.
+    e.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus();
   };
 
   return (

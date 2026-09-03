@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
 
 /** Bresenham Euclidean test: is rotated step `s` of `n` a hit when `f` are filled? */
 const onAt = (s: number, n: number, f: number): boolean =>
@@ -8,7 +8,7 @@ class Euklid extends Base {
   step = -1;
   lc = 0;
   lr = 0;
-  rs = 918273;
+  rng = new Lcg(918273);
   hit = 0;
   accent = 0;
   sent = -1;
@@ -19,8 +19,20 @@ class Euklid extends Base {
   }
 
   rnd(): number {
-    this.rs = (this.rs * 1103515245 + 12345) & 0x7fffffff;
-    return this.rs / 0x7fffffff;
+    return (this.rng.next() + 1) / 2;
+  }
+
+  /** Rewrite `pat` for n/f/rot; true when any step changed. */
+  repat(n: number, f: number, rot: number): boolean {
+    let moved = false;
+    for (let k = 0; k < 16; k++) {
+      const v = k < n && onAt((k + rot) % n, n, f) ? 1 : 0;
+      if (this.pat[k] !== v) {
+        this.pat[k] = v;
+        moved = true;
+      }
+    }
+    return moved;
   }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
@@ -53,17 +65,20 @@ class Euklid extends Base {
         if (on && this.rnd() > prob) on = false;
         this.hit = on ? 1 : 0;
         this.accent = on && head ? 1 : 0;
-        if (this.step !== this.sent) {
-          this.sent = this.step;
-          for (let k = 0; k < 16; k++) this.pat[k] = k < n && onAt((k + rot) % n, n, f) ? 1 : 0;
-          this.port.postMessage({ t: 'step', i: this.step, n, hit: this.hit, pattern: this.pat });
-        }
       }
       this.lc = c;
       const high = c > 2.5;
       trig[i] = high && this.hit ? 5 : 0;
       inv[i] = high && !this.hit ? 5 : 0;
       acc[i] = high && this.accent ? 5 : 0;
+    }
+    // Display posts at block rate, on change only: either the step moved, or FILL /
+    // ROTATE redrew the pattern while the clock was stopped.
+    const dn = clamp(Math.round(p.steps ?? 16), 1, 16);
+    const df = clamp(Math.round((p.fill ?? 5) + (fcv?.[trig.length - 1] ?? 0) * 1.6), 0, dn);
+    if (this.repat(dn, df, Math.round(p.rot ?? 0)) || this.step !== this.sent) {
+      this.sent = this.step;
+      this.port.postMessage({ t: 'step', i: this.step, n: dn, hit: this.hit, pattern: this.pat });
     }
     return true;
   }

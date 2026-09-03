@@ -34,9 +34,12 @@ class DDelay extends Base {
     if (!out) return true;
     const p = this.p;
     const sync = p.sync ?? 0;
+    let lit = 0;
     for (let i = 0; i < out.length; i++) {
       const x = inp?.[i] ?? 0;
-      const per = this.cs.tick(clk?.[i] ?? 0);
+      const c = clk?.[i] ?? 0;
+      const per = this.cs.tick(c);
+      if (c > 2.5) lit = 1;
       const tone = clamp((p.tone ?? 4000) * Math.pow(2, (tocv?.[i] ?? 0) / 5), 150, 17000);
       const tc = lpCoeff(tone);
       // synced time (division of the incoming clock pulse) or free-run TIME knob
@@ -52,8 +55,8 @@ class DDelay extends Base {
       this.d.push(x + clamp(y * fb, -6, 6));
       out[i] = x * (1 - mix) + y * mix;
     }
-    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
-    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    // Sync LED: posted at block rate on change only, but the gate is detected
+    // anywhere in the block so a pulse starting mid-block still lights it.
     if (lit !== this.led) {
       this.led = lit;
       this.port.postMessage({ t: 'led', id: 'clk', v: lit });

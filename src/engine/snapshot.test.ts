@@ -62,6 +62,7 @@ beforeAll(() => {
   vi.stubGlobal('AudioWorkletNode', FakeWorkletNode);
   registerSpec({ def: SRC });
   registerSpec({ def: DST });
+  registerSpec({ def: { ...SRC, id: 'swide', worklet: 'swide', hp: 40 } });
   registerSpec({
     def: { ...SRC, id: 'sext', worklet: 'sext' },
     serialize: {
@@ -97,6 +98,32 @@ describe('snapshot', () => {
     expect(modules.find((m) => m.def.id === 'ssrc')?.vals.freq).toBe(42);
     expect(s.cables).toHaveLength(1);
     expect(s.rows).toHaveLength(2);
+  });
+
+  it('places each row of an over-wide patch without losing a module', () => {
+    const wideUids = [1, 2, 3, 4, 5, 6, 7]; // 7 x 40 HP against a 120 HP row
+    const snap: RackSnapshot = {
+      modules: [
+        ...wideUids.map((uid) => ({ mtype: 'swide', uid, vals: {}, sws: {} })),
+        { mtype: 'sdst', uid: 8, vals: {}, sws: {} },
+      ],
+      cables: [],
+      rows: [wideUids, [8]],
+    };
+    applySnapshot(snap);
+
+    const s = useRackStore.getState();
+    const modules = Object.values(s.modules);
+    expect(modules).toHaveLength(8);
+    expect(s.rows.flatMap((r) => r.uids)).toHaveLength(8);
+    // the snapshot's second row keeps its own row instead of absorbing the first row's overflow
+    const dst = modules.find((m) => m.def.id === 'sdst');
+    const dstRow = s.rows.find((r) => r.uids.includes(dst?.uid ?? -1));
+    expect(dstRow?.uids).toEqual([dst?.uid]);
+    const widest = Math.max(
+      ...s.rows.map((r) => r.uids.reduce((n, u) => n + (s.modules[u]?.def.hp ?? 0), 0)),
+    );
+    expect(widest).toBeLessThanOrEqual(useSettingsStore.getState().rowWidthHp);
   });
 
   it('skips unknown module types instead of throwing', () => {

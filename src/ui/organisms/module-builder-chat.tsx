@@ -41,13 +41,14 @@ export function ModuleBuilderChat({ onModule }: ModuleBuilderChatProps): ReactNo
       const v = validateUserDef(res.def);
       if (!v.ok) return fail(v.error);
       const now = Date.now();
+      // registering reaches addModule, which throws when a worklet processor never registered
       const err = await onModule({
         slug: res.slug,
         def: v.def,
         dsp: res.dsp,
         createdAt: now,
         updatedAt: now,
-      });
+      }).catch((e: unknown) => (e instanceof Error ? e.message : 'unexpected error'));
       if (err) return fail(err);
       add({ role: 'assistant', text: `Built ${res.slug}. Edit the DSP, verify it, then save.` });
     } finally {

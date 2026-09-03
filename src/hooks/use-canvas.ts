@@ -46,6 +46,19 @@ export function useCanvas(
     };
     paint(); // visible before the shared loop's first frame
 
+    // A window dragged to a different-DPI display fires no resize on a fixed-size canvas.
+    let mq: MediaQueryList | undefined;
+    function onDpr(): void {
+      resize(w, h);
+      watchDpr();
+    }
+    function watchDpr(): void {
+      mq?.removeEventListener('change', onDpr);
+      mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      mq.addEventListener('change', onDpr);
+    }
+    watchDpr();
+
     let ro: ResizeObserver | undefined;
     if (width === undefined || height === undefined) {
       ro = new ResizeObserver((entries) => {
@@ -59,6 +72,7 @@ export function useCanvas(
     return () => {
       unregister();
       ro?.disconnect();
+      mq?.removeEventListener('change', onDpr);
     };
   }, [width, height]);
 

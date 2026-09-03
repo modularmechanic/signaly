@@ -20,7 +20,7 @@ export const def: ModuleDef = {
   sws: [{ id: 'mode', label: 'MODE', options: ['KICK', 'SNARE', 'HH', 'CRSH', 'SAMPLE'] }],
   ins: [
     { id: 'trig', label: 'TRIG', kind: 'g' },
-    { id: 'pitch_cv', label: 'V/OCT', kind: 'c' },
+    { id: 'pitch_cv', label: 'V/OCT', kind: 'p' },
     { id: 'sample_in', label: 'SAMPLE IN', kind: 'a' },
   ],
   outs: [

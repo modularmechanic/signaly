@@ -15,6 +15,8 @@ interface StepMsg {
 export function SeqParts({ m }: { m: ModuleInstance }): ReactNode {
   const [, bump] = useReducer((n: number) => n + 1, 0);
   const [play, setPlay] = useState(-1);
+  /** Text of the pitch cell being typed into: "-" is not a number yet, and must survive the render. */
+  const [draft, setDraft] = useState<{ i: number; text: string } | null>(null);
   const send = usePortSend<{ t: 'step'; i: number; pitch: number; gate: 0 | 1 }>(m);
   const seq = getSeq(m);
 
@@ -58,9 +60,15 @@ export function SeqParts({ m }: { m: ModuleInstance }): ReactNode {
             min={-24}
             max={24}
             step={1}
-            value={step.pitch}
+            value={draft?.i === col ? draft.text : step.pitch}
             aria-label={`step ${col + 1} pitch`}
-            onChange={(e) => edit(col, Math.max(-24, Math.min(24, e.target.valueAsNumber || 0)), step.gate)}
+            onChange={(e) => {
+              const v = e.target.valueAsNumber;
+              if (Number.isNaN(v)) return setDraft({ i: col, text: e.target.value });
+              setDraft(null);
+              edit(col, Math.max(-24, Math.min(24, v)), step.gate);
+            }}
+            onBlur={() => setDraft(null)}
           />
         );
       }}

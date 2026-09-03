@@ -3,8 +3,10 @@ import type { Params } from '../../engine/dsp-prelude';
 
 const SR = 48000;
 
+const post = vi.fn();
+
 class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
+  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: post };
 }
 
 interface Proc {
@@ -70,5 +72,17 @@ describe('ddelay.dsp', () => {
     const silence = new Float32Array(n);
     for (let b = 0; b < 400; b++) d.process([[silence], [], [], [], [], []], [[out]]);
     for (const v of out) expect(Math.abs(v)).toBeLessThan(10);
+  });
+
+  it('lights the sync LED for a clock pulse that starts mid-block', () => {
+    post.mockClear();
+    const d = new Ctor();
+    const n = 128;
+    const silence = new Float32Array(n);
+    const out = new Float32Array(n);
+    const clk = new Float32Array(n);
+    clk.fill(5, 100); // rises at sample 100, invisible to a clk[0]-only check
+    d.process([[silence], [], [], [], [], [clk]], [[out]]);
+    expect(post.mock.calls.map((c) => c[0])).toEqual([{ t: 'led', id: 'clk', v: 1 }]);
   });
 });

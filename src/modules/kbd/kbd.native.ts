@@ -43,6 +43,8 @@ export const native: NativeSpec = {
     m.jacks.out.gate = { node: gate, idx: 0 };
     m.jacks.out.trig = { node: trig, idx: 0 };
 
+    /** physically-down keys by e.code — keyup and blur release exactly these. */
+    const down = new Map<string, number>();
     const ext: KbdExt = {
       held: [],
       trigOn: (note) => {
@@ -62,26 +64,33 @@ export const native: NativeSpec = {
       detach: () => {
         window.removeEventListener('keydown', onDown);
         window.removeEventListener('keyup', onUp);
+        window.removeEventListener('blur', allOff);
       },
     };
 
-    function noteFor(e: KeyboardEvent): number | undefined {
-      if (e.ctrlKey || e.metaKey || e.altKey || typing()) return undefined;
-      const semi = KEYS[e.key.toLowerCase()];
-      return semi === undefined ? undefined : BASE + semi;
-    }
     function onDown(e: KeyboardEvent): void {
-      const note = noteFor(e);
-      if (note === undefined || e.repeat) return;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing()) return;
+      const semi = KEYS[e.key.toLowerCase()];
+      if (semi === undefined || down.has(e.code)) return;
       e.preventDefault();
-      ext.trigOn(note);
+      down.set(e.code, BASE + semi);
+      ext.trigOn(BASE + semi);
     }
+    /** No typing/modifier filter here: a key that went down must always be able to come up. */
     function onUp(e: KeyboardEvent): void {
-      const note = noteFor(e);
-      if (note !== undefined) ext.trigOff(note);
+      const note = down.get(e.code);
+      if (note === undefined) return;
+      down.delete(e.code);
+      ext.trigOff(note);
+    }
+    /** Alt-tab away with keys held and their keyup never arrives. */
+    function allOff(): void {
+      for (const note of down.values()) ext.trigOff(note);
+      down.clear();
     }
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', allOff);
     m.ext.kbd = ext;
   },
 

@@ -40,7 +40,7 @@ class Formant extends Base {
         this.st[f * 2 + 1] = g * bp + lp;
         y += bp * (GAINS[f] ?? 0);
       }
-      out[i] = clamp(y * 7, -10, 10);
+      out[i] = clamp(y * 7, -5, 5);
     }
     return true;
   }

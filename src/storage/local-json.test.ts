@@ -23,6 +23,16 @@ describe('local-json', () => {
     expect(readJson('naked', 'fb')).toBe('fb');
   });
 
+  it('falls back when the payload is not the shape the caller expects', () => {
+    // a hand-edited or corrupted store must not hand a caller something it cannot .filter()
+    localStorage.setItem(KEYS.patches, JSON.stringify({ v: 1, data: null }));
+    expect(readJson<unknown[]>(KEYS.patches, [])).toEqual([]);
+    localStorage.setItem(KEYS.patches, JSON.stringify({ v: 1, data: { nope: 1 } }));
+    expect(readJson<unknown[]>(KEYS.patches, [])).toEqual([]);
+    localStorage.setItem(KEYS.settings, JSON.stringify({ v: 1, data: ['x'] }));
+    expect(readJson(KEYS.settings, { rowWidthHp: 0 })).toEqual({ rowWidthHp: 0 });
+  });
+
   it('removes a key', () => {
     writeJson('k', 1);
     removeJson('k');

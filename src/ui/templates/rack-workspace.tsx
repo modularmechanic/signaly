@@ -22,8 +22,15 @@ function announce(s: RackState, prev: RackState): void {
   if (s.revision === prev.revision) return;
   const added = Object.keys(s.modules).find((k) => !(k in prev.modules));
   const removed = Object.keys(prev.modules).find((k) => !(k in s.modules));
-  if (added !== undefined) return say(`Added ${s.modules[Number(added)]?.def.name ?? 'module'}`);
+  if (added !== undefined) {
+    const uid = Number(added);
+    const name = s.modules[uid]?.def.name ?? 'module';
+    // An add can spill into a row of its own, so say where it actually landed.
+    const at = s.rows.findIndex((r) => r.uids.includes(uid));
+    return say(at < 0 ? `Added ${name}` : `Added ${name} to row ${at + 1}`);
+  }
   if (removed !== undefined) return say(`Removed ${prev.modules[Number(removed)]?.def.name ?? 'module'}`);
+  if (s.rows.length > prev.rows.length) return say(`Row ${s.rows.length} added`);
   const last = s.cables[s.cables.length - 1];
   if (s.cables.length > prev.cables.length && last)
     say(`Patched ${jackLabel(s, last.from)} to ${jackLabel(s, last.to)}`);
@@ -153,9 +160,7 @@ export function RackWorkspace(): ReactNode {
 
       <CableCanvas />
 
-      {browserOpen && (
-        <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />
-      )}
+      {browserOpen && <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />}
       {patchesOpen && <PatchMenu onClose={() => setPatchesOpen(false)} />}
       {settingsOpen && <SettingsDialog onClose={() => ui.setSettingsOpen(false)} />}
     </div>

@@ -112,19 +112,27 @@ export function snapshotRack(): RackSnapshot {
   return { modules, cables, rows: s.rows.map((r) => [...r.uids]) };
 }
 
-/** Rebuild the rack from a validated snapshot. Unknown mtypes and over-capacity rows are
-    skipped, never thrown: the remaining modules still load. */
+/** Rebuild the rack from a validated snapshot. Unknown mtypes are skipped and a row too narrow
+    for its modules spills into extra rows, never thrown: the remaining modules still load. */
 export function applySnapshot(s: RackSnapshot): void {
   clearRack();
   const byUid = new Map(s.modules.map((m) => [m.uid, m]));
   const remap = new Map<number, number>();
 
+  // Every row exists before the first module lands: addModule spills into a row it inserts itself,
+  // which shifts any live row index the loop would still be holding.
+  const rowIds = s.rows.map((_, i) =>
+    i === 0 ? (useRackStore.getState().rows[0]?.id ?? addRow()) : addRow(),
+  );
+
   s.rows.forEach((rowUids, rowIdx) => {
-    if (rowIdx > 0) addRow();
+    const rowId = rowIds[rowIdx];
+    if (rowId === undefined) return;
     for (const oldUid of rowUids) {
       const ms = byUid.get(oldUid);
       if (!ms) continue;
-      const inst = addModule(ms.mtype, rowIdx);
+      const at = useRackStore.getState().rows.findIndex((r) => r.id === rowId);
+      const inst = addModule(ms.mtype, at);
       if (!inst) continue;
       remap.set(oldUid, inst.uid);
       Object.entries(ms.vals).forEach(([id, v]) => setParam(inst.uid, id, v));

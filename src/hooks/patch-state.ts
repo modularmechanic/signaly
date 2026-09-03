@@ -151,12 +151,16 @@ export function startJackDrag(info: JackInfo, e: PointerEvent): void {
       drag.y = ev.clientY;
     }
   };
-  const up = (ev: PointerEvent): void => {
+  const cleanup = (): void => {
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', cleanup);
     fixed.el.classList.remove('hot');
     setCompat(need, false);
-
+    drag = null;
+  };
+  const up = (ev: PointerEvent): void => {
+    cleanup();
     const hitKey = document
       .elementsFromPoint(ev.clientX, ev.clientY)
       .map((node) => (node as HTMLElement).dataset?.jackKey)
@@ -167,9 +171,9 @@ export function startJackDrag(info: JackInfo, e: PointerEvent): void {
       const inp = fixed.dir === 'in' ? fixed : target;
       connectCable({ uid: out.uid, jack: out.jackId }, { uid: inp.uid, jack: inp.jackId });
     }
-    drag = null;
   };
 
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', cleanup);
 }

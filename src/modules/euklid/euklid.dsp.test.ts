@@ -7,6 +7,7 @@ class FakeProcessor {
 }
 
 interface Proc {
+  port: { onmessage: ((e: MessageEvent) => void) | null };
   process(I: Float32Array[][], O: Float32Array[][]): boolean;
 }
 type Ctor = new (o?: { processorOptions?: { p?: Record<string, number> } }) => Proc;
@@ -64,5 +65,21 @@ describe('euklid.dsp', () => {
     expect(msgs[0]!.t).toBe('step');
     expect(msgs[0]!.n).toBe(8);
     expect([...msgs[0]!.pattern]).toEqual([0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it('redraws the pattern when FILL changes with the clock stopped', () => {
+    post.mockClear();
+    const e = new Euklid({ processorOptions: { p: { steps: 8, fill: 3, rot: 0, prob: 1, chaos: 0 } } });
+    const gap = new Float32Array(128);
+    const I: Float32Array[][] = [[gap], [], [], []];
+    const O = Array.from({ length: 3 }, () => [new Float32Array(128)]);
+    e.process(I, O);
+    e.process(I, O);
+    expect(post).toHaveBeenCalledTimes(1);
+    e.port.onmessage?.({ data: { t: 'p', id: 'fill', v: 5 } } as MessageEvent);
+    e.process(I, O);
+    expect(post).toHaveBeenCalledTimes(2);
+    const last = post.mock.calls.at(-1)![0] as { pattern: Uint8Array };
+    expect([...last.pattern]).toEqual([0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
   });
 });

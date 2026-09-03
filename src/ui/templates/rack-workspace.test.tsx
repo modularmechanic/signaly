@@ -81,16 +81,20 @@ describe('RackWorkspace live region', () => {
   it('adds the module picked in the browser to the target row', () => {
     registerSpec({ def: { ...DEF, id: 'tpick', name: 'PICKME' } });
     act(() => useUiStore.getState().setBrowserOpen(true));
-    const item = [...host.querySelectorAll('.browser-item')].find((el) =>
-      el.textContent?.includes('PICKME'),
-    );
+    const item = [...host.querySelectorAll('.browser-item')].find((el) => el.textContent?.includes('PICKME'));
     act(() => item?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     unregisterSpec('tpick');
 
     const added = Object.values(useRackStore.getState().modules).filter((m) => m.def.id === 'tpick');
     expect(added).toHaveLength(1);
     expect(useRackStore.getState().rows[0]?.uids).toContain(added[0]?.uid);
-    expect(live()).toBe('Added PICKME');
+    expect(live()).toBe('Added PICKME to row 1');
+  });
+
+  it('announces an added row', () => {
+    const add = [...host.querySelectorAll('button')].find((b) => b.textContent === '+ Row');
+    act(() => add?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(live()).toBe('Row 2 added');
   });
 
   it('announces a cancelled arm', async () => {

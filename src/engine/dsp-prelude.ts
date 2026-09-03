@@ -178,7 +178,8 @@ export class Lcg {
 
   /** Next value in -1..1. */
   next(): number {
-    this.s = (this.s * 1103515245 + 12345) & 0x7fffffff;
+    // Math.imul keeps the product in 32 bits; plain * loses the low bits past 2^53.
+    this.s = (Math.imul(this.s, 1103515245) + 12345) & 0x7fffffff;
     return this.s / 0x3fffffff - 1;
   }
 }

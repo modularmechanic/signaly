@@ -53,10 +53,13 @@ class SDelay extends Base {
     const swing = p.swing ?? 0;
     const width = clamp(p.width ?? 0.85, 0, 1);
     const tc = lpCoeff(clamp(p.tone ?? 5000, 150, 17000));
+    let lit = 0;
     for (let i = 0; i < L.length; i++) {
       const xL = iL?.[i] ?? 0;
       const xR = iR?.[i] ?? 0;
-      const per = this.cs.tick(clk?.[i] ?? 0);
+      const c = clk?.[i] ?? 0;
+      const per = this.cs.tick(c);
+      if (c > 2.5) lit = 1;
       // synced base (a division of one clock pulse) or the free-run TIME knobs (+TIME CV)
       const synced = sync > 0 && per > 0;
       const syncT = clamp((per / sampleRate) * (SYNC_DIV[sync] ?? 1), 0.005, 3.9);
@@ -87,8 +90,8 @@ class SDelay extends Base {
       L[i] = xL * (1 - mix) + (monoW + (yL - monoW) * width) * mix;
       R[i] = xR * (1 - mix) + (monoW + (yR - monoW) * width) * mix;
     }
-    // Sync LED: block-rate edge detect is plenty for the eye and never floods the port.
-    const lit = (clk?.[0] ?? 0) > 2.5 ? 1 : 0;
+    // Sync LED: posted at block rate on change only, but the gate is detected
+    // anywhere in the block so a pulse starting mid-block still lights it.
     if (lit !== this.led) {
       this.led = lit;
       this.port.postMessage({ t: 'led', id: 'clk', v: lit });

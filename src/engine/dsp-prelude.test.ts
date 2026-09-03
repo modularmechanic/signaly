@@ -53,6 +53,26 @@ describe('dsp-prelude', () => {
     expect(P.SYNC_DIV[0]).toBe(0);
   });
 
+  it('runs a full-period Lcg: in range, low bits alive, no short cycle', () => {
+    const rng = new P.Lcg(12345);
+    const seen = new Set<number>();
+    const low = new Set<number>();
+    let repeat = -1;
+    for (let i = 0; i < 200000; i++) {
+      const v = rng.next();
+      expect(v).toBeGreaterThanOrEqual(-1);
+      expect(v).toBeLessThanOrEqual(1);
+      if (seen.has(rng.s)) {
+        repeat = i;
+        break;
+      }
+      seen.add(rng.s);
+      low.add(rng.s & 15);
+    }
+    expect(repeat).toBe(-1);
+    expect(low.size).toBeGreaterThan(1);
+  });
+
   it('routes {t:p} port messages to params and everything else to msg()', () => {
     class Proc extends P.Base {
       seen: InMsg[] = [];
