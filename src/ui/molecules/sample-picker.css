@@ -1,0 +1,57 @@
+.sample-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  overflow: hidden;
+  color: var(--text);
+  font: 600 11px/1.2 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.sample-picker-btn input[type='file'] {
+  /* the label is the click target; the native input stays invisible */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.sample-picker-info {
+  display: flex;
+  gap: 6px;
+  max-width: 100%;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sample-picker-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sample-picker-dur {
+  flex: none;
+}
+
+.sample-picker-empty {
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.sample-picker-wave {
+  width: 100%;
+  max-width: 220px;
+  height: 40px;
+}
+
+.sample-picker-msg {
+  color: var(--kind-g);
+  font-size: 10px;
+}
