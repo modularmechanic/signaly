@@ -1,0 +1,41 @@
+import type { ModuleDef } from '../../core/types';
+
+export const def: ModuleDef = {
+  id: 'fmvoice',
+  name: 'FM VOICE',
+  sub: 'FOUR OPERATOR',
+  hp: 12,
+  cat: 'VOICES',
+  worklet: 'fmvoice',
+  knobs: [
+    {
+      id: 'tune',
+      label: 'TUNE',
+      min: 20,
+      max: 2000,
+      initial: 220,
+      fmt: 'fHz',
+      curve: 'log',
+      big: true,
+      cvIn: 'tcv',
+    },
+    { id: 'r1', label: 'RATIO 1', min: 0, max: 11, initial: 1, fmt: 'fInt' },
+    { id: 'r2', label: 'RATIO 2', min: 0, max: 11, initial: 1, fmt: 'fInt' },
+    { id: 'r3', label: 'RATIO 3', min: 0, max: 11, initial: 1, fmt: 'fInt' },
+    { id: 'r4', label: 'RATIO 4', min: 0, max: 11, initial: 1, fmt: 'fInt' },
+    { id: 'l1', label: 'LEVEL 1', min: 0, max: 1, initial: 1, fmt: 'fPc' },
+    { id: 'l2', label: 'LEVEL 2', min: 0, max: 1, initial: 0, fmt: 'fPc' },
+    { id: 'l3', label: 'LEVEL 3', min: 0, max: 1, initial: 0, fmt: 'fPc' },
+    { id: 'l4', label: 'LEVEL 4', min: 0, max: 1, initial: 0, fmt: 'fPc' },
+    { id: 'atk', label: 'ATTACK', min: 0.001, max: 2, initial: 0.005, fmt: 'fMs', curve: 'log' },
+    { id: 'dec', label: 'DECAY', min: 0.01, max: 4, initial: 0.6, fmt: 'fMs', curve: 'log' },
+  ],
+  sws: [{ id: 'algo', label: 'ALGORITHM', options: ['STACK', '2-CAR', 'PARALLEL', 'FB STACK'] }],
+  ins: [
+    { id: 'voct', label: 'V/OCT', kind: 'p' },
+    { id: 'gate', label: 'GATE', kind: 'g' },
+    { id: 'tcv', label: 'TUNE CV', kind: 'c' },
+  ],
+  outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
+  leds: ['gate'],
+};

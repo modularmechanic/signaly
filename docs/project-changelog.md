@@ -2,6 +2,48 @@
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+Panel geometry rework and a catalogue that grows from 41 to 71 modules:
+`plans/260903-1032-panel-rework-and-30-modules/`. Panel evidence is measured in
+`plans/reports/audit-260903-1032-module-panel-visual.md`.
+
+### Added
+
+- **Thirty new modules**, none ported from the earlier project, chosen to fill the gaps a Eurorack
+  user would notice. Sources: WAVETABLE, FM OP, SUPER, CHAOS, GRAIN. Filters: DIODE, LPG, MORPH,
+  RESON. Function: AD, SLEW, LOGIC, COMPARE. Amp and mix: XFADE, RING, MATRIX. Effects: PHASER,
+  WAVEFOLD, FREEZE, PITCH, GLITCH, SPREAD. Voices: FM VOICE, PLUCK. Sequencing: QUANT, TURING,
+  BURST, SWITCH. Drums: KICK, HATS. The catalogue previously had no low pass gate, quantizer,
+  Turing machine, wavefolder, ring modulator, matrix mixer, sequential switch or logic
+- `src/modules/panel-fit.test.ts` — 198 assertions that no node leaves its panel, no two nodes
+  overlap, and no knob row falls under the 37 px at which `controls.css` deletes its label. Panel
+  crowding is now a failing build rather than something found by looking
+
+### Fixed
+
+- The remove button could not be reached on any 2–3 HP module: it was `display: none`, leaving
+  Delete on a focused panel as the only removal path, which a pointer-only user cannot use
+- On 4 HP the full-width centred header ran the module name underneath that button by up to 20 px.
+  It now sits on its own opaque chip
+- Knob rows have a minimum height. DRUM 2 was laying out 26 px rows and losing all seven knob labels
+- Spare panel height is split above and below the control block instead of pooling into one dead
+  band above the pinned jacks; NOISE was wasting 482 px of its 658
+- Knob labels ellipsise instead of clipping, so THRESHOLD no longer reads as THRESHO
+- Jack labels break between words instead of splitting a token, so START/STOP no longer wraps as
+  "START/S" over "TOP"
+- Switch selects no longer paint the OS dropdown chevron over the faceplate
+- FREEZE played its captured window twice per cycle: the dual-tap constant-power crossfade makes
+  `tap(ph)` and `tap(ph + 0.5)` identical for a static buffer, halving the loop period
+- PLUCK's decay gain ignored the loop length, so DECAY barely moved the ring time
+- The LED contract sweep grepped for a literal id and so failed any module driving its LEDs from an
+  id table, which SWITCH and TURING both correctly do
+
+### Changed
+
+- HP rebalanced from measured control density: 19 panels widened (DRUM 2 2→8, CRUSH 2→6, VCO 4→8,
+  REVERB 10→14 among them) and 4 narrowed (SEQ-8 17→12, QUAD VCO 10→6, MULT 4→2)
+
 ## [0.2.0] — 2026-09-03
 
 The 2D rework plus the production-readiness pass that made the repo publishable:

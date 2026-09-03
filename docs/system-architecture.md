@@ -1,6 +1,6 @@
 # System Architecture
 
-Signaly is a 2D modular synthesizer that runs entirely in the browser: 41 built-in Eurorack-style
+Signaly is a 2D modular synthesizer that runs entirely in the browser: 71 built-in Eurorack-style
 modules, patch cables, saved patches, and a BYOK LLM module builder. No backend, no accounts.
 
 ## Stack
