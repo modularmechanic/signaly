@@ -1,0 +1,252 @@
+/* Patch points and the cable overlay. Signal kind is encoded three ways —
+   colour, socket ring line-style and a glyph — so hue is never the only channel.
+   The coloured ring is the only colour on an otherwise black Thonkiconn socket. */
+
+.jack-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 6px;
+  justify-content: center;
+}
+
+.jack-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.jack-cell.out {
+  flex-direction: column-reverse;
+}
+
+.jack-label {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 3px;
+  color: var(--text);
+  font: 500 11px/1.05 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  /* A long label wraps onto a second line rather than ellipsising: a jack you cannot
+     name is worse than a two-line legend. */
+  overflow-wrap: anywhere;
+}
+
+.jack-cell.out .jack-label {
+  padding: 1.5px 6px;
+  border: 1px solid color-mix(in srgb, var(--jc, var(--kind-a)) 55%, var(--edge));
+  border-radius: 3px;
+  background: var(--metal-2);
+  color: var(--jc, var(--kind-a));
+}
+
+/* ---------- socket ---------- */
+.jack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  padding: 0;
+  border: 2px solid var(--jc, var(--kind-a));
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      var(--edge) 0 5.7px,
+      color-mix(in srgb, var(--metal) 64%, var(--edge)) 5.7px 7.2px,
+      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 7.2px 13.6px,
+      color-mix(in srgb, var(--metal-2) 60%, var(--edge)) 13.6px 15.1px,
+      transparent 15.1px
+    ),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 0deg 4deg,
+      color-mix(in srgb, var(--metal-2) 85%, var(--metal)) 4deg 9deg
+    );
+  box-shadow:
+    0 1.5px 3px rgba(0, 0, 0, 0.9),
+    inset 0 0 4px rgba(0, 0, 0, 0.9);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* >=44px touch target without scaling the socket art */
+.jack::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+.jack-glyph {
+  color: var(--jc, var(--kind-a));
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* narrow jack columns (and every 2 HP panel) get a smaller label */
+@container (max-width: 58px) {
+  .jack-label {
+    padding: 0;
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+
+  .jack-cell.out .jack-label {
+    padding: 1.5px 3px;
+  }
+}
+
+/* kind: colour + socket line-style + glyph (the glyph comes from the atom).
+   `--jc` is set on the cell so the label inherits it too. */
+.jack-cell:has(.jack-a) {
+  --jc: var(--kind-a);
+}
+
+.jack-cell:has(.jack-p) {
+  --jc: var(--kind-p);
+}
+
+.jack-cell:has(.jack-g) {
+  --jc: var(--kind-g);
+}
+
+.jack-cell:has(.jack-c) {
+  --jc: var(--kind-c);
+}
+
+.jack-a {
+  border-style: solid;
+}
+
+.jack-p {
+  border-style: dashed;
+}
+
+.jack-g {
+  border-style: double;
+  border-width: 4px;
+}
+
+.jack-c {
+  border-style: dotted;
+}
+
+/* a faint second ring marks outputs; no coloured pad */
+.jack.out {
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    0 0 0 3px color-mix(in srgb, var(--jc, var(--kind-a)) 35%, transparent);
+}
+
+/* patched: a silver plug tip fills the hole and the ring reads brighter */
+.jack.patched {
+  border-style: solid;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--jc, var(--kind-a)) 40%, transparent);
+}
+
+.jack-g.patched {
+  border-style: double;
+}
+
+.jack.patched::after {
+  background: radial-gradient(
+      circle at 42% 38%,
+      var(--chrome) 0,
+      color-mix(in srgb, var(--chrome) 45%, var(--edge)) 52%,
+      var(--edge) 78%,
+      transparent 80%
+    )
+    50% 50% / 13px 13px no-repeat;
+}
+
+.jack.patched .jack-glyph {
+  opacity: 0;
+}
+
+/* set by patch-state while a drag/arm is looking for a partner */
+.jack.compat {
+  outline: 3px dashed var(--jc, var(--kind-a));
+  outline-offset: 4px;
+}
+
+.jack.hot,
+.jack[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 3px var(--jc, var(--kind-a)),
+    0 0 17px var(--jc, var(--kind-a));
+  animation: jack-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes jack-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--jc, var(--kind-a)),
+      0 0 12px var(--jc, var(--kind-a));
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--jc, var(--kind-a)),
+      0 0 23px var(--jc, var(--kind-a));
+  }
+}
+
+.jack:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- cable overlay ---------- */
+.cable-canvas {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  /* Never takes pointer events: the canvas covers the viewport, so hit-testing happens
+     on window events instead and a control under a cable stays clickable. */
+  pointer-events: none;
+}
+
+/* Set while the pointer is within HIT_PX of a cable and not over a control. */
+body.cable-hover,
+body.cable-hover .rack {
+  cursor: pointer;
+}
+
+/* ---------- patch status / tooltip line ---------- */
+.patch-tip {
+  position: fixed;
+  z-index: 60;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--edge));
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--amber);
+  font: 600 11.5px/1.2 var(--font-mono);
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .jack {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jack.hot,
+  .jack[aria-pressed='true'] {
+    animation: none;
+  }
+}

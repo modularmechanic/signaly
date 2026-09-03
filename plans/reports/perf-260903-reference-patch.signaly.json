@@ -1,0 +1,28 @@
+{
+  "format": "signaly.patch",
+  "version": 1,
+  "name": "Perf reference 260903",
+  "snapshot": {
+    "modules": [
+      { "mtype": "vco", "uid": 1, "vals": { "oct": 0, "fine": 0, "pw": 0.5 }, "sws": {} },
+      { "mtype": "lfo", "uid": 5, "vals": { "rate": 2 }, "sws": {} },
+      { "mtype": "svf", "uid": 2, "vals": { "cut": 800, "res": 0.35, "cv": 0.6 }, "sws": {} },
+      { "mtype": "adsr", "uid": 7, "vals": { "a": 0.01, "d": 0.25, "s": 0.4, "r": 0.4 }, "sws": {} },
+      { "mtype": "vca", "uid": 3, "vals": { "g1": 0.8, "cv1A": 1 }, "sws": { "exp": 0 } },
+      { "mtype": "clock", "uid": 6, "vals": { "bpm": 120 }, "sws": { "run": 1 } },
+      { "mtype": "scope", "uid": 8, "vals": { "time": 0.25, "scale1": 1 }, "sws": { "mode": 0 } },
+      { "mtype": "out", "uid": 4, "vals": { "level": 0 }, "sws": { "spectrum": 1, "phase": 0 } }
+    ],
+    "cables": [
+      { "id": 1, "from": { "uid": 1, "jack": "saw" }, "to": { "uid": 2, "jack": "in" } },
+      { "id": 2, "from": { "uid": 2, "jack": "lp" }, "to": { "uid": 3, "jack": "in1" } },
+      { "id": 3, "from": { "uid": 3, "jack": "o1" }, "to": { "uid": 4, "jack": "l" } },
+      { "id": 4, "from": { "uid": 3, "jack": "o1" }, "to": { "uid": 4, "jack": "r" } },
+      { "id": 5, "from": { "uid": 5, "jack": "tri" }, "to": { "uid": 2, "jack": "cv" } },
+      { "id": 6, "from": { "uid": 6, "jack": "x1" }, "to": { "uid": 7, "jack": "gate" } },
+      { "id": 7, "from": { "uid": 7, "jack": "out" }, "to": { "uid": 3, "jack": "cv1" } },
+      { "id": 8, "from": { "uid": 1, "jack": "saw" }, "to": { "uid": 8, "jack": "in1" } }
+    ],
+    "rows": [[1, 5, 2, 7, 3, 6, 8, 4]]
+  }
+}

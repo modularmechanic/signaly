@@ -1,0 +1,51 @@
+import type { ModuleDef } from '../../core/types';
+
+export const def: ModuleDef = {
+  id: 'tape',
+  name: 'TAPE ECHO',
+  sub: 'WOW + SATURATION · SYNC',
+  hp: 14,
+  cat: 'FX',
+  worklet: 'tape',
+  dark: true,
+  knobs: [
+    {
+      id: 'time',
+      label: 'TIME',
+      min: 0.03,
+      max: 2.5,
+      initial: 0.42,
+      fmt: 'fMs',
+      curve: 'log',
+      big: true,
+      cvIn: 'tcv',
+    },
+    { id: 'fb', label: 'REGEN', min: 0, max: 1.1, initial: 0.45, fmt: 'fPc', cvIn: 'fcv' },
+    { id: 'wow', label: 'WOW', min: 0, max: 1, initial: 0.4, fmt: 'fPc', cvIn: 'wcv' },
+    { id: 'sat', label: 'SAT', min: 0.5, max: 5, initial: 1.6, fmt: 'f1', cvIn: 'scv' },
+    { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.4, fmt: 'fPc', cvIn: 'mcv' },
+    { id: 'tcvA', label: 'TIME CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'tcv' },
+    { id: 'fcvA', label: 'REGEN CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
+    { id: 'wcvA', label: 'WOW CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'wcv' },
+    { id: 'scvA', label: 'SAT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'scv' },
+    { id: 'mcvA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mcv' },
+  ],
+  sws: [
+    {
+      id: 'sync',
+      label: 'SYNC',
+      options: ['FREE', '1/1', '1/2', '1/4.', '1/4', '1/8.', '1/8', '1/8T', '1/16', '1/16T'],
+    },
+  ],
+  ins: [
+    { id: 'in', label: 'IN', kind: 'a' },
+    { id: 'tcv', label: 'TIME CV', kind: 'c' },
+    { id: 'fcv', label: 'REGEN CV', kind: 'c' },
+    { id: 'wcv', label: 'WOW CV', kind: 'c' },
+    { id: 'scv', label: 'SAT CV', kind: 'c' },
+    { id: 'mcv', label: 'MIX CV', kind: 'c' },
+    { id: 'clk', label: 'CLOCK', kind: 'g' },
+  ],
+  outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
+  leds: ['clk'],
+};

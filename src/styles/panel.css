@@ -1,0 +1,472 @@
+/* Faceplate: the uniformly black anodised module panel, absolutely positioned panel
+   nodes, silkscreen and the display primitives. Category is a thin accent only —
+   `--cat` (a CAT_COLOR hex) and `--hp-count` are set on `.module-panel`. */
+
+/* Rails: two 17px brushed strips top and bottom of every row. */
+.rack-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 17px 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rail) 55%, var(--metal-hi)) 0,
+      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) 16px,
+      var(--edge) 16px 17px,
+      transparent 17px calc(100% - 17px),
+      var(--edge) calc(100% - 17px) calc(100% - 16px),
+      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) calc(100% - 16px),
+      color-mix(in srgb, var(--rail) 55%, var(--metal-hi)) 100%
+    );
+  background-repeat: repeat-x, no-repeat;
+  background-position:
+    0 0,
+    0 0;
+  background-size:
+    auto 16px,
+    100% 100%;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--panel-h);
+}
+
+/* ---------- module faceplate ---------- */
+.module-panel {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(var(--hp-count, 8) * var(--hp));
+  height: var(--panel-h);
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  background-color: var(--panel);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 6px 14px rgba(0, 0, 0, 0.6);
+  contain: layout paint;
+  container-type: inline-size;
+  --label-fs: clamp(10px, calc(var(--hp-count, 8) * 2px), 13px);
+}
+
+/* matte grain speckle, tiled — kept off `background` so the inline faceplate
+   backgroundSize from useFaceplateImage cannot stretch it */
+.module-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  background-size: 120px 120px;
+  pointer-events: none;
+}
+
+/* the one category-coloured thing in the header band: a hairline at y = 0.09 */
+.module-panel::after {
+  content: '';
+  position: absolute;
+  top: 9%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cat, var(--cat-utility)) 18% 82%, transparent);
+  pointer-events: none;
+}
+
+.module-panel.dark {
+  background-color: var(--panel-dark);
+}
+
+.module-panel.selected {
+  border-color: var(--cat, var(--cat-utility));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cat, var(--cat-utility)) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.6);
+}
+
+.module-panel:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.module-panel.dragging {
+  opacity: 0.35;
+}
+
+/* ---------- header ---------- */
+.module-head {
+  position: relative;
+  z-index: 2;
+  padding: 19px 6px 0;
+  background: transparent;
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.module-head:active {
+  cursor: grabbing;
+}
+
+.module-name {
+  overflow: hidden;
+  color: var(--text);
+  font: 600 16px/1 var(--font-mono);
+  letter-spacing: 0.22em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  text-shadow: 0 0 9px color-mix(in srgb, var(--cat, var(--cat-utility)) 45%, transparent);
+  white-space: nowrap;
+}
+
+.module-sub {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text-dim);
+  font: 500 10px/1 var(--font-ui);
+  letter-spacing: 0.2em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Wide tracking is the Blackline signature but costs width; step it down as the panel narrows
+   so the name and sub read in full instead of ellipsising on nearly every module. */
+@container (max-width: 189px) {
+  .module-name {
+    font-size: 14.5px;
+    letter-spacing: 0.12em;
+  }
+
+  .module-sub {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+  }
+}
+
+@container (max-width: 137px) {
+  .module-name {
+    font-size: 13.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .module-sub {
+    font-size: 8.5px;
+    letter-spacing: 0.01em;
+  }
+}
+
+@container (max-width: 85px) {
+  .module-head {
+    padding-right: 3px;
+    padding-left: 3px;
+  }
+
+  .module-name {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .module-sub {
+    display: none;
+  }
+}
+
+/* ---------- panel nodes (phase 06 sets left/top/width/height from PanelNode) ---------- */
+.panel-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  container-type: size;
+}
+
+/* min-width:0 keeps a wide control (a 4-option switch trough) from beating
+   max-width via the grid item's automatic minimum size */
+.panel-node > * {
+  min-width: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.knob-group {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+  gap: 6px 3px;
+  justify-items: center;
+  padding: 3px;
+}
+
+/* ---------- screws + silkscreen ---------- */
+.screw {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--metal-hi) 92%, var(--pointer)) 0,
+    color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 45%,
+    var(--panel) 100%
+  );
+  box-shadow:
+    0 0 0 1px var(--edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+/* hex socket, not a slot */
+.screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--edge);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+
+.screw.tl {
+  top: 6px;
+  left: 6px;
+}
+.screw.tr {
+  top: 6px;
+  right: 6px;
+}
+.screw.bl {
+  bottom: 6px;
+  left: 6px;
+}
+.screw.br {
+  bottom: 6px;
+  right: 6px;
+}
+
+.panel-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text);
+  font: 500 var(--label-fs, 9px) / 1.1 var(--font-ui);
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.panel-label.sub {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+
+.panel-label.unit {
+  color: var(--amber);
+  font: 500 11.5px/1.1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* ---------- display recess: one recipe for every screen ---------- */
+.scope-screen,
+.env-screen,
+.text-screen,
+.mini-piano,
+.channel-vu {
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background-color: var(--screen);
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 4px);
+  box-shadow:
+    inset 0 3px 9px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.scope-screen,
+.env-screen {
+  width: 100%;
+  padding: 4px;
+}
+
+.scope-screen canvas {
+  width: 100%;
+  height: 75px;
+}
+
+.env-screen canvas {
+  width: 100%;
+  height: 63px;
+}
+
+.env-vals {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.env-chip {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.env-chip span {
+  color: var(--text-dim);
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.env-chip b {
+  color: var(--env-c, var(--amber));
+  font: 600 13px var(--font-mono);
+}
+
+/* ---------- LEDs ---------- */
+.led-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 40% 35%,
+    var(--led-c, var(--led)) 0,
+    color-mix(in srgb, var(--led-c, var(--led)) 55%, var(--edge)) 55%,
+    var(--edge) 100%
+  );
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 0 9px var(--led-c, var(--led)),
+    0 0 20px color-mix(in srgb, var(--led-c, var(--led)) 45%, transparent);
+  transition: opacity 0.05s linear;
+}
+
+.led-label {
+  color: var(--text-dim);
+  font: 500 10px/1 var(--font-ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---------- step grid ---------- */
+.step-grid {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 4px;
+}
+
+.step-grid > div {
+  min-width: 0;
+}
+
+/* ---------- channel VU ---------- */
+.channel-vu {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 14px;
+  height: 100%;
+  min-height: 58px;
+  overflow: hidden;
+}
+
+.channel-vu-fill {
+  width: 100%;
+  height: 2%;
+  background: linear-gradient(var(--danger), var(--amber) 30%, var(--cat, var(--kind-c)));
+}
+
+/* ---------- mini piano ---------- */
+.mini-piano {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  width: 100%;
+  height: 81px;
+  overflow: hidden;
+  padding-bottom: 3px;
+}
+
+.mpk {
+  border: 0;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    filter 0.06s linear,
+    background 0.06s linear;
+}
+
+.mpk.w {
+  flex: 1 1 0;
+  border-right: 1px solid var(--edge);
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--pointer) 92%, var(--metal)),
+    color-mix(in srgb, var(--pointer) 78%, var(--metal-hi))
+  );
+}
+
+.mpk.b {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  width: 26px;
+  height: 62%;
+  border: 1px solid var(--edge);
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(var(--metal), color-mix(in srgb, var(--metal-2) 60%, var(--edge)));
+}
+
+.mpk:hover {
+  filter: brightness(1.12);
+}
+
+.mpk.on {
+  background: linear-gradient(
+    var(--mp-c, var(--cat, var(--amber))),
+    color-mix(in srgb, var(--mp-c, var(--cat, var(--amber))) 58%, var(--edge))
+  );
+}
+
+.mpk.root {
+  box-shadow:
+    inset 0 0 0 2px var(--pointer),
+    0 0 6px var(--mp-c, var(--cat, var(--amber)));
+}
+
+.mpk.playing {
+  z-index: 3;
+  box-shadow:
+    inset 0 0 0 2px var(--pointer),
+    0 0 10px var(--pointer);
+}
+
+.mpk:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led,
+  .mpk {
+    transition: none;
+  }
+}

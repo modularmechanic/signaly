@@ -1,0 +1,39 @@
+import type { ModuleDef } from '../../core/types';
+
+export const def: ModuleDef = {
+  id: 'reverb',
+  name: 'REVERB',
+  sub: 'MULTI-ALGORITHM',
+  hp: 10,
+  cat: 'FX',
+  worklet: 'reverb',
+  dark: true,
+  knobs: [
+    { id: 'pre', label: 'PREDELAY', min: 0.001, max: 0.25, initial: 0.02, fmt: 'fMs', curve: 'log' },
+    { id: 'decay', label: 'DECAY', min: 0.1, max: 0.999, initial: 0.8, fmt: 'fPc', big: true, cvIn: 'decay' },
+    { id: 'size', label: 'SIZE', min: 0.3, max: 2.5, initial: 1, fmt: 'f1', big: true, cvIn: 'size' },
+    { id: 'diff', label: 'DIFFUSE', min: 0.1, max: 0.95, initial: 0.7, fmt: 'fPc' },
+    { id: 'inhp', label: 'IN HPF', min: 15, max: 2000, initial: 20, fmt: 'fHz', curve: 'log' },
+    { id: 'inlp', label: 'IN LPF', min: 500, max: 18000, initial: 14000, fmt: 'fHz', curve: 'log' },
+    { id: 'damp', label: 'DAMP', min: 500, max: 16000, initial: 7000, fmt: 'fHz', curve: 'log' },
+    { id: 'lowd', label: 'LOW DAMP', min: 15, max: 2000, initial: 40, fmt: 'fHz', curve: 'log' },
+    { id: 'mrate', label: 'MOD RATE', min: 0.05, max: 8, initial: 0.6, fmt: 'fHz', curve: 'log' },
+    { id: 'mdep', label: 'MOD DEPTH', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
+    { id: 'mix', label: 'DRY/WET', min: 0, max: 1, initial: 0.35, fmt: 'fPc', cvIn: 'mix' },
+    { id: 'sizeA', label: 'SIZE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'size' },
+    { id: 'decayA', label: 'DECAY CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'decay' },
+    { id: 'mixA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mix' },
+  ],
+  sws: [{ id: 'algo', label: 'ALGORITHM', options: ['HALL', 'PLATE', 'ROOM', 'CATHEDRAL'] }],
+  ins: [
+    { id: 'inl', label: 'IN L', kind: 'a' },
+    { id: 'inr', label: 'IN R', kind: 'a' },
+    { id: 'size', label: 'SIZE CV', kind: 'c' },
+    { id: 'decay', label: 'DECAY CV', kind: 'c' },
+    { id: 'mix', label: 'MIX CV', kind: 'c' },
+  ],
+  outs: [
+    { id: 'outl', label: 'OUT L', kind: 'a' },
+    { id: 'outr', label: 'OUT R', kind: 'a' },
+  ],
+};

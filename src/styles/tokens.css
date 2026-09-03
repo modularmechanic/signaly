@@ -1,0 +1,77 @@
+:root {
+  /* signal kinds — audio / pitch / gate / cv. Okabe-Ito-derived, lifted for a black ground;
+     always paired with ring line-style (solid/dashed/double/dotted) + glyph (● ◆ ■ ▲).
+     --kind-c is lifted off the spec's #35d0a6: that value collapsed onto --kind-g under
+     deuteranopia (dE76 7.8) and onto --kind-p under tritanopia (4.9). */
+  --kind-a: #ffb02e;
+  --kind-p: #5ab4ff;
+  --kind-g: #ff5fa0;
+  --kind-c: #68f3bf;
+
+  /* surfaces (app chrome: topbar, modals, browser) */
+  --bg: #0a0a0b;
+  --bg-2: #111113;
+  --rail: #1b1c20;
+  --surface: #1c1d21;
+  --surface-2: #26272c;
+
+  /* faceplate + machined-part surfaces (faceplates no longer use --surface) */
+  --panel: #141416;
+  --panel-dark: #0d0d0f;
+  --metal: #26272b;
+  --metal-2: #0f1012;
+  --pointer: #f4f5f7;
+  --screen: #050607;
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.07 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+
+  /* derived machined shades — the only other literals in the stylesheet set, so every
+     other file can stay on var()/color-mix()/rgba() alone. */
+  --edge: #050506;
+  --metal-hi: #35373c;
+  --metal-lo: #16171a;
+  --chrome: #9ea3ab;
+
+  /* text */
+  --text: #e6e8eb;
+  --text-dim: #8d939c;
+  --text-invert: #0a0a0b;
+
+  /* lines + focus */
+  --border: rgba(0, 0, 0, 0.7);
+  --border-soft: rgba(255, 255, 255, 0.07);
+  --focus: #9ad5ff;
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus);
+
+  /* accents */
+  --amber: #f3c77a;
+  --led: #ffd166;
+  --danger: #ff5d5d;
+
+  /* category accent hues — thin things only (header rule, knob ring, fader fill, LED,
+     lit switch). Must match CAT_COLOR in src/core/types.ts */
+  --cat-sources: #ff6a3d;
+  --cat-filters: #ffc247;
+  --cat-env-func: #4ade80;
+  --cat-amp-mix: #c8b48a;
+  --cat-fx: #a78bfa;
+  --cat-voices: #ff5c8a;
+  --cat-seq-ctrl: #5aa9ff;
+  --cat-drums: #ff9a3d;
+  --cat-meters: #2dd4bf;
+  --cat-output: #e5e7eb;
+  --cat-utility: #b0b6c0;
+  --cat-custom: #e879f9;
+
+  /* geometry — must match HP_PX / PANEL_H in src/core/types.ts (5.08 : 128.5) */
+  --hp: 26px;
+  --panel-h: 658px;
+
+  /* radii — sharper, machined */
+  --r-sm: 2px;
+  --r-md: 4px;
+  --r-lg: 8px;
+
+  /* type */
+  --font-ui: -apple-system, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}

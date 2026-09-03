@@ -1,0 +1,394 @@
+/* Machined black hardware: knurled knobs, slotted faders, recessed switch troughs.
+   Colours come from tokens.css only. `--cat` is set on the module panel. */
+
+.knob-cell,
+.fader-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.knob-label {
+  width: max-content;
+  max-width: 100%;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--text) 76%, var(--text-dim));
+  font: 500 var(--label-fs, 9px) / 1.1 var(--font-ui);
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------- knob ---------- */
+.knob {
+  --d: min(46px, calc(52cqh - 1.5px), 68cqw);
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle closest-side at 38% 32%,
+      color-mix(in srgb, var(--metal-hi) 78%, var(--pointer)) 0,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle closest-side,
+      var(--metal) 0 44%,
+      color-mix(in srgb, var(--metal) 64%, var(--edge)) 74%,
+      transparent 75%
+    ),
+    repeating-conic-gradient(from 0deg, var(--metal-hi) 0deg 3deg, var(--metal-2) 3deg 7.5deg);
+  box-shadow:
+    0 4px 7px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.knob-cell.big .knob {
+  --d: min(64px, calc(52cqh - 1.5px), 68cqw);
+}
+
+.knob:hover {
+  filter: brightness(1.08);
+}
+
+/* value ring: a thin accent arc floating just outside the knurl */
+.knob::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--d) * -0.19);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 225deg,
+    var(--cat, var(--amber)) calc(var(--pct, 0) * 270deg),
+    rgba(255, 255, 255, 0.1) 0 270deg,
+    transparent 0
+  );
+  mask: radial-gradient(closest-side, transparent 0 86%, currentColor 88%);
+}
+
+/* >=44px pointer target without scaling the art */
+.knob::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+/* Pointer: bottom edge pinned to the knob centre so rotate(0deg) points up —
+   same zero and 270deg sweep as the ::before ring and .knob-cv. */
+.knob-cap {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 3px;
+  height: 36%;
+  margin-left: -1.5px;
+  border-radius: 1.5px;
+  background: var(--pointer);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--cat, var(--amber)) 60%, transparent);
+  transform-origin: 50% 100%;
+  transition: transform 0.06s linear;
+}
+
+/* Static CV marker: where the patched modulation currently pushes this knob. */
+.knob-cv {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 52%;
+  border-radius: 1.5px;
+  background: var(--kind-c);
+  box-shadow: 0 0 6px var(--kind-c);
+  opacity: 0.85;
+  transform: translate(-50%, -100%) rotate(calc(var(--cv, 0) * 270deg - 135deg));
+  transform-origin: 50% 100%;
+}
+
+.knob:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Narrow columns: drop the tracking before the word gets cut. */
+@container (max-width: 58px) {
+  .knob-label {
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Dense panels: the label tightens and the art follows the row height. */
+@container (max-height: 63px) {
+  .knob-cell,
+  .fader-cell {
+    gap: 1.5px;
+  }
+
+  .knob-label {
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .knob {
+    --d: min(46px, calc(70cqh - 9px), 68cqw);
+  }
+
+  .knob-cell.big .knob {
+    --d: min(64px, calc(70cqh - 9px), 68cqw);
+  }
+}
+
+/* Rows with no room for any label at all: drop it and give the art the space. */
+@container (max-height: 37px) {
+  .knob-label {
+    display: none;
+  }
+
+  .knob,
+  .knob-cell.big .knob {
+    --d: min(46px, 72cqh, 68cqw);
+  }
+}
+
+/* ---------- fader ---------- */
+.fader {
+  position: relative;
+  flex: 1 1 auto;
+  width: 20px;
+  min-height: 81px;
+  height: 100%;
+  padding: 0 7px;
+  background-image:
+    /* The cap's indicator line travels over (100% - 19px) and sits 9.5px inside the 19px cap,
+       so the fill must stop at that same line — not at pct * full height — or the two disagree
+       everywhere except the midpoint. Same shared-zero contract as .knob-cap and the value ring. */
+    linear-gradient(
+      to top,
+      var(--cat, var(--amber)) 0 calc(9.5px + var(--pct, 0) * (100% - 19px)),
+      transparent 0
+    ),
+    linear-gradient(
+      90deg,
+      transparent 6px,
+      var(--edge) 6px 7px,
+      var(--metal-2) 7px 13px,
+      rgba(255, 255, 255, 0.08) 13px 14px,
+      transparent 14px
+    );
+  background-clip: content-box, border-box;
+  background-repeat: no-repeat;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.fader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 44px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.fader-cap {
+  position: absolute;
+  top: calc((1 - var(--pct, 0)) * (100% - 19px));
+  left: -7px;
+  width: 35px;
+  height: 19px;
+  border: 1px solid var(--edge);
+  border-radius: 3px;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1.5px, transparent 1.5px 4px),
+    linear-gradient(var(--metal-hi), var(--metal) 40%, var(--metal-lo));
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.fader-cap::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 3px;
+  left: 3px;
+  height: 3px;
+  background: var(--pointer);
+  box-shadow: 0 0 4px var(--cat, var(--amber));
+}
+
+.fader:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- switch (radiogroup) ---------- */
+.switch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+}
+
+.switch-label,
+.select-label {
+  color: var(--text-dim);
+  font: 500 10px/1 var(--font-ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* recessed trough — the options are backlit legends inside it, never filled blocks */
+.switch-opts,
+.btn {
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--metal-2);
+  box-shadow:
+    inset 0 1.5px 4px rgba(0, 0, 0, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.switch-opts {
+  display: flex;
+  max-width: 100%;
+  overflow: hidden;
+  gap: 0;
+  padding: 1.5px;
+}
+
+.switch-opt {
+  position: relative;
+  min-width: 0;
+  padding: 4px 3px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-dim);
+  /* Legends must never clip: a switch whose state you cannot read is broken, not merely tight. */
+  font: 600 10.5px/1 var(--font-mono);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.switch-opt::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+.switch-opt:hover:not(.on) {
+  color: var(--text);
+}
+
+.switch-opt.on {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cat, var(--amber));
+  text-shadow: 0 0 5px var(--cat, var(--amber));
+  box-shadow: inset 0 -3px 0 var(--cat, var(--amber));
+}
+
+.switch-opt:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- button ---------- */
+.btn {
+  padding: 4px 8px;
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn:hover {
+  color: var(--text);
+}
+
+.btn.on {
+  color: var(--amber);
+  box-shadow:
+    inset 0 -2px 0 var(--amber),
+    0 0 6px color-mix(in srgb, var(--amber) 35%, transparent);
+}
+
+.btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- select ---------- */
+.select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+}
+
+.select select {
+  max-width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--edge);
+  border-radius: 3px;
+  background: var(--metal-2);
+  color: var(--amber);
+  font: 600 11.5px/1.2 var(--font-mono);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.select select:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Coarse pointers: grow the art itself, the pseudo-target is already >=44px. */
+@media (pointer: coarse) {
+  .knob {
+    --d: min(55px, calc(52cqh - 1.5px), 68cqw);
+  }
+
+  .knob-cell.big .knob {
+    --d: min(72px, calc(52cqh - 1.5px), 68cqw);
+  }
+
+  .fader {
+    width: 26px;
+  }
+
+  .switch-opt,
+  .btn {
+    min-height: 40px;
+    padding: 8px 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob-cap {
+    transition: none;
+  }
+}

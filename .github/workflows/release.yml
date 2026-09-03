@@ -1,0 +1,66 @@
+name: release
+
+# Publishing a GitHub release (which is always cut from a tag) is the ONLY way
+# the site is deployed. Merging to master runs ci.yml and stops there — master
+# is the integration branch, a tag is the release.
+#
+# workflow_dispatch is here for re-running a deploy that failed in GitHub's own
+# Pages infrastructure. It deploys whatever ref it is dispatched against, so
+# dispatch it against a tag, not a branch.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # A release re-runs the full gate. The tag may point at a commit that passed
+  # ci.yml weeks ago against a different dependency tree.
+  gate:
+    uses: ./.github/workflows/gate.yml
+
+  build:
+    needs: gate
+    runs-on: ubuntu-latest
+    env:
+      # A repo named "<user>.github.io" is a user site served from "/"; every
+      # other repo is a project site served from "/<repo>/". One line to change
+      # if that ever applies here.
+      PAGES_BASE: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      # Direct `npx vite build`, not `npm run build -- --base=…`: the `build`
+      # script is `tsc --noEmit && vite build`, so an npm-run `--base` flag only
+      # reaches Vite because `vite build` happens to be the last command in that
+      # script. A harmless-looking reorder of package.json would silently send
+      # the flag to `tsc` instead. The gate job already typechecked this tree.
+      - run: npx vite build --base="$PAGES_BASE"
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

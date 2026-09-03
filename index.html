@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A lean, accessible, 2D modular synthesizer that runs entirely in the browser: 40 Eurorack-style modules, patch cables, and a module builder."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- frame-ancestors is deliberately absent: browsers ignore it in a meta CSP and warn on
+         every load. It needs a real response header, which a static host must set.
+         blob: stays in script-src/worker-src because user modules are compiled in the page and
+         registered as AudioWorklet modules from a blob URL — that is the sandbox, not a hole. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <title>Signaly</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

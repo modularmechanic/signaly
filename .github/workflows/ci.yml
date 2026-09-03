@@ -1,0 +1,15 @@
+name: ci
+
+# Runs on every pull request and on master itself. This is the check to require
+# in the master branch protection rule.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    uses: ./.github/workflows/gate.yml
