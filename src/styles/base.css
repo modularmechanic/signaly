@@ -12,6 +12,8 @@ body,
 
 body {
   margin: 0;
+  /* A knob drag that reaches the top of the page must not turn into a pull-to-refresh. */
+  overscroll-behavior: none;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
@@ -26,6 +28,13 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+/* No 300 ms wait for a double-tap-to-zoom that will never come. */
+button,
+[role='slider'],
+[role='radio'] {
+  touch-action: manipulation;
 }
 
 canvas,

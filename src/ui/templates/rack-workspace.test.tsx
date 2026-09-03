@@ -6,6 +6,7 @@ import type { ModuleInstance } from '../../engine/types';
 import { armJack } from '../../hooks/patch-state';
 import { registerSpec, unregisterSpec } from '../../modules/registry';
 import { useRackStore } from '../../state/rack-store';
+import { useSettingsStore } from '../../state/settings-store';
 import { useUiStore } from '../../state/ui-store';
 import { RackWorkspace } from './rack-workspace';
 
@@ -52,6 +53,7 @@ beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   useRackStore.getState().reset();
   useUiStore.getState().setNotice(null);
+  useSettingsStore.getState().setZoom(1);
   useRackStore.getState().addModuleInstance(instance(101), 0);
   useRackStore.getState().addModuleInstance(instance(102), 0);
   host = document.createElement('div');
@@ -63,6 +65,35 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+});
+
+const zoomBtn = (label: string): HTMLButtonElement => {
+  const el = host.querySelector<HTMLButtonElement>(`.zoom-dock [aria-label^="${label}"]`);
+  if (!el) throw new Error(`no ${label} button`);
+  return el;
+};
+const rackZoom = (): string => document.documentElement.style.getPropertyValue('--rack-zoom');
+
+describe('RackWorkspace zoom dock', () => {
+  it('drives the rack surface from a CSS variable, so a zoom change re-renders no panel', () => {
+    expect(rackZoom()).toBe('1');
+    act(() => zoomBtn('Zoom in').click());
+    expect(Number(rackZoom())).toBeGreaterThan(1);
+    act(() => zoomBtn('Zoom out').click());
+    expect(Number(rackZoom())).toBeCloseTo(1, 6);
+  });
+
+  it('zooms in without a ceiling and resets from the level readout', () => {
+    for (let i = 0; i < 30; i++) act(() => zoomBtn('Zoom in').click());
+    expect(Number(rackZoom())).toBeGreaterThan(100);
+    act(() => host.querySelector<HTMLButtonElement>('.zoom-level')?.click());
+    expect(rackZoom()).toBe('1');
+  });
+
+  it('floors zooming out so the rack never becomes unreadable', () => {
+    for (let i = 0; i < 30; i++) act(() => zoomBtn('Zoom out').click());
+    expect(Number(rackZoom())).toBe(0.2);
+  });
 });
 
 describe('RackWorkspace live region', () => {
