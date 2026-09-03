@@ -62,7 +62,7 @@ const ROWS: Record<Kit, Row> = {
   atelier: ['cream', 'chicken', 'toggle', 'box', 'curve', 'grotesk', 'plain'],
   console: ['graph', 'knurl', 'slide', 'band', 'bars', 'stencil', 'nut'],
   noir: ['black', 'rubber', 'tab', 'rule', 'none', 'grotesk', 'plain'],
-  board: ['pcb', 'davies', 'slide', 'stamp', 'grid', 'mono', 'plain'],
+  board: ['pcb', 'davies', 'slide', 'stamp', 'grid', 'stencil', 'plain'],
   anodic: ['ano', 'knurl', 'tab', 'rule', 'ring', 'mono', 'nut'],
   bronze: ['copper', 'davies', 'toggle', 'bar', 'chevron', 'mono', 'nut'],
   slateware: ['slate', 'knurl', 'slide', 'band', 'dots', 'grotesk', 'nut'],
@@ -70,9 +70,9 @@ const ROWS: Record<Kit, Row> = {
   chalk: ['white', 'chicken', 'toggle', 'bar', 'curve', 'grotesk', 'plain'],
   lab: ['alu', 'trimmer', 'tab', 'box', 'grid', 'stencil', 'ringed'],
   tape: ['cream', 'knurl', 'slide', 'band', 'ring', 'mono', 'nut'],
-  stage: ['black', 'chicken', 'toggle', 'band', 'bars', 'grotesk', 'nut'],
+  stage: ['black', 'chicken', 'toggle', 'band', 'bars', 'stencil', 'nut'],
   voice: ['graph', 'davies', 'toggle', 'box', 'curve', 'mono', 'plain'],
-  signal: ['slate', 'trimmer', 'tab', 'rule', 'dots', 'mono', 'ringed'],
+  signal: ['slate', 'trimmer', 'tab', 'rule', 'chevron', 'mono', 'ringed'],
   ether: ['ano', 'rubber', 'slide', 'plain', 'ring', 'grotesk', 'plain'],
   grid: ['pcb', 'knurl', 'tab', 'band', 'grid', 'mono', 'ringed'],
   patina: ['copper', 'chicken', 'tab', 'stamp', 'dots', 'grotesk', 'plain'],
@@ -100,7 +100,7 @@ export const CAT_KIT: Record<Cat, Kit> = {
   METERS: 'press',
   OUTPUT: 'console',
   UTILITY: 'signal',
-  CUSTOM: 'noir',
+  CUSTOM: 'carbon',
 };
 
 export const kitOf = (def: ModuleDef): KitSpec =>

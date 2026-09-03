@@ -6,7 +6,9 @@
    `.knob::before`, which is the one part that repaints while a knob is being dragged. */
 
 .panel-node {
-  --track: rgba(255, 255, 255, 0.1);
+  /* `--track` is deliberately NOT declared here: a declaration on the node would shadow the
+     light-plate groove that faceplates.css sets on the panel, and inheritance only reaches a
+     property the element does not declare itself. The consumer below carries the default. */
   /* graduations are cut through the ring in the plate's own colour, so one rule prints
      legible marks on cream, aluminium, PCB green and black alike */
   --dial: var(--panel);
@@ -22,7 +24,7 @@
     conic-gradient(
       from 225deg,
       var(--cat-line, var(--cat, var(--amber))) calc(var(--pct, 0) * 270deg),
-      var(--track) 0 270deg,
+      var(--track, rgba(255, 255, 255, 0.1)) 0 270deg,
       transparent 0
     );
   mask: radial-gradient(closest-side, transparent 0 84%, currentColor 87%);

@@ -29,7 +29,9 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  overflow-wrap: break-word;
+  /* Break between words only: breaking inside one left "INTERVA" over "L". A single word
+     that still does not fit shrinks through the container steps below before it ellipsises. */
+  overflow-wrap: normal;
   text-overflow: ellipsis;
 }
 
@@ -217,7 +219,10 @@
 
 .fader-cap {
   position: absolute;
-  top: calc((1 - var(--pct, 0)) * (100% - 19px));
+  /* The cap moves every pointermove of a drag. A transform stays on the compositor; the
+     `top` it replaced forced a layout pass per frame. */
+  top: 0;
+  transform: translateY(calc((1 - var(--pct, 0)) * (100% - 19px)));
   left: -7px;
   width: 35px;
   height: 19px;
@@ -406,5 +411,20 @@
 @media (prefers-reduced-motion: reduce) {
   .knob-cap {
     transition: none;
+  }
+}
+
+/* Half-width cells (the mixer's EQ and send trimmers, 4 HP two-column panels): a single long
+   legend and a three-way switch both need the smaller print before they need a second line. */
+@container (max-width: 92px) {
+  .knob-label {
+    font-size: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .switch-opt {
+    padding: 3px 2px;
+    font-size: 8.5px;
+    letter-spacing: 0;
   }
 }

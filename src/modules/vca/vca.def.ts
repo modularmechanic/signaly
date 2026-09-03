@@ -6,7 +6,7 @@ export const def: ModuleDef = {
   sub: 'DUAL AMPLIFIER',
   hp: 4,
   cat: 'AMP / MIX',
-  look: 'console',
+  look: 'lab',
   worklet: 'vca',
   knobs: [
     { id: 'g1', label: 'LEVEL 1', min: 0, max: 1.5, initial: 1, fmt: 'fPc', cvIn: 'cv1' },
