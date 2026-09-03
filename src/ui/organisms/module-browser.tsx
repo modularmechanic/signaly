@@ -19,13 +19,11 @@ export function filterModuleDefs(
 }
 
 export interface ModuleBrowserProps {
-  /** free HP in the target row — over-sized entries get a hint but stay clickable */
-  freeHp: number;
   onPick: (defId: string) => void;
   onClose: () => void;
 }
 
-export function ModuleBrowser({ freeHp, onPick, onClose }: ModuleBrowserProps): ReactNode {
+export function ModuleBrowser({ onPick, onClose }: ModuleBrowserProps): ReactNode {
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState<CatFilter>('ALL');
   const [hi, setHi] = useState(0);
@@ -82,24 +80,21 @@ export function ModuleBrowser({ freeHp, onPick, onClose }: ModuleBrowserProps): 
         </header>
         <div className="cat-chips">{[chip('ALL', 'All'), ...cats.map((c) => chip(c, c))]}</div>
         <ul className="browser-list">
-          {results.map((d, i) => {
-            const tight = d.hp > freeHp;
-            return (
-              <li key={d.id}>
-                <button
-                  type="button"
-                  className={'browser-item' + (i === idx ? ' hi' : '')}
-                  style={{ '--cat': CAT_COLOR[d.cat] ?? CAT_COLOR.CUSTOM } as CSSProperties}
-                  title={tight ? `${d.hp} HP — only ${freeHp} HP free in this row` : d.sub}
-                  onClick={() => onPick(d.id)}
-                >
-                  <strong>{d.name}</strong>
-                  <span className="browser-sub">{d.sub}</span>
-                  <span className={'browser-hp' + (tight ? ' tight' : '')}>{d.hp} HP</span>
-                </button>
-              </li>
-            );
-          })}
+          {results.map((d, i) => (
+            <li key={d.id}>
+              <button
+                type="button"
+                className={'browser-item' + (i === idx ? ' hi' : '')}
+                style={{ '--cat': CAT_COLOR[d.cat] ?? CAT_COLOR.CUSTOM } as CSSProperties}
+                title={d.sub}
+                onClick={() => onPick(d.id)}
+              >
+                <strong>{d.name}</strong>
+                <span className="browser-sub">{d.sub}</span>
+                <span className="browser-hp">{d.hp} HP</span>
+              </button>
+            </li>
+          ))}
           {results.length === 0 && <li className="browser-empty">No matching modules.</li>}
         </ul>
       </div>

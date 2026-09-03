@@ -7,21 +7,21 @@ const TAG = ['LO', 'LM', 'HM', 'HI'];
 
 /** Rendered by mix8.parts, not by a panel node — one set edits the SELected channel. */
 export const EQ_KNOBS: KnobDef[] = bands.flatMap((b) => [
-  { id: `eq${b}f`, label: `${TAG[b - 1]} F`, min: 20, max: 18000, def: EQ_F[b - 1] ?? 1000, fmt: 'fHz', curve: 'log' },
-  { id: `eq${b}g`, label: `${TAG[b - 1]} G`, min: -18, max: 18, def: 0, fmt: 'f1' },
-  { id: `eq${b}q`, label: `${TAG[b - 1]} Q`, min: 0.3, max: 8, def: EQ_Q, fmt: 'f1', curve: 'log' },
+  { id: `eq${b}f`, label: `${TAG[b - 1]} F`, min: 20, max: 18000, initial: EQ_F[b - 1] ?? 1000, fmt: 'fHz', curve: 'log' },
+  { id: `eq${b}g`, label: `${TAG[b - 1]} G`, min: -18, max: 18, initial: 0, fmt: 'f1' },
+  { id: `eq${b}q`, label: `${TAG[b - 1]} Q`, min: 0.3, max: 8, initial: EQ_Q, fmt: 'f1', curve: 'log' },
 ]);
 
 const knobs: KnobDef[] = [
-  ...chs.map((n): KnobDef => ({ id: `l${n}`, label: `CH ${n}`, min: 0, max: 1, def: 0.75, fmt: 'fPc', fader: true })),
-  { id: 'master', label: 'MAIN', min: 0, max: 1, def: 0.8, fmt: 'fPc', fader: true },
-  ...chs.map((n): KnobDef => ({ id: `p${n}`, label: `PAN ${n}`, min: -1, max: 1, def: 0, fmt: 'f1' })),
+  ...chs.map((n): KnobDef => ({ id: `l${n}`, label: `CH ${n}`, min: 0, max: 1, initial: 0.75, fmt: 'fPc', fader: true })),
+  { id: 'master', label: 'MAIN', min: 0, max: 1, initial: 0.8, fmt: 'fPc', fader: true },
+  ...chs.map((n): KnobDef => ({ id: `p${n}`, label: `PAN ${n}`, min: -1, max: 1, initial: 0, fmt: 'f1' })),
   ...EQ_KNOBS,
 ];
 
 const sws: SwitchDef[] = [
-  { id: 'sel', label: 'EQ CH', options: chs.map(String), def: 0 },
-  ...chs.map((n): SwitchDef => ({ id: `m${n}`, label: `MUTE ${n}`, options: ['OFF', 'ON'], def: 0 })),
+  { id: 'sel', label: 'EQ CH', options: chs.map(String), initial: 0 },
+  ...chs.map((n): SwitchDef => ({ id: `m${n}`, label: `MUTE ${n}`, options: ['OFF', 'ON'], initial: 0 })),
 ];
 
 const ins: JackDef[] = [

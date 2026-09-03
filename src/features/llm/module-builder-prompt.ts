@@ -1,4 +1,4 @@
-import { CAT_ORDER } from '../../core/types';
+import { CAT_ORDER, KIND_NAME } from '../../core/types';
 import { DISPLAYS, FMT_NAMES } from '../user-modules/validate';
 
 type Schema = Record<string, unknown>;
@@ -19,7 +19,7 @@ const KNOB = shape({
   label: s('string'),
   min: s('number'),
   max: s('number'),
-  def: s('number'),
+  initial: s('number'),
   fmt: nul('string'),
   curve: nul('string'),
   big: nul('boolean'),
@@ -32,7 +32,7 @@ const SWITCH = shape({
   id: s('string'),
   label: s('string'),
   options: list(s('string')),
-  def: nul('integer'),
+  initial: nul('integer'),
 });
 const JACK = shape({ id: s('string'), label: s('string'), kind: s('string') });
 const PANEL_NODE = shape({
@@ -98,12 +98,12 @@ DEF — the panel and ports:
   hp: integer 1..24 panel width (1 HP = 26px, panel is 658px tall). 4-8 HP suits most modules.
   cat: one of ${CAT_ORDER.join(' | ')}
   dark?: boolean, dark faceplate.
-  knobs: <=16 of { id, label(<=16), min, max, def, fmt?, curve?, big?, fader?, cvIn?, attenuates? }
-    def must sit inside [min,max]. fmt is one of ${FMT_NAMES.join(' ')}. curve is 'lin' or 'log'.
+  knobs: <=16 of { id, label(<=16), min, max, initial, fmt?, curve?, big?, fader?, cvIn?, attenuates? }
+    initial must sit inside [min,max]. fmt is one of ${FMT_NAMES.join(' ')}. curve is 'lin' or 'log'.
     cvIn names an input jack that modulates this knob (a display hint only).
     attenuates names a 'c' input jack — the engine inserts the gain, so never scale that input in DSP.
-  sws?: <=8 of { id, label(<=16), options (2..16 strings, <=16 chars), def? option index }
-  ins / outs: <=8 each of { id, label(<=16), kind }; kind is a=audio p=pitch CV g=gate/trigger c=control CV.
+  sws?: <=8 of { id, label(<=16), options (2..16 strings, <=16 chars), initial? option index }
+  ins / outs: <=8 each of { id, label(<=16), kind }; kind is a=${KIND_NAME.a} p=${KIND_NAME.p} (1V/oct) g=${KIND_NAME.g} c=${KIND_NAME.c}.
   display?: one of ${DISPLAYS.join(' ')}
   leds?: <=8 unique [a-z0-9_-] ids (<=16 chars), each an indicator the DSP lights with { t: 'led', id, v }.
   panel?: OPTIONAL { nodes: [{ id, kind, x, y, w, h, label? }] } in 0..1 panel coordinates, <=64 nodes,

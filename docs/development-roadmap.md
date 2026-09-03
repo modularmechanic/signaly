@@ -41,7 +41,7 @@ From the plan's **Out of scope** and the phase 09 integration report's **Deferre
   class would be a behaviour-affecting refactor, not a pure DRY cleanup
 - Seconds-based one-pole coefficient duplicated in `adsr`/`noiselab`/`snh` — differs from the ms/Hz
   variants elsewhere, left as-is
-- `mix.patchState` normalling described in the plan does not exist in the source — not implemented
+- `mix.onConnectionChange` normalling described in the plan does not exist in the source — not implemented
 - `volt` uses `display: 'text'` although it also exposes an analyser
 - `--shadow`/`--highlight` tokens derived via `color-mix` in phase-05 CSS rather than defined in
   `tokens.css`

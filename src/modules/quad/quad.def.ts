@@ -8,9 +8,9 @@ export const def: ModuleDef = {
   cat: 'SOURCES',
   worklet: 'quad',
   knobs: [
-    { id: 'oct', label: 'OCTAVE', min: -3, max: 3, def: 0, fmt: 'fInt', curve: 'lin', big: true },
-    { id: 'det', label: 'SPREAD', min: 0, max: 50, def: 8, fmt: 'fInt', curve: 'lin', big: true, cvIn: 'det' },
-    { id: 'detA', label: 'SPREAD CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'det' },
+    { id: 'oct', label: 'OCTAVE', min: -3, max: 3, initial: 0, fmt: 'fInt', curve: 'lin', big: true },
+    { id: 'det', label: 'SPREAD', min: 0, max: 50, initial: 8, fmt: 'fInt', curve: 'lin', big: true, cvIn: 'det' },
+    { id: 'detA', label: 'SPREAD CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'det' },
   ],
   sws: [{ id: 'wave', label: 'WAVE', options: ['SIN', 'TRI', 'SAW', 'SQR'] }],
   ins: [

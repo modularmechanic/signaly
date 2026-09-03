@@ -9,10 +9,10 @@ export const def: ModuleDef = {
   worklet: 'wasp',
   dark: true,
   knobs: [
-    { id: 'cut', label: 'CUTOFF', min: 25, max: 15000, def: 900, fmt: 'fHz', curve: 'log', big: true, cvIn: 'cv' },
-    { id: 'res', label: 'RES', min: 0, max: 1, def: 0.4, fmt: 'fPc' },
-    { id: 'dirt', label: 'DIRT', min: 0, max: 1, def: 0.4, fmt: 'fPc' },
-    { id: 'cv', label: 'CV AMT', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cv' },
+    { id: 'cut', label: 'CUTOFF', min: 25, max: 15000, initial: 900, fmt: 'fHz', curve: 'log', big: true, cvIn: 'cv' },
+    { id: 'res', label: 'RES', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
+    { id: 'dirt', label: 'DIRT', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
+    { id: 'cv', label: 'CV AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

@@ -61,7 +61,7 @@ describe('ModuleBrowser', () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const root = createRoot(host);
-    act(() => root.render(<ModuleBrowser freeHp={104} onPick={(id) => picked.push(id)} onClose={vi.fn()} />));
+    act(() => root.render(<ModuleBrowser onPick={(id) => picked.push(id)} onClose={vi.fn()} />));
 
     const search = host.querySelector('input');
     act(() => {

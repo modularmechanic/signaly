@@ -10,12 +10,12 @@ export const def: ModuleDef = {
   worklet: 'gate',
   display: 'meter',
   knobs: [
-    { id: 'thr', label: 'THRESHOLD', min: -80, max: 0, def: -40, fmt: 'f1', cvIn: 'thrcv' },
-    { id: 'atk', label: 'ATTACK', min: 0.0001, max: 0.05, def: 0.002, fmt: 'fMs', curve: 'log' },
-    { id: 'hold', label: 'HOLD', min: 0, max: 0.5, def: 0.05, fmt: 'fMs' },
-    { id: 'rel', label: 'RELEASE', min: 0.005, max: 1, def: 0.15, fmt: 'fMs', curve: 'log' },
-    { id: 'range', label: 'RANGE', min: -90, max: 0, def: -60, fmt: 'f1' },
-    { id: 'thrcvA', label: 'THRESH CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'thrcv' },
+    { id: 'thr', label: 'THRESHOLD', min: -80, max: 0, initial: -40, fmt: 'f1', cvIn: 'thrcv' },
+    { id: 'atk', label: 'ATTACK', min: 0.0001, max: 0.05, initial: 0.002, fmt: 'fMs', curve: 'log' },
+    { id: 'hold', label: 'HOLD', min: 0, max: 0.5, initial: 0.05, fmt: 'fMs' },
+    { id: 'rel', label: 'RELEASE', min: 0.005, max: 1, initial: 0.15, fmt: 'fMs', curve: 'log' },
+    { id: 'range', label: 'RANGE', min: -90, max: 0, initial: -60, fmt: 'f1' },
+    { id: 'thrcvA', label: 'THRESH CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'thrcv' },
   ],
   ins: [
     { id: 'inl', label: 'IN L', kind: 'a' },

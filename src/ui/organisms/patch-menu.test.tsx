@@ -2,7 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useRackStore } from '../../state/rack-store';
-import { listPresets } from '../../storage/preset-store';
+import { listPatches } from '../../storage/patch-store';
 import { PatchMenu } from './patch-menu';
 
 let host: HTMLDivElement;
@@ -37,6 +37,6 @@ describe('PatchMenu', () => {
     act(() => {
       form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     });
-    expect(listPresets().map((p) => p.name)).toEqual(['Enter patch']);
+    expect(listPatches().map((p) => p.name)).toEqual(['Enter patch']);
   });
 });

@@ -1,45 +1,45 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { applySnapshot } from '../../engine/snapshot';
 import {
-  deletePreset,
-  downloadPreset,
-  listPresets,
+  deletePatch,
+  downloadPatch,
+  listPatches,
   MAX_PATCH_BYTES,
   parsePatchFile,
-  renamePreset,
-  savePreset,
-  type Preset,
-} from '../../storage/preset-store';
+  renamePatch,
+  savePatch,
+  type Patch,
+} from '../../storage/patch-store';
 import { useUiStore } from '../../state/ui-store';
 import { Button } from '../atoms/button';
 
 const note = (text: string): void => useUiStore.getState().setNotice(text);
 
 export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
-  const [list, setList] = useState<Preset[]>(() => listPresets());
+  const [list, setList] = useState<Patch[]>(() => listPatches());
   const [name, setName] = useState('');
   const feedback = useUiStore((s) => s.notice);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const refresh = (): void => setList(listPresets());
+  const refresh = (): void => setList(listPatches());
 
   const save = (): void => {
-    const saved = savePreset(name);
+    const saved = savePatch(name);
     setName('');
     refresh();
     note(`Saved ${saved.name}`);
   };
 
-  const load = (p: Preset): void => {
+  const load = (p: Patch): void => {
     applySnapshot(p.snapshot);
     note(`Loaded ${p.name}`);
     onClose();
   };
 
-  const rename = (p: Preset): void => {
+  const rename = (p: Patch): void => {
     const next = window.prompt('Patch name', p.name);
     if (next === null) return;
-    renamePreset(p.id, next);
+    renamePatch(p.id, next);
     refresh();
   };
 
@@ -51,7 +51,7 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
     try {
       const patch = parsePatchFile(await f.text());
       applySnapshot(patch.snapshot);
-      savePreset(patch.name, patch.snapshot);
+      savePatch(patch.name, patch.snapshot);
       refresh();
       note(`Imported ${patch.name}`);
     } catch (err) {
@@ -103,10 +103,10 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
                 {p.name}
               </button>
               <Button onClick={() => rename(p)}>Rename</Button>
-              <Button onClick={() => downloadPreset(p)}>Export</Button>
+              <Button onClick={() => downloadPatch(p)}>Export</Button>
               <Button
                 onClick={() => {
-                  deletePreset(p.id);
+                  deletePatch(p.id);
                   refresh();
                   note(`Deleted ${p.name}`);
                 }}

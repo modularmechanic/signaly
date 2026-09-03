@@ -8,10 +8,10 @@ export const def: ModuleDef = {
   cat: 'AMP / MIX',
   worklet: 'vca',
   knobs: [
-    { id: 'g1', label: 'LEVEL 1', min: 0, max: 1.5, def: 1, fmt: 'fPc', cvIn: 'cv1' },
-    { id: 'g2', label: 'LEVEL 2', min: 0, max: 1.5, def: 1, fmt: 'fPc', cvIn: 'cv2' },
-    { id: 'cv1A', label: 'CV 1', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cv1' },
-    { id: 'cv2A', label: 'CV 2', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cv2' },
+    { id: 'g1', label: 'LEVEL 1', min: 0, max: 1.5, initial: 1, fmt: 'fPc', cvIn: 'cv1' },
+    { id: 'g2', label: 'LEVEL 2', min: 0, max: 1.5, initial: 1, fmt: 'fPc', cvIn: 'cv2' },
+    { id: 'cv1A', label: 'CV 1', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv1' },
+    { id: 'cv2A', label: 'CV 2', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv2' },
   ],
   sws: [{ id: 'exp', label: 'RESPONSE', options: ['LIN', 'EXP'] }],
   ins: [

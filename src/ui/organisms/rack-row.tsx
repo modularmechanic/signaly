@@ -7,8 +7,8 @@ import { useUiStore } from '../../state/ui-store';
 import { Button } from '../atoms/button';
 import { ModulePanel } from './module-panel';
 
-/** Explain a capacity refusal instead of silently dropping the action. */
-export function rowFullNotice(): void {
+/** Explain a refused drop instead of silently relocating it. */
+function rowFullNotice(): void {
   const r = getLastRowRejection();
   useUiStore
     .getState()

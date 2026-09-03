@@ -11,11 +11,11 @@ export const def: ModuleDef = {
   worklet: 'clock',
   dark: true,
   knobs: [
-    { id: 'bpm', label: 'BPM', min: 30, max: 300, def: 120, fmt: 'fInt', big: true },
-    { id: 'r1', label: 'OUT 1', min: 0, max: 6, def: 3, fmt: 'fRate' },
-    { id: 'r2', label: 'OUT 2', min: 0, max: 6, def: 4, fmt: 'fRate' },
-    { id: 'r3', label: 'OUT 3', min: 0, max: 6, def: 2, fmt: 'fRate' },
-    { id: 'r4', label: 'OUT 4', min: 0, max: 6, def: 1, fmt: 'fRate' },
+    { id: 'bpm', label: 'BPM', min: 30, max: 300, initial: 120, fmt: 'fInt', big: true },
+    { id: 'r1', label: 'OUT 1', min: 0, max: 6, initial: 3, fmt: 'fRate' },
+    { id: 'r2', label: 'OUT 2', min: 0, max: 6, initial: 4, fmt: 'fRate' },
+    { id: 'r3', label: 'OUT 3', min: 0, max: 6, initial: 2, fmt: 'fRate' },
+    { id: 'r4', label: 'OUT 4', min: 0, max: 6, initial: 1, fmt: 'fRate' },
   ],
   sws: [{ id: 'run', label: 'RUN', options: ['STOP', 'RUN'] }],
   ins: [

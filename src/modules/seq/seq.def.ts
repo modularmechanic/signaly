@@ -9,8 +9,8 @@ export const def: ModuleDef = {
   worklet: 'seq',
   dark: true,
   knobs: [
-    { id: 'len', label: 'STEPS', min: 1, max: 8, def: 8, fmt: 'fInt' },
-    { id: 'glide', label: 'GLIDE', min: 0.001, max: 0.3, def: 0.01, fmt: 'fMs', curve: 'log' },
+    { id: 'len', label: 'STEPS', min: 1, max: 8, initial: 8, fmt: 'fInt' },
+    { id: 'glide', label: 'GLIDE', min: 0.001, max: 0.3, initial: 0.01, fmt: 'fMs', curve: 'log' },
   ],
   ins: [
     { id: 'clk', label: 'CLOCK', kind: 'g' },

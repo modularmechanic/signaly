@@ -8,9 +8,9 @@ export const def: ModuleDef = {
   cat: 'FILTERS',
   worklet: 'formant',
   knobs: [
-    { id: 'vowel', label: 'A·E·I·O·U', min: 0, max: 4, def: 0, fmt: 'f1', curve: 'lin', big: true, cvIn: 'cv' },
-    { id: 'res', label: 'RES', min: 0.5, max: 0.98, def: 0.85, fmt: 'fPc' },
-    { id: 'cv', label: 'VOWEL CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cv' },
+    { id: 'vowel', label: 'A·E·I·O·U', min: 0, max: 4, initial: 0, fmt: 'f1', curve: 'lin', big: true, cvIn: 'cv' },
+    { id: 'res', label: 'RES', min: 0.5, max: 0.98, initial: 0.85, fmt: 'fPc' },
+    { id: 'cv', label: 'VOWEL CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

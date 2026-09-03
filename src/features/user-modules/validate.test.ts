@@ -7,10 +7,10 @@ const good = (): Record<string, unknown> => ({
   hp: 6,
   cat: 'FX',
   knobs: [
-    { id: 'rate', label: 'RATE', min: 0.1, max: 20, def: 2, fmt: 'fHz', curve: 'log' },
-    { id: 'amt', label: 'AMOUNT', min: -1, max: 1, def: 0, cvIn: 'cv', attenuates: 'cv' },
+    { id: 'rate', label: 'RATE', min: 0.1, max: 20, initial: 2, fmt: 'fHz', curve: 'log' },
+    { id: 'amt', label: 'AMOUNT', min: -1, max: 1, initial: 0, cvIn: 'cv', attenuates: 'cv' },
   ],
-  sws: [{ id: 'wave', label: 'WAVE', options: ['SIN', 'TRI', 'SAW'], def: 1 }],
+  sws: [{ id: 'wave', label: 'WAVE', options: ['SIN', 'TRI', 'SAW'], initial: 1 }],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },
     { id: 'cv', label: 'CV', kind: 'c' },
@@ -50,7 +50,7 @@ describe('validateUserDef', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.def.knobs[1]?.attenuates).toBe('cv');
-    expect(r.def.sws?.[0]?.def).toBe(1);
+    expect(r.def.sws?.[0]?.initial).toBe(1);
     expect(r.def.panel?.nodes).toHaveLength(4);
     expect(r.def.display).toBe('scope');
   });
@@ -68,21 +68,21 @@ describe('validateUserDef', () => {
     expect(errorOf(withDef({ name: 'x'.repeat(25) }))).toMatch(/def.name/));
 
   it('rejects more than 16 knobs', () => {
-    const knobs = Array.from({ length: 17 }, (_, i) => ({ id: `k${i}`, label: 'K', min: 0, max: 1, def: 0 }));
+    const knobs = Array.from({ length: 17 }, (_, i) => ({ id: `k${i}`, label: 'K', min: 0, max: 1, initial: 0 }));
     expect(errorOf(withDef({ knobs }))).toMatch(/at most 16/);
   });
 
   it('rejects a knob default outside [min,max]', () => {
-    expect(errorOf(withDef({ knobs: [{ id: 'a', label: 'A', min: 0, max: 1, def: 2 }] }))).toMatch(/within/);
+    expect(errorOf(withDef({ knobs: [{ id: 'a', label: 'A', min: 0, max: 1, initial: 2 }] }))).toMatch(/within/);
   });
 
   it('rejects attenuates naming a non-CV input', () => {
-    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, def: 0, attenuates: 'in' }];
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, attenuates: 'in' }];
     expect(errorOf(withDef({ knobs }))).toMatch(/must name a 'c' input/);
   });
 
   it('rejects cvIn naming no input', () => {
-    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, def: 0, cvIn: 'nope' }];
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, cvIn: 'nope' }];
     expect(errorOf(withDef({ knobs }))).toMatch(/names no input jack/);
   });
 
@@ -101,7 +101,7 @@ describe('validateUserDef', () => {
 
   it('rejects an unknown display and an unknown fmt', () => {
     expect(errorOf(withDef({ display: 'lava' }))).toMatch(/def.display/);
-    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, def: 0, fmt: 'fLava' }];
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, fmt: 'fLava' }];
     expect(errorOf(withDef({ knobs }))).toMatch(/fmt/);
   });
 

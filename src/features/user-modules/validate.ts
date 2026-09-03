@@ -66,9 +66,9 @@ function knobs(v: unknown, ins: JackDef[]): KnobDef[] {
     const min = num(o.min, `${at}.min`);
     const max = num(o.max, `${at}.max`);
     if (min >= max) bad(`${at}.min must be less than ${at}.max`);
-    const def = num(o.def, `${at}.def`);
-    if (def < min || def > max) bad(`${at}.def must be within [${min}, ${max}]`);
-    const k: KnobDef = { id, label: str(o.label, `${at}.label`, 16), min, max, def };
+    const initial = num(o.initial, `${at}.initial`);
+    if (initial < min || initial > max) bad(`${at}.initial must be within [${min}, ${max}]`);
+    const k: KnobDef = { id, label: str(o.label, `${at}.label`, 16), min, max, initial };
     const fmt = opt(o.fmt);
     if (fmt !== undefined) k.fmt = pick(fmt, `${at}.fmt`, FMT_NAMES) as FmtName;
     const curve = opt(o.curve);
@@ -107,11 +107,11 @@ function switches(v: unknown): SwitchDef[] {
     const options = list(o.options, `${at}.options`, 16).map((x, n) => str(x, `${at}.options[${n}]`, 16));
     if (options.length < 2) bad(`${at}.options needs at least 2 entries`);
     const s: SwitchDef = { id, label: str(o.label, `${at}.label`, 16), options };
-    const d = opt(o.def);
+    const d = opt(o.initial);
     if (d !== undefined) {
-      const n = num(d, `${at}.def`);
-      if (!Number.isInteger(n) || n < 0 || n >= options.length) bad(`${at}.def must index options`);
-      s.def = n;
+      const n = num(d, `${at}.initial`);
+      if (!Number.isInteger(n) || n < 0 || n >= options.length) bad(`${at}.initial must index options`);
+      s.initial = n;
     }
     out.push(s);
   });

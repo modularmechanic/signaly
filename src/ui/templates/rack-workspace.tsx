@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { getAudioContext, resume } from '../../engine/audio-context';
-import { addModule, addRow, rowUsedHp } from '../../engine/rack';
+import { addModule, addRow } from '../../engine/rack';
 import { cancelArm, getArmed, subscribeArm } from '../../hooks/patch-state';
 import { useRackStore, type RackState } from '../../state/rack-store';
-import { useSettingsStore } from '../../state/settings-store';
 import { useUiStore } from '../../state/ui-store';
 import { hasAnyKey } from '../../storage/api-key-store';
 import { Button } from '../atoms/button';
 import { CableCanvas } from '../molecules/cable-canvas';
 import { ModuleBrowser } from '../organisms/module-browser';
 import { PatchMenu } from '../organisms/patch-menu';
-import { RackRow, rowFullNotice } from '../organisms/rack-row';
+import { RackRow } from '../organisms/rack-row';
 import { SettingsDialog } from '../organisms/settings-dialog';
 
 const say = (text: string): void => useUiStore.getState().setNotice(text);
@@ -36,7 +35,6 @@ export function RackWorkspace(): ReactNode {
   const browserOpen = useUiStore((s) => s.browserOpen);
   const settingsOpen = useUiStore((s) => s.settingsOpen);
   const notice = useUiStore((s) => s.notice);
-  const rowWidthHp = useSettingsStore((s) => s.rowWidthHp);
   const [patchesOpen, setPatchesOpen] = useState(false);
   const [targetRow, setTargetRow] = useState(0);
   const opener = useRef<HTMLElement | null>(null);
@@ -44,7 +42,6 @@ export function RackWorkspace(): ReactNode {
   const ui = useUiStore.getState();
   const anyModal = browserOpen || settingsOpen || patchesOpen;
   const hasKey = hasAnyKey();
-  const freeHp = rowWidthHp - rowUsedHp(rows[targetRow]?.id ?? '');
 
   // Browsers start the context suspended; the first gesture in the page resumes it.
   useEffect(() => {
@@ -101,7 +98,7 @@ export function RackWorkspace(): ReactNode {
   const pick = (defId: string): void => {
     ui.setBrowserOpen(false);
     try {
-      if (!addModule(defId, targetRow)) rowFullNotice();
+      addModule(defId, targetRow);
     } catch {
       // A worklet whose processor never registered throws on construction.
       say(`${defId} could not start — its DSP failed to load.`);
@@ -157,7 +154,7 @@ export function RackWorkspace(): ReactNode {
       <CableCanvas />
 
       {browserOpen && (
-        <ModuleBrowser freeHp={freeHp} onPick={pick} onClose={() => ui.setBrowserOpen(false)} />
+        <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />
       )}
       {patchesOpen && <PatchMenu onClose={() => setPatchesOpen(false)} />}
       {settingsOpen && <SettingsDialog onClose={() => ui.setSettingsOpen(false)} />}

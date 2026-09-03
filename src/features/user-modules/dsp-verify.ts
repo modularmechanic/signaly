@@ -24,8 +24,10 @@ export async function verifyDsp(code: string, processorName: string, outs: numbe
   const count = Math.max(1, Math.min(8, Math.trunc(outs) || 1));
   const url = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let close: (() => Promise<void>) | undefined;
   try {
     const ctx = new Ctx(count, RENDER_FRAMES, RENDER_RATE);
+    close = (ctx as { close?: () => Promise<void> }).close?.bind(ctx);
     const render = (async (): Promise<AudioBuffer> => {
       await ctx.audioWorklet.addModule(url);
       const node = new Node(ctx, processorName, {
@@ -43,6 +45,13 @@ export async function verifyDsp(code: string, processorName: string, outs: numbe
     return e instanceof Error ? e.message : 'DSP failed to render';
   } finally {
     clearTimeout(timer);
+    // Bounds the leak, not the wedge: an infinite loop inside the worklet cannot be
+    // pre-empted from the main thread, so that render thread stays busy until the tab reloads.
+    try {
+      await close?.();
+    } catch {
+      /* some contexts have no close, or reject once rendering has started */
+    }
     URL.revokeObjectURL(url);
   }
 }

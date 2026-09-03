@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RackSnapshot } from '../engine/snapshot';
-import { MAX_PATCH_BYTES, parsePatchFile } from './preset-store';
+import { MAX_PATCH_BYTES, parsePatchFile } from './patch-store';
 
 const snapshot: RackSnapshot = {
   modules: [{ mtype: 'vco', uid: 1, vals: { freq: 220 }, sws: { wave: 0 } }],

@@ -24,7 +24,7 @@ export function makeNode(m: ModuleInstance, native?: NativeSpec): void {
   if (d.worklet) {
     const ac = getAudioContext();
     const p: Record<string, number> = {};
-    d.knobs.forEach((k) => (p[k.id] = m.vals[k.id] ?? k.def));
+    d.knobs.forEach((k) => (p[k.id] = m.vals[k.id] ?? k.initial));
     (d.sws ?? []).forEach((s) => (p[s.id] = m.sws[s.id] ?? 0));
     const node = createWorkletModuleNode(ac, d.worklet, d.ins.length, d.outs.length, p);
     m.node = node;

@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { KEYS, readJson, writeJson } from '../storage/local-json';
 
-export const MIN_ROW_HP = 20;
-export const MAX_ROW_HP = 208;
+export const MIN_ROW_HP = 120;
+export const MAX_ROW_HP = 240;
 export const DEFAULT_ROW_HP = 120;
 
 export interface Settings {
-  /** row capacity in HP; rack.ts rejects adds/moves that overflow it */
+  /** row capacity in HP; rack.ts spills overflowing adds into a new row and refuses moves */
   rowWidthHp: number;
   /** user override on top of `prefers-reduced-motion` */
   reducedMotion: boolean;

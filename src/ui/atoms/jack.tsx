@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
-import type { JackDef, Kind } from '../../core/types';
+import { KIND_NAME, type JackDef, type Kind } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import {
   armJack,
@@ -13,7 +13,6 @@ import {
   type JackDir,
 } from '../../hooks/patch-state';
 
-const KIND_NAME: Record<Kind, string> = { a: 'audio', p: 'pitch', g: 'gate', c: 'CV' };
 const KIND_GLYPH: Record<Kind, string> = { a: '●', p: '◆', g: '■', c: '▲' };
 
 export interface JackProps {

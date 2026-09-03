@@ -8,12 +8,12 @@ export const def: ModuleDef = {
   cat: 'SOURCES',
   worklet: 'duo',
   knobs: [
-    { id: 'oct', label: 'OCTAVE', min: -3, max: 3, def: 0, fmt: 'fInt', curve: 'lin', big: true },
-    { id: 'semi', label: 'INTERVAL', min: -12, max: 12, def: 0, fmt: 'fSemi' },
-    { id: 'det', label: 'DETUNE', min: 0, max: 50, def: 6, fmt: 'fInt' },
-    { id: 'mix', label: 'OSC MIX', min: 0, max: 1, def: 0.5, fmt: 'fPc', cvIn: 'mix' },
-    { id: 'fmA', label: 'FM', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'fm' },
-    { id: 'mixA', label: 'MIX CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'mix' },
+    { id: 'oct', label: 'OCTAVE', min: -3, max: 3, initial: 0, fmt: 'fInt', curve: 'lin', big: true },
+    { id: 'semi', label: 'INTERVAL', min: -12, max: 12, initial: 0, fmt: 'fSemi' },
+    { id: 'det', label: 'DETUNE', min: 0, max: 50, initial: 6, fmt: 'fInt' },
+    { id: 'mix', label: 'OSC MIX', min: 0, max: 1, initial: 0.5, fmt: 'fPc', cvIn: 'mix' },
+    { id: 'fmA', label: 'FM', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fm' },
+    { id: 'mixA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mix' },
   ],
   sws: [
     { id: 'w1', label: 'WAVE 1', options: ['SIN', 'TRI', 'SAW', 'SQR'] },

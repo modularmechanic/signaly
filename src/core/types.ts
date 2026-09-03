@@ -1,5 +1,8 @@
 export type Kind = 'a' | 'p' | 'g' | 'c';
 
+/** Canonical display name per signal kind — jack aria-labels and the module-builder prompt. */
+export const KIND_NAME: Record<Kind, string> = { a: 'audio', p: 'pitch', g: 'gate', c: 'CV' };
+
 export type Cat =
   | 'SOURCES'
   | 'FILTERS'
@@ -24,7 +27,7 @@ export interface KnobDef {
   label: string;
   min: number;
   max: number;
-  def: number;
+  initial: number;
   fmt?: FmtName;
   curve?: 'lin' | 'log';
   big?: boolean;
@@ -39,7 +42,7 @@ export interface SwitchDef {
   id: string;
   label: string;
   options: string[];
-  def?: number;
+  initial?: number;
 }
 
 export interface JackDef {

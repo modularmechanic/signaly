@@ -8,10 +8,10 @@ export const def: ModuleDef = {
   cat: 'AMP / MIX',
   native: 'mix',
   knobs: [
-    { id: 'l1', label: 'CH 1', min: 0, max: 1.2, def: 0.8, fmt: 'fPc' },
-    { id: 'l2', label: 'CH 2', min: 0, max: 1.2, def: 0.8, fmt: 'fPc' },
-    { id: 'l3', label: 'CH 3', min: 0, max: 1.2, def: 0.8, fmt: 'fPc' },
-    { id: 'l4', label: 'CH 4', min: 0, max: 1.2, def: 0.8, fmt: 'fPc' },
+    { id: 'l1', label: 'CH 1', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
+    { id: 'l2', label: 'CH 2', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
+    { id: 'l3', label: 'CH 3', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
+    { id: 'l4', label: 'CH 4', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
   ],
   ins: [
     { id: 'i1', label: 'IN 1', kind: 'a' },

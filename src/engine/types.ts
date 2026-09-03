@@ -29,7 +29,7 @@ export interface NativeSpec {
   /** worklet processors instantiated inside a native graph */
   worklets?: readonly string[];
   param?(m: ModuleInstance, id: string, v: number): void;
-  patchState?(m: ModuleInstance, dir: 'in' | 'out', jack: string, connected: boolean): void;
+  onConnectionChange?(m: ModuleInstance, dir: 'in' | 'out', jack: string, connected: boolean): void;
   dispose?(m: ModuleInstance): void;
 }
 

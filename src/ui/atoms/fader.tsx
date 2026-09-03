@@ -61,7 +61,7 @@ export function Fader({ m, def }: FaderProps): ReactNode {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onDoubleClick={() => setVal(def.def)}
+        onDoubleClick={() => setVal(def.initial)}
       >
         <div className="fader-cap" />
       </div>

@@ -9,12 +9,12 @@ export const def: ModuleDef = {
   worklet: 'noiselab',
   dark: true,
   knobs: [
-    { id: 'color', label: 'COLOR', min: -1, max: 1, def: 0, fmt: 'f1', curve: 'lin', big: true, cvIn: 'color' },
-    { id: 'cut', label: 'CUTOFF', min: 60, max: 18000, def: 8000, fmt: 'fHz', curve: 'log', cvIn: 'cut' },
-    { id: 'dec', label: 'BURST DEC', min: 0.005, max: 2, def: 0.15, fmt: 'fMs', curve: 'log' },
-    { id: 'dens', label: 'DENSITY', min: 0.5, max: 500, def: 20, fmt: 'fHz', curve: 'log' },
-    { id: 'colorA', label: 'COLOR CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'color' },
-    { id: 'cutA', label: 'CUT CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cut' },
+    { id: 'color', label: 'COLOR', min: -1, max: 1, initial: 0, fmt: 'f1', curve: 'lin', big: true, cvIn: 'color' },
+    { id: 'cut', label: 'CUTOFF', min: 60, max: 18000, initial: 8000, fmt: 'fHz', curve: 'log', cvIn: 'cut' },
+    { id: 'dec', label: 'BURST DEC', min: 0.005, max: 2, initial: 0.15, fmt: 'fMs', curve: 'log' },
+    { id: 'dens', label: 'DENSITY', min: 0.5, max: 500, initial: 20, fmt: 'fHz', curve: 'log' },
+    { id: 'colorA', label: 'COLOR CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'color' },
+    { id: 'cutA', label: 'CUT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cut' },
   ],
   ins: [
     { id: 'gate', label: 'GATE', kind: 'g' },

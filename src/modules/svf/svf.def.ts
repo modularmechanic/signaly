@@ -8,10 +8,10 @@ export const def: ModuleDef = {
   cat: 'FILTERS',
   worklet: 'svf',
   knobs: [
-    { id: 'cut', label: 'CUTOFF', min: 30, max: 16000, def: 800, fmt: 'fHz', curve: 'log', big: true, cvIn: 'cv' },
-    { id: 'res', label: 'RES', min: 0, max: 1, def: 0.25, fmt: 'fPc', cvIn: 'rcv' },
-    { id: 'cv', label: 'CV AMT', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'cv' },
-    { id: 'rcvamt', label: 'RES CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'rcv' },
+    { id: 'cut', label: 'CUTOFF', min: 30, max: 16000, initial: 800, fmt: 'fHz', curve: 'log', big: true, cvIn: 'cv' },
+    { id: 'res', label: 'RES', min: 0, max: 1, initial: 0.25, fmt: 'fPc', cvIn: 'rcv' },
+    { id: 'cv', label: 'CV AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+    { id: 'rcvamt', label: 'RES CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'rcv' },
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

@@ -8,7 +8,7 @@ import type { Cable, ModuleInstance, RackRow } from './types';
 let nextUid = 1;
 let nextCableId = 1;
 
-/** Why the last add/duplicate/move was refused. UI reads it to say "Row full — N HP needed, M free". */
+/** Why the last move was refused. UI reads it to say "Row full — N HP needed, M free". */
 let lastRowRejection: { needed: number; free: number } | null = null;
 export const getLastRowRejection = (): { needed: number; free: number } | null => lastRowRejection;
 
@@ -52,14 +52,14 @@ function wireCable(c: Pick<Cable, 'from' | 'to'>, on: boolean): void {
 }
 
 /** Tell a native module whether one of its jacks is logically patched. */
-function notifyPatchState(uid: number, dir: 'in' | 'out', jack: string): void {
+function notifyConnectionChange(uid: number, dir: 'in' | 'out', jack: string): void {
   const s = useRackStore.getState();
   const m = s.modules[uid];
   if (!m) return;
   const connected = s.cables.some((c) =>
     dir === 'in' ? c.to.uid === uid && c.to.jack === jack : c.from.uid === uid && c.from.jack === jack,
   );
-  quietly(() => getSpec(m.def.id)?.native?.patchState?.(m, dir, jack, connected));
+  quietly(() => getSpec(m.def.id)?.native?.onConnectionChange?.(m, dir, jack, connected));
 }
 
 function teardownModule(m: ModuleInstance): void {
@@ -82,8 +82,11 @@ export function addModule(defId: string, row?: number): ModuleInstance | null {
   if (!spec) return null;
   if (useRackStore.getState().rows.length === 0) useRackStore.getState().addRow();
   const rows = useRackStore.getState().rows;
-  const rowIdx = Math.max(0, Math.min(row ?? rows.length - 1, rows.length - 1));
-  if (!fits(rows[rowIdx], spec.def.hp)) return null;
+  const at = Math.max(0, Math.min(row ?? rows.length - 1, rows.length - 1));
+  // An add is never refused. When the target row is full, spill into the row directly beneath if
+  // it has room — otherwise a repeat add would mint a row per module — and only then make one.
+  const hp = spec.def.hp;
+  const rowIdx = fits(rows[at], hp) ? at : fits(rows[at + 1], hp) ? at + 1 : insertRow(at + 1);
 
   const m: ModuleInstance = {
     uid: nextUid++,
@@ -93,8 +96,8 @@ export function addModule(defId: string, row?: number): ModuleInstance | null {
     sws: {},
     ext: {},
   };
-  spec.def.knobs.forEach((k) => (m.vals[k.id] = k.def));
-  (spec.def.sws ?? []).forEach((s) => (m.sws[s.id] = s.def ?? 0));
+  spec.def.knobs.forEach((k) => (m.vals[k.id] = k.initial));
+  (spec.def.sws ?? []).forEach((s) => (m.sws[s.id] = s.initial ?? 0));
   makeNode(m, spec.native);
   useRackStore.getState().addModuleInstance(m, rowIdx);
   return m;
@@ -137,8 +140,8 @@ export function connectCable(from: Cable['from'], to: Cable['to']): Cable | null
   const cable: Cable = { id: nextCableId++, from, to };
   useRackStore.getState().addCable(cable);
   wireCable(cable, true);
-  notifyPatchState(from.uid, 'out', from.jack);
-  notifyPatchState(to.uid, 'in', to.jack);
+  notifyConnectionChange(from.uid, 'out', from.jack);
+  notifyConnectionChange(to.uid, 'in', to.jack);
   return cable;
 }
 
@@ -147,8 +150,8 @@ export function disconnectCable(id: number): void {
   if (!cable) return;
   wireCable(cable, false);
   useRackStore.getState().removeCable(id);
-  notifyPatchState(cable.from.uid, 'out', cable.from.jack);
-  notifyPatchState(cable.to.uid, 'in', cable.to.jack);
+  notifyConnectionChange(cable.from.uid, 'out', cable.from.jack);
+  notifyConnectionChange(cable.to.uid, 'in', cable.to.jack);
 }
 
 /** Non-finite values are dropped: they reach AudioParam.value and corrupt the node. */
@@ -178,6 +181,20 @@ export function setSwitch(uid: number, id: string, i: number): void {
 }
 
 export const addRow = (): string => useRackStore.getState().addRow();
+
+/** New empty row at `at`; returns its index. Appends, then slides the row into place. */
+export function insertRow(at: number): number {
+  useRackStore.getState().addRow();
+  const idx = Math.max(0, Math.min(at, useRackStore.getState().rows.length - 1));
+  useRackStore.setState((s) => {
+    const rows = [...s.rows];
+    const row = rows.pop();
+    if (!row) return s;
+    rows.splice(idx, 0, row);
+    return { rows, revision: s.revision + 1 };
+  });
+  return idx;
+}
 
 export const removeRow = (rowId: string): void => useRackStore.getState().removeRow(rowId);
 

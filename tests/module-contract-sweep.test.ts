@@ -23,8 +23,8 @@ function checkDef(def: ModuleDef): void {
   const ins = new Set(def.ins.map((j) => j.id));
   const cvIns = new Set(def.ins.filter((j) => j.kind === 'c').map((j) => j.id));
   for (const k of def.knobs) {
-    expect(k.def).toBeGreaterThanOrEqual(k.min);
-    expect(k.def).toBeLessThanOrEqual(k.max);
+    expect(k.initial).toBeGreaterThanOrEqual(k.min);
+    expect(k.initial).toBeLessThanOrEqual(k.max);
     if (k.cvIn !== undefined) expect(ins.has(k.cvIn)).toBe(true);
     if (k.attenuates !== undefined) expect(cvIns.has(k.attenuates)).toBe(true);
   }

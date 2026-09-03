@@ -10,9 +10,9 @@ const def = (over: Partial<ModuleDef> = {}): ModuleDef => ({
   cat: 'FILTERS',
   worklet: 'lay',
   knobs: [
-    { id: 'a', label: 'A', min: 0, max: 1, def: 0 },
-    { id: 'b', label: 'B', min: 0, max: 1, def: 0, big: true },
-    { id: 'c', label: 'C', min: 0, max: 1, def: 0, fader: true },
+    { id: 'a', label: 'A', min: 0, max: 1, initial: 0 },
+    { id: 'b', label: 'B', min: 0, max: 1, initial: 0, big: true },
+    { id: 'c', label: 'C', min: 0, max: 1, initial: 0, fader: true },
   ],
   sws: [{ id: 's', label: 'S', options: ['x', 'y'] }],
   ins: [{ id: 'in', label: 'IN', kind: 'a' }],

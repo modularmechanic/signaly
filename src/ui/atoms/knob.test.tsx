@@ -6,8 +6,8 @@ import type { ModuleInstance } from '../../engine/types';
 import { useRackStore } from '../../state/rack-store';
 import { Knob, knobValue } from './knob';
 
-const CUT: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, def: 50, fmt: 'fHz' };
-const LOG: KnobDef = { id: 'cut', label: 'CUTOFF', min: 30, max: 16000, def: 800, fmt: 'fHz', curve: 'log' };
+const CUT: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, initial: 50, fmt: 'fHz' };
+const LOG: KnobDef = { id: 'cut', label: 'CUTOFF', min: 30, max: 16000, initial: 800, fmt: 'fHz', curve: 'log' };
 
 const def: ModuleDef = {
   id: 'test-knob',

@@ -2,8 +2,11 @@ import { transform } from 'sucrase';
 import preludeSrc from '../../engine/dsp-prelude.ts?raw';
 import { MAX_DSP_BYTES } from './schema';
 
-// Defence in depth: AudioWorkletGlobalScope has no DOM and no network by spec, so this
-// only buys a fast, readable failure instead of a runtime worklet crash.
+// Defence in depth only. The real sandbox is AudioWorkletGlobalScope — no DOM, no network by
+// spec — plus the CSP. This regex is deliberately not sound: globalThis["eval"], aliasing eval
+// to a variable, and dynamic import() all get past it, and that is accepted. Since modules can
+// be imported, a hostile module file from a third party is a real path; its damage ceiling is
+// wedging the user's own tab, which a reload fixes.
 const FORBIDDEN =
   /\b(eval|Function|importScripts|fetch|XMLHttpRequest|WebSocket|SharedArrayBuffer|window|document|localStorage|globalThis)\s*[({.]/;
 

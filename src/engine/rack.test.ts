@@ -62,8 +62,8 @@ const FLT: ModuleDef = {
   cat: 'FILTERS',
   worklet: 'tflt',
   knobs: [
-    { id: 'cut', label: 'CUT', min: 0, max: 100, def: 50 },
-    { id: 'amt', label: 'AMT', min: -1, max: 1, def: 0, attenuates: 'cv' },
+    { id: 'cut', label: 'CUT', min: 0, max: 100, initial: 50 },
+    { id: 'amt', label: 'AMT', min: -1, max: 1, initial: 0, attenuates: 'cv' },
   ],
   sws: [{ id: 'mode', label: 'MODE', options: ['LP', 'HP'] }],
   ins: [
@@ -82,6 +82,15 @@ const add = (id: string, row?: number): ModuleInstance => {
 const sentOf = (m: ModuleInstance): unknown[] => (m.node as unknown as FakeWorkletNode).sent;
 const firstRowId = (): string => useRackStore.getState().rows[0]?.id ?? '';
 
+const ROW_HP = 120;
+/** Pack row 0 to exactly ROW_HP with 6 HP filters; returns the first of them. */
+function fillFirstRow(): ModuleInstance {
+  const first = add('tflt', 0);
+  for (let i = 1; i < ROW_HP / FLT.hp; i++) add('tflt', 0);
+  expect(rowUsedHp(firstRowId())).toBe(ROW_HP);
+  return first;
+}
+
 beforeAll(() => {
   vi.stubGlobal('AudioWorkletNode', FakeWorkletNode);
   registerSpec({ def: SRC });
@@ -90,7 +99,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   clearRack();
-  useSettingsStore.getState().setRowWidthHp(104);
+  useSettingsStore.getState().setRowWidthHp(ROW_HP);
 });
 
 describe('rack', () => {
@@ -142,21 +151,39 @@ describe('rack', () => {
     expect(f.sws.mode).toBe(1);
   });
 
-  it('refuses adds, duplicates and moves that overflow the row width', () => {
-    useSettingsStore.getState().setRowWidthHp(20);
-    const f = add('tflt');
-    add('tflt');
-    add('tflt');
-    expect(rowUsedHp(firstRowId())).toBe(18);
-    expect(addModule('tflt')).toBeNull();
-    expect(getLastRowRejection()).toEqual({ needed: 6, free: 2 });
-    expect(duplicateModule(f.uid)).toBeNull();
+  it('spills an overflowing add into a new row directly beneath the full one', () => {
+    const f = fillFirstRow();
+    const spilled = addModule('tflt', 0);
+    const rows = useRackStore.getState().rows;
+    expect(spilled).not.toBeNull();
+    expect(rows).toHaveLength(2);
+    expect(rows[1]?.uids).toEqual([spilled?.uid]);
+    // A second overflowing add joins that spill row rather than minting another: repeated adds
+    // into a full row must not produce one row per module.
+    const clone = duplicateModule(f.uid);
+    expect(clone).not.toBeNull();
+    expect(useRackStore.getState().rows).toHaveLength(2);
+    expect(useRackStore.getState().rows[1]?.uids).toEqual([spilled?.uid, clone?.uid]);
+  });
 
+  it('spills into an existing row below when it has room, before making a new one', () => {
+    fillFirstRow();
+    const tail = addRow();
+    const spilled = addModule('tflt', 0);
+    const rows = useRackStore.getState().rows;
+    expect(rows).toHaveLength(2);
+    expect(rows[1]?.id).toBe(tail);
+    expect(rows[1]?.uids).toEqual([spilled?.uid]);
+  });
+
+  it('refuses a move into a full row, and reports why', () => {
+    fillFirstRow();
     addRow();
-    expect(moveModule(f.uid, 1, 0)).toBe(true);
-    expect(rowUsedHp(firstRowId())).toBe(12);
+    const loose = add('tflt', 1);
+    expect(moveModule(loose.uid, 0, 0)).toBe(false);
+    expect(getLastRowRejection()).toEqual({ needed: 6, free: 0 });
     // moving inside its own row does not count its HP twice
-    expect(moveModule(f.uid, 1, 0)).toBe(true);
+    expect(moveModule(loose.uid, 1, 0)).toBe(true);
   });
 
   it('duplicates knob and switch state without cables', () => {

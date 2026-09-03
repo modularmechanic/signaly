@@ -30,7 +30,7 @@ const SRC: ModuleDef = {
   hp: 4,
   cat: 'SOURCES',
   worklet: 'ssrc',
-  knobs: [{ id: 'freq', label: 'FREQ', min: 0, max: 100, def: 10 }],
+  knobs: [{ id: 'freq', label: 'FREQ', min: 0, max: 100, initial: 10 }],
   ins: [],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
 };

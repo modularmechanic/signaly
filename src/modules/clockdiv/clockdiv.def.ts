@@ -8,7 +8,7 @@ export const def: ModuleDef = {
   cat: 'SEQ / CTRL',
   worklet: 'clockdiv',
   dark: true,
-  knobs: [{ id: 'div', label: 'DIVIDE', min: 1, max: 64, def: 4, fmt: 'fInt', big: true }],
+  knobs: [{ id: 'div', label: 'DIVIDE', min: 1, max: 64, initial: 4, fmt: 'fInt', big: true }],
   ins: [
     { id: 'clk', label: 'CLOCK', kind: 'g' },
     { id: 'rst', label: 'RESET', kind: 'g' },

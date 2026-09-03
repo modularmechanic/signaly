@@ -8,10 +8,10 @@ export const def: ModuleDef = {
   cat: 'FILTERS',
   worklet: 'comb',
   knobs: [
-    { id: 'freq', label: 'FREQ', min: 25, max: 4000, def: 220, fmt: 'fHz', curve: 'log', big: true },
-    { id: 'fb', label: 'FEEDBK', min: -0.99, max: 0.99, def: 0.7, fmt: 'f1' },
-    { id: 'damp', label: 'DAMP', min: 400, max: 16000, def: 6000, fmt: 'fHz', curve: 'log' },
-    { id: 'mix', label: 'MIX', min: 0, max: 1, def: 1, fmt: 'fPc' },
+    { id: 'freq', label: 'FREQ', min: 25, max: 4000, initial: 220, fmt: 'fHz', curve: 'log', big: true },
+    { id: 'fb', label: 'FEEDBK', min: -0.99, max: 0.99, initial: 0.7, fmt: 'f1' },
+    { id: 'damp', label: 'DAMP', min: 400, max: 16000, initial: 6000, fmt: 'fHz', curve: 'log' },
+    { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 1, fmt: 'fPc' },
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

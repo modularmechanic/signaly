@@ -7,7 +7,7 @@ export const def: ModuleDef = {
   hp: 4,
   cat: 'AMP / MIX',
   native: 'mult',
-  knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'in' }],
+  knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }],
   ins: [{ id: 'in', label: 'IN', kind: 'c' }],
   outs: [
     { id: 'o1', label: 'OUT 1', kind: 'c' },

@@ -23,7 +23,7 @@ beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   useRackStore.getState().reset();
   m = { uid: 1, def: svf, jacks: { in: {}, out: {} }, vals: {}, sws: {}, ext: {} };
-  svf.knobs.forEach((k) => (m.vals[k.id] = k.def));
+  svf.knobs.forEach((k) => (m.vals[k.id] = k.initial));
   useRackStore.getState().addModuleInstance(m, 0);
   host = document.createElement('div');
   document.body.appendChild(host);

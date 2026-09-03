@@ -6,7 +6,7 @@ export const PATCH_VERSION = 1 as const;
 /** Caller-side cap before JSON.parse — an untrusted file must not blow the main thread. */
 export const MAX_PATCH_BYTES = 2_000_000;
 
-export interface Preset {
+export interface Patch {
   id: string;
   name: string;
   createdAt: number;
@@ -14,9 +14,9 @@ export interface Preset {
   snapshot: RackSnapshot;
 }
 
-const isPreset = (v: unknown): v is Preset => {
+const isPatch = (v: unknown): v is Patch => {
   if (typeof v !== 'object' || v === null) return false;
-  const p = v as Partial<Preset>;
+  const p = v as Partial<Patch>;
   return (
     typeof p.id === 'string' &&
     typeof p.name === 'string' &&
@@ -26,12 +26,12 @@ const isPreset = (v: unknown): v is Preset => {
   );
 };
 
-const read = (): Preset[] => readJson<unknown[]>(KEYS.patches, []).filter(isPreset);
-const persist = (list: Preset[]): void => writeJson(KEYS.patches, list);
+const read = (): Patch[] => readJson<unknown[]>(KEYS.patches, []).filter(isPatch);
+const persist = (list: Patch[]): void => writeJson(KEYS.patches, list);
 
 const normalise = (name: string): string => name.trim().slice(0, 60) || 'Untitled patch';
 
-function uniqueName(name: string, existing: Preset[], skipId?: string): string {
+function uniqueName(name: string, existing: Patch[], skipId?: string): string {
   const taken = new Set(existing.filter((p) => p.id !== skipId).map((p) => p.name.toLowerCase()));
   if (!taken.has(name.toLowerCase())) return name;
   for (let n = 2; ; n++) {
@@ -40,29 +40,29 @@ function uniqueName(name: string, existing: Preset[], skipId?: string): string {
   }
 }
 
-export function listPresets(): Preset[] {
+export function listPatches(): Patch[] {
   return read().sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
-export function getPreset(id: string): Preset | undefined {
+export function getPatch(id: string): Patch | undefined {
   return read().find((p) => p.id === id);
 }
 
-export function savePreset(name: string, snapshot: RackSnapshot = snapshotRack()): Preset {
+export function savePatch(name: string, snapshot: RackSnapshot = snapshotRack()): Patch {
   const list = read();
   const now = Date.now();
-  const preset: Preset = {
+  const patch: Patch = {
     id: crypto.randomUUID(),
     name: uniqueName(normalise(name), list),
     createdAt: now,
     updatedAt: now,
     snapshot,
   };
-  persist([...list, preset]);
-  return preset;
+  persist([...list, patch]);
+  return patch;
 }
 
-export function renamePreset(id: string, name: string): void {
+export function renamePatch(id: string, name: string): void {
   const list = read();
   const next = normalise(name);
   persist(
@@ -70,16 +70,16 @@ export function renamePreset(id: string, name: string): void {
   );
 }
 
-export function deletePreset(id: string): void {
+export function deletePatch(id: string): void {
   persist(read().filter((p) => p.id !== id));
 }
 
-export function serializePreset(preset: Preset): string {
+export function serializePatch(patch: Patch): string {
   const file: PatchFile = {
     format: PATCH_FORMAT,
     version: PATCH_VERSION,
-    name: preset.name,
-    snapshot: preset.snapshot,
+    name: patch.name,
+    snapshot: patch.snapshot,
   };
   return JSON.stringify(file, null, 2);
 }
@@ -101,11 +101,11 @@ export function parsePatchFile(raw: string): { name: string; snapshot: RackSnaps
   return { name: normalise(typeof file.name === 'string' ? file.name : ''), snapshot: file.snapshot };
 }
 
-export function downloadPreset(preset: Preset): void {
-  const url = URL.createObjectURL(new Blob([serializePreset(preset)], { type: 'application/json' }));
+export function downloadPatch(patch: Patch): void {
+  const url = URL.createObjectURL(new Blob([serializePatch(patch)], { type: 'application/json' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${preset.name.replace(/[^\w.-]+/g, '-')}.signaly.json`;
+  a.download = `${patch.name.replace(/[^\w.-]+/g, '-')}.signaly.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

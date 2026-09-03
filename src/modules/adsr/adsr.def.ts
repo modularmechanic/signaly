@@ -8,10 +8,10 @@ export const def: ModuleDef = {
   cat: 'ENV / FUNC',
   worklet: 'adsr',
   knobs: [
-    { id: 'a', label: 'ATTACK', min: 0.001, max: 3, def: 0.01, fmt: 'fMs', curve: 'log' },
-    { id: 'd', label: 'DECAY', min: 0.005, max: 4, def: 0.25, fmt: 'fMs', curve: 'log' },
-    { id: 's', label: 'SUSTAIN', min: 0, max: 1, def: 0.6, fmt: 'fPc' },
-    { id: 'r', label: 'RELEASE', min: 0.005, max: 6, def: 0.4, fmt: 'fMs', curve: 'log' },
+    { id: 'a', label: 'ATTACK', min: 0.001, max: 3, initial: 0.01, fmt: 'fMs', curve: 'log' },
+    { id: 'd', label: 'DECAY', min: 0.005, max: 4, initial: 0.25, fmt: 'fMs', curve: 'log' },
+    { id: 's', label: 'SUSTAIN', min: 0, max: 1, initial: 0.6, fmt: 'fPc' },
+    { id: 'r', label: 'RELEASE', min: 0.005, max: 6, initial: 0.4, fmt: 'fMs', curve: 'log' },
   ],
   ins: [{ id: 'gate', label: 'GATE', kind: 'g' }],
   outs: [

@@ -8,8 +8,8 @@ export const def: ModuleDef = {
   cat: 'SOURCES',
   worklet: 'lfo',
   knobs: [
-    { id: 'rate', label: 'RATE', min: 0.02, max: 30, def: 2, fmt: 'fHz', curve: 'log', cvIn: 'rate' },
-    { id: 'rateA', label: 'RATE CV', min: -1, max: 1, def: 0, fmt: 'f1', attenuates: 'rate' },
+    { id: 'rate', label: 'RATE', min: 0.02, max: 30, initial: 2, fmt: 'fHz', curve: 'log', cvIn: 'rate' },
+    { id: 'rateA', label: 'RATE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'rate' },
   ],
   ins: [
     { id: 'rate', label: 'RATE CV', kind: 'c' },

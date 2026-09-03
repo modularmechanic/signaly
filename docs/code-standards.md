@@ -3,7 +3,7 @@
 ## Files
 
 - **kebab-case** file names (`module-panel.tsx`, `dsp-transpile.ts`).
-- **< 200 lines per TS file.** One documented exception: `src/modules/reverb/reverb.dsp.ts` (281 L —
+- **< 200 lines per TS file.** One documented exception: `src/modules/reverb/reverb.dsp.ts` (288 L —
   a single Freeverb-style DSP class that doesn't split cleanly).
 - **No barrel `index.ts`** in hot paths — it defeats tree-shaking. (`features/llm/providers/index.ts`
   is a small named re-export map, not a barrel of the whole tree.)
@@ -39,10 +39,11 @@
 - Clamp feedback paths to a stable range before they reach a delay/filter state variable.
 - Call `flush()` (from the prelude) on filter/delay state to zero denormals below `DENORMAL` (1e-18).
 - Signals are **volts**: audio ±5 V, gate 0/5 V, pitch 1 V/oct with 0 V = C4.
-- Worklet scope exposes exactly: `Base`, `ch`, `clamp`, `TP`, `flush`, `blep`, `oscW`, `DL`,
-  `OnePole`, `onePoleCoeff`, `ClockSync`, `SYNC_DIV`, `sampleRate` — nothing else. User DSP is
-  transpiled with the same prelude inlined (`dsp-transpile.ts`), so this list is exhaustive for both
-  built-in and user modules.
+- Worklet scope exposes exactly: `Base`, `ch`, `clamp`, `TP`, `DENORMAL`, `flush`, `blep`, `oscW`,
+  `DL`, `OnePole`, `onePoleCoeff`, `lpCoeff`, `Lcg`, `ClockSync`, `SYNC_DIV`, `sampleRate` — nothing
+  else. User DSP is transpiled with the same prelude inlined (`dsp-transpile.ts`), so this list is
+  exhaustive for both built-in and user modules; keep it in step with the README's copy and the
+  builder system prompt when the prelude gains a symbol.
 
 ## Testing conventions
 
