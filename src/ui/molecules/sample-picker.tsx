@@ -82,19 +82,19 @@ export function SamplePicker({ sampleId, sampleName, onLoaded }: SamplePickerPro
     if (!sampleId || sampleId === loadedId.current) return;
     let live = true;
     setBusy(true);
-    void getSample(sampleId).then(async (blob) => {
+    const reload = async (): Promise<void> => {
+      const blob = await getSample(sampleId);
       if (!live) return;
-      if (!blob) {
-        setBusy(false);
-        setMsg('no sample');
-        return;
-      }
+      if (!blob) return setMsg('no sample');
       const dec = await decodeSample(blob);
       if (!live) return;
-      setBusy(false);
       if ('error' in dec) setMsg(dec.error);
       else commit(sampleId, sampleName ?? 'sample', dec);
-    });
+    };
+    // IndexedDB itself can reject (private mode, quota, a closed database): report, never hang busy.
+    reload()
+      .catch(() => live && setMsg('could not load sample'))
+      .finally(() => live && setBusy(false));
     return () => {
       live = false;
     };
@@ -103,16 +103,17 @@ export function SamplePicker({ sampleId, sampleName, onLoaded }: SamplePickerPro
 
   const pick = async (file: File): Promise<void> => {
     setBusy(true);
-    const dec = await decodeSample(file);
-    if ('error' in dec) {
+    try {
+      const dec = await decodeSample(file);
+      if ('error' in dec) return setMsg(dec.error);
+      const id = newSampleId();
+      await saveSample(id, file);
+      commit(id, file.name, dec);
+    } catch {
+      setMsg('could not save sample');
+    } finally {
       setBusy(false);
-      setMsg(dec.error);
-      return;
     }
-    const id = newSampleId();
-    await saveSample(id, file);
-    setBusy(false);
-    commit(id, file.name, dec);
   };
 
   return (

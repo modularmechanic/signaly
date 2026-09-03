@@ -38,7 +38,7 @@ export interface KnobDef {
   cvIn?: string;
   /** input jack id this knob attenuverts (engine inserts a GainNode) */
   attenuates?: string;
-  /** overrides ModuleDef.look.knob for this one control (a trimmer among Davies knobs) */
+  /** overrides the module kit's knob style for this one control (a trimmer among Davies knobs) */
   look?: KnobLook;
 }
 
@@ -47,7 +47,7 @@ export interface SwitchDef {
   label: string;
   options: string[];
   initial?: number;
-  /** overrides ModuleDef.look.sw for this one control */
+  /** overrides the module kit's switch style for this one control */
   look?: SwitchLook;
 }
 

@@ -32,12 +32,16 @@ class Chords extends Base {
     const p = this.p;
     const table = CHORDS[clamp(Math.round(p.type ?? 0), 0, CHORDS.length - 1)] ?? CHORDS[0]!;
     const inv = clamp(Math.round(p.inv ?? 0), 0, 3);
-    // INVERSION rotates the voicing: the lowest `inv` notes move up an octave.
-    const offsets = [0, 1, 2, 3].map((j) => {
-      const idx = (j + inv) % 4;
-      const oct = Math.floor((j + inv) / 4);
-      return (table[idx] ?? 0) + 12 * oct;
-    });
+    // INVERSION rotates the voicing: the lowest `inv` notes move up. Each wrapped note is raised
+    // by whole octaves until it sits above the voice before it, so a table with an octave in it
+    // (MAJ is 0 4 7 12) never doubles a pitch: inv 1 gives 4 7 12 24, not 4 7 12 12.
+    const offsets: number[] = [];
+    for (let j = 0; j < 4; j++) {
+      let note = table[(j + inv) % 4] ?? 0;
+      const prev = offsets[j - 1];
+      if (prev !== undefined) while (note <= prev) note += 12;
+      offsets.push(note);
+    }
     const n = outs[0]!.length;
     for (let i = 0; i < n; i++) {
       const root = inp?.[i] ?? 0;

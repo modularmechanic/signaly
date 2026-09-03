@@ -45,4 +45,17 @@ describe('chords.dsp', () => {
     expect(min7[2]).toBeCloseTo(1 + 7 / 12, 5);
     expect(min7[3]).toBeCloseTo(1 + 10 / 12, 5);
   });
+
+  it('keeps every inversion strictly ascending, never doubling a pitch', () => {
+    // MAJ inv 1: the root wraps above the octave already in the table -> 4 7 12 24, not 4 7 12 12.
+    const maj1 = voices(0, 0, 1).map((v) => Math.round(v * 12));
+    expect(maj1).toEqual([4, 7, 12, 24]);
+    // 5TH (0 7 12 19) inv 1 -> 7 12 19 24.
+    expect(voices(0, 8, 1).map((v) => Math.round(v * 12))).toEqual([7, 12, 19, 24]);
+    for (let type = 0; type < 12; type++)
+      for (let inv = 0; inv < 4; inv++) {
+        const v = voices(0, type, inv);
+        for (let k = 1; k < 4; k++) expect(v[k]!, `type ${type} inv ${inv}`).toBeGreaterThan(v[k - 1]!);
+      }
+  });
 });
