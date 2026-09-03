@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { setParam, setSwitch } from '../engine/rack';
-import type { ModuleInstance } from '../engine/types';
+import type { JackRef, ModuleInstance } from '../engine/types';
 import { useRackStore } from '../state/rack-store';
 import { addDraw } from './render-bus';
 
@@ -66,6 +66,84 @@ export function useWorkletFeed<M = unknown>(m: ModuleInstance, handler: (msg: M)
       bag.__feed?.delete(h);
     };
   }, [m]);
+}
+
+/** ±5 V is full scale, and a knob's CV marker spans the full travel at attenuverter 1. */
+const CV_VOLTS = 5;
+/** ~30 Hz. Faster buys nothing on a marker with a 50 ms CSS ease and costs rAF budget. */
+const CV_MS = 33;
+/** Travel step below one pixel on the dial, so an idle patch writes no style at all. */
+const CV_STEP = 500;
+
+/** Where a knob's CV comes from: the attenuverter gain when one exists (so the reading is
+    post-attenuverter, matching what the DSP sees), else the patched source's own out jack. */
+function cvTap(m: ModuleInstance, jackId: string, src: string): JackRef | undefined {
+  const gain = m.cvGains?.[jackId]?.node;
+  if (gain) return { node: gain, idx: 0 };
+  const [uid, jack] = src.split(':');
+  return useRackStore.getState().modules[Number(uid)]?.jacks.out[jack ?? ''];
+}
+
+/** Drives the live CV marker on a knob: writes the modulated 0..1 position straight to
+    `--cv` on `ref` off the render bus, never through React state. Returns whether a cable
+    is feeding `jackId` — while false the caller owns `--cv` and the static marker stands.
+    Costs nothing for a knob with no `cvIn` or an unpatched one: no tap, no subscription. */
+export function useCvMod(
+  m: ModuleInstance,
+  jackId: string | undefined,
+  ref: RefObject<HTMLElement | null>,
+  pct: number,
+): boolean {
+  const pctRef = useRef(pct);
+  pctRef.current = pct;
+  // A primitive key, so re-patching to a different source restarts the tap while an
+  // unrelated rack change re-renders nothing.
+  const src = useRackStore((s) => {
+    if (jackId === undefined) return '';
+    const c = s.cables.find((x) => x.to.uid === m.uid && x.to.jack === jackId);
+    return c ? `${c.from.uid}:${c.from.jack}` : '';
+  });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || jackId === undefined || !src) return;
+    const tap = cvTap(m, jackId, src);
+    if (!tap) return;
+    // The tap node's own context: a knob must never be the thing that creates an AudioContext.
+    const an = tap.node.context.createAnalyser();
+    an.fftSize = 32; // ~0.7 ms — an instantaneous reading, not an average that flattens an LFO
+    const buf = new Float32Array(an.fftSize);
+    tap.node.connect(an, tap.idx);
+    // React drops --cv from the style object the moment this goes live, so seed it here or
+    // the marker snaps to the dial's minimum until the first bus frame lands.
+    let prev = pctRef.current;
+    el.style.setProperty('--cv', String(prev));
+    let last = performance.now();
+    const stop = addDraw(() => {
+      const t = performance.now();
+      if (t - last < CV_MS) return;
+      last = t;
+      an.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] ?? 0;
+      const raw = pctRef.current + sum / buf.length / CV_VOLTS;
+      const v = Math.round((raw < 0 ? 0 : raw > 1 ? 1 : raw) * CV_STEP) / CV_STEP;
+      if (v === prev) return;
+      prev = v;
+      el.style.setProperty('--cv', String(v));
+    });
+    return () => {
+      stop();
+      // Removing a module tears its nodes down before this cleanup runs.
+      try {
+        tap.node.disconnect(an);
+      } catch {
+        /* already disconnected */
+      }
+    };
+  }, [m, jackId, src, ref]);
+
+  return src !== '';
 }
 
 /** A stable poster to `m.node.port` — a no-op for native modules. */

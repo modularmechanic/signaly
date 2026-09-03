@@ -106,7 +106,9 @@
   transition: transform 0.06s linear;
 }
 
-/* Static CV marker: where the patched modulation currently pushes this knob. */
+/* CV marker: where the modulation currently pushes this knob. `useCvMod` rewrites --cv at
+   ~30 Hz off the render bus while the jack is patched, so the ease has to bridge one 33 ms
+   gap; unpatched it rests at the attenuverter's reach and the ease costs nothing. */
 .knob-cv {
   position: absolute;
   top: 50%;
@@ -119,6 +121,7 @@
   opacity: 0.85;
   transform: translate(-50%, -100%) rotate(calc(var(--cv, 0) * 270deg - 135deg));
   transform-origin: 50% 100%;
+  transition: transform 0.05s linear;
 }
 
 .knob:focus-visible {

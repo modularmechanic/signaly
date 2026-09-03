@@ -2,7 +2,7 @@ import { useRef, type CSSProperties, type KeyboardEvent, type PointerEvent, type
 import type { KnobDef } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { fmtValue, isIntFmt } from '../../hooks/formatters';
-import { useParam } from '../../hooks/module-api';
+import { useCvMod, useParam } from '../../hooks/module-api';
 
 export const clamp = (x: number, a: number, b: number): number => (x < a ? a : x > b ? b : x);
 
@@ -48,14 +48,17 @@ export function sliderKey(d: KnobDef, v: number, e: KeyboardEvent): number | und
 export interface KnobProps {
   m: ModuleInstance;
   def: KnobDef;
-  /** signed modulation depth in 0..1 travel space — draws a static CV marker arc */
+  /** signed modulation depth in 0..1 travel space — the marker's resting place while the
+      knob's `cvIn` jack is unpatched. Patched, `useCvMod` animates the marker instead. */
   cv?: number;
 }
 
 export function Knob({ m, def, cv }: KnobProps): ReactNode {
   const [val, setVal] = useParam(m, def.id);
   const drag = useRef<{ n: number; x: number; y: number; ax?: 'x' | 'y' } | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const n = knobNorm(def, val);
+  const live = useCvMod(m, def.cvIn, ref, n);
   const commit = (v: number): void => setVal(knobQuantize(def, v));
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>): void => {
@@ -87,12 +90,18 @@ export function Knob({ m, def, cv }: KnobProps): ReactNode {
     commit(next);
   };
 
-  const marker = cv !== undefined && cv !== 0;
-  const style = { '--pct': n, '--cv': marker ? clamp(n + cv, 0, 1) : n } as CSSProperties;
+  const marker = live || (cv !== undefined && cv !== 0);
+  // While live the render bus owns --cv; leaving it out of the style object is what stops
+  // React from stomping the animated value on every re-render.
+  const style = {
+    '--pct': n,
+    ...(live ? null : { '--cv': cv !== undefined && cv !== 0 ? clamp(n + cv, 0, 1) : n }),
+  } as CSSProperties;
 
   return (
     <div className={'knob-cell' + (def.big ? ' big' : '')} data-param-id={def.id}>
       <div
+        ref={ref}
         className="knob"
         role="slider"
         tabIndex={0}
