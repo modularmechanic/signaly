@@ -1,7 +1,7 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Night Drums (G minor)",
+  "name": "Deep Field (G minor)",
   "snapshot": {
     "modules": [
       {
@@ -19,99 +19,22 @@
         "mtype": "clock",
         "uid": 1,
         "vals": {
-          "bpm": 74,
+          "bpm": 50,
           "r1": 3,
-          "r2": 5,
-          "r3": 2,
-          "r4": 1
+          "r2": 4,
+          "r3": 1,
+          "r4": 0
         },
         "sws": {
           "run": 1
         }
       },
       {
-        "mtype": "trigseq",
-        "uid": 2,
-        "vals": {
-          "len1": 16,
-          "len2": 16,
-          "len3": 16,
-          "len4": 16
-        },
-        "sws": {},
-        "ext": {
-          "lanes": [
-            [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-            [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-          ]
-        }
-      },
-      {
-        "mtype": "bern",
-        "uid": 6,
-        "vals": {
-          "bias": 0.15,
-          "biasA": 0
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "logic",
-        "uid": 7,
-        "vals": {
-          "thr": 2.5
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "kick",
-        "uid": 3,
-        "vals": {
-          "tune": 45,
-          "pdec": 0.05,
-          "adec": 0.5,
-          "click": 0.2,
-          "drive": 0.3,
-          "level": 0.8
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "drum2",
-        "uid": 4,
-        "vals": {
-          "tone": 0.4,
-          "snap": 0.3,
-          "click": 0.3,
-          "length": 0.25,
-          "pitch": 0,
-          "resonance": 0.5,
-          "adsr": 0.4
-        },
-        "sws": {
-          "mode": 1
-        }
-      },
-      {
-        "mtype": "hats",
-        "uid": 5,
-        "vals": {
-          "tone": 6000,
-          "cdec": 0.03,
-          "odec": 0.4,
-          "metal": 0.7,
-          "level": 0.5
-        },
-        "sws": {}
-      },
-      {
         "mtype": "seq",
         "uid": 8,
         "vals": {
           "len": 8,
-          "glide": 0.05
+          "glide": 0.3
         },
         "sws": {},
         "ext": {
@@ -130,7 +53,7 @@
             },
             {
               "pitch": 0,
-              "gate": 1
+              "gate": 0
             },
             {
               "pitch": -2,
@@ -166,15 +89,15 @@
         "mtype": "monov",
         "uid": 10,
         "vals": {
-          "glide": 0.05,
-          "cut": 300,
-          "res": 0.4,
-          "env": 0.5,
+          "glide": 0.3,
+          "cut": 220,
+          "res": 0.2,
+          "env": 0.3,
           "fcv": 0,
-          "a": 0.01,
-          "d": 0.4,
-          "s": 0.3,
-          "r": 0.3,
+          "a": 1.5,
+          "d": 2,
+          "s": 0.8,
+          "r": 3,
           "accA": 0
         },
         "sws": {
@@ -185,9 +108,9 @@
         "mtype": "saturate",
         "uid": 11,
         "vals": {
-          "drive": 1.5,
+          "drive": 1.3,
           "bias": 0,
-          "tilt": -0.2,
+          "tilt": -0.3,
           "level": 0.8,
           "dcvA": 0
         },
@@ -199,7 +122,7 @@
         "mtype": "turing",
         "uid": 12,
         "vals": {
-          "prob": 0.7,
+          "prob": 0.5,
           "len": 8,
           "scale": 1.5,
           "offset": 0
@@ -212,7 +135,7 @@
         "vals": {
           "root": 7,
           "transpose": 0,
-          "glide": 0.2
+          "glide": 0.6
         },
         "sws": {
           "scale": 2
@@ -222,29 +145,79 @@
         "mtype": "lfo",
         "uid": 16,
         "vals": {
-          "rate": 0.04,
+          "rate": 0.03,
           "rateA": 0
         },
         "sws": {}
       },
       {
-        "mtype": "fmvoice",
+        "mtype": "wavetable",
         "uid": 14,
         "vals": {
-          "tune": 220,
-          "r1": 1,
-          "r2": 2,
-          "r3": 1,
-          "r4": 3,
-          "l1": 1,
-          "l2": 0.4,
-          "l3": 0,
-          "l4": 0,
-          "atk": 1,
-          "dec": 3
+          "tune": 0,
+          "fine": 0,
+          "pos": 0.4,
+          "posA": 0.4,
+          "fm": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "super",
+        "uid": 2,
+        "vals": {
+          "tune": 0,
+          "det": 0.4,
+          "mix": 0.5,
+          "detA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "mix",
+        "uid": 3,
+        "vals": {
+          "l1": 0.6,
+          "l2": 0.6,
+          "l3": 0.8,
+          "l4": 0.8
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "polivoks",
+        "uid": 4,
+        "vals": {
+          "cut": 500,
+          "res": 0.3,
+          "drive": 1.2,
+          "cvA": 0.4
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "ad",
+        "uid": 5,
+        "vals": {
+          "a": 3,
+          "d": 6,
+          "curve": 0.6
         },
         "sws": {
-          "algo": 1
+          "loop": 0
+        }
+      },
+      {
+        "mtype": "vca",
+        "uid": 6,
+        "vals": {
+          "g1": 0.8,
+          "g2": 1,
+          "cv1A": 1,
+          "cv2A": 0
+        },
+        "sws": {
+          "exp": 0
         }
       },
       {
@@ -252,7 +225,7 @@
         "uid": 15,
         "vals": {
           "sweep": -0.1,
-          "cvA": 0.6
+          "cvA": 0.3
         },
         "sws": {}
       },
@@ -260,10 +233,10 @@
         "mtype": "noiselab",
         "uid": 18,
         "vals": {
-          "color": -0.5,
-          "cut": 6000,
-          "dec": 0.3,
-          "dens": 8,
+          "color": -0.6,
+          "cut": 5000,
+          "dec": 0.4,
+          "dens": 4,
           "colorA": 0,
           "cutA": 0
         },
@@ -273,10 +246,10 @@
         "mtype": "lofi",
         "uid": 19,
         "vals": {
-          "bw": 4000,
-          "wow": 0.5,
-          "hiss": 0.15,
-          "crackle": 0.4,
+          "bw": 3500,
+          "wow": 0.4,
+          "hiss": 0.2,
+          "crackle": 0.5,
           "mix": 1
         },
         "sws": {}
@@ -285,7 +258,7 @@
         "mtype": "rvsdelay",
         "uid": 22,
         "vals": {
-          "time": 0.5,
+          "time": 0.8,
           "mix": 1
         },
         "sws": {}
@@ -294,12 +267,12 @@
         "mtype": "sdelay",
         "uid": 20,
         "vals": {
-          "timel": 0.375,
-          "timer": 0.375,
-          "fb": 0.5,
+          "timel": 0.5,
+          "timer": 0.75,
+          "fb": 0.55,
           "swing": 0,
           "tone": 2500,
-          "width": 0.9,
+          "width": 1,
           "mix": 1,
           "tcvA": 0,
           "fcvA": 0,
@@ -307,42 +280,42 @@
         },
         "sws": {
           "mode": 1,
-          "sync": 5
+          "sync": 2
         }
       },
       {
         "mtype": "reverb",
         "uid": 21,
         "vals": {
-          "pre": 0.02,
-          "decay": 0.8,
-          "size": 1.2,
-          "diff": 0.7,
-          "inhp": 150,
-          "inlp": 7000,
-          "damp": 5000,
-          "lowd": 80,
-          "mrate": 0.6,
-          "mdep": 0.3,
+          "pre": 0.04,
+          "decay": 0.95,
+          "size": 2.2,
+          "diff": 0.8,
+          "inhp": 80,
+          "inlp": 9000,
+          "damp": 4000,
+          "lowd": 50,
+          "mrate": 0.3,
+          "mdep": 0.5,
           "mix": 1,
           "sizeA": 0,
           "decayA": 0,
           "mixA": 0
         },
         "sws": {
-          "algo": 2
+          "algo": 3
         }
       },
       {
         "mtype": "comp",
         "uid": 23,
         "vals": {
-          "thr": -14,
-          "ratio": 4,
-          "atk": 0.01,
-          "rel": 0.12,
+          "thr": -16,
+          "ratio": 3,
+          "atk": 0.02,
+          "rel": 0.3,
           "knee": 6,
-          "makeup": 3
+          "makeup": 2
         },
         "sws": {
           "limit": 1
@@ -355,29 +328,29 @@
           "master": 1,
           "ret1": 0.8,
           "ret2": 0.5,
-          "l1": 0.9,
+          "l1": 0.75,
           "p1": 0,
           "snd1_1": 0,
           "snd2_1": 0,
-          "l2": 0.6,
-          "p2": -0.2,
-          "snd1_2": 0.5,
+          "l2": 0.75,
+          "p2": 0,
+          "snd1_2": 0,
           "snd2_2": 0,
-          "l3": 0.45,
-          "p3": 0.3,
-          "snd1_3": 0.3,
+          "l3": 0.75,
+          "p3": 0,
+          "snd1_3": 0,
           "snd2_3": 0,
           "l4": 0.75,
           "p4": 0,
           "snd1_4": 0,
           "snd2_4": 0,
-          "l5": 0.5,
+          "l5": 0.6,
           "p5": 0,
           "snd1_5": 0.6,
           "snd2_5": 0.7,
-          "l6": 0.25,
+          "l6": 0.2,
           "p6": -0.5,
-          "snd1_6": 0,
+          "snd1_6": 0.3,
           "snd2_6": 0,
           "l7": 0.75,
           "p7": 0,
@@ -404,7 +377,15 @@
           "s5": 0,
           "s6": 0,
           "s7": 0,
-          "s8": 0
+          "s8": 0,
+          "pre1": 0,
+          "pre2": 0,
+          "pre3": 0,
+          "pre4": 0,
+          "pre5": 1,
+          "pre6": 0,
+          "pre7": 0,
+          "pre8": 0
         }
       }
     ],
@@ -413,95 +394,7 @@
         "id": 1,
         "from": {
           "uid": 1,
-          "jack": "x2"
-        },
-        "to": {
-          "uid": 2,
-          "jack": "clk"
-        }
-      },
-      {
-        "id": 2,
-        "from": {
-          "uid": 1,
-          "jack": "x2"
-        },
-        "to": {
-          "uid": 6,
-          "jack": "gate"
-        }
-      },
-      {
-        "id": 3,
-        "from": {
-          "uid": 2,
-          "jack": "t2"
-        },
-        "to": {
-          "uid": 7,
-          "jack": "a"
-        }
-      },
-      {
-        "id": 4,
-        "from": {
-          "uid": 6,
-          "jack": "a"
-        },
-        "to": {
-          "uid": 7,
-          "jack": "b"
-        }
-      },
-      {
-        "id": 5,
-        "from": {
-          "uid": 2,
-          "jack": "t1"
-        },
-        "to": {
-          "uid": 3,
-          "jack": "trig"
-        }
-      },
-      {
-        "id": 6,
-        "from": {
-          "uid": 7,
-          "jack": "or"
-        },
-        "to": {
-          "uid": 4,
-          "jack": "trig"
-        }
-      },
-      {
-        "id": 7,
-        "from": {
-          "uid": 2,
-          "jack": "t3"
-        },
-        "to": {
-          "uid": 5,
-          "jack": "closed"
-        }
-      },
-      {
-        "id": 8,
-        "from": {
-          "uid": 2,
-          "jack": "t4"
-        },
-        "to": {
-          "uid": 5,
-          "jack": "open"
-        }
-      },
-      {
-        "id": 9,
-        "from": {
-          "uid": 1,
-          "jack": "x1"
+          "jack": "d2"
         },
         "to": {
           "uid": 8,
@@ -509,7 +402,7 @@
         }
       },
       {
-        "id": 10,
+        "id": 2,
         "from": {
           "uid": 8,
           "jack": "cv"
@@ -520,7 +413,7 @@
         }
       },
       {
-        "id": 11,
+        "id": 3,
         "from": {
           "uid": 9,
           "jack": "out"
@@ -531,7 +424,7 @@
         }
       },
       {
-        "id": 12,
+        "id": 4,
         "from": {
           "uid": 8,
           "jack": "gate"
@@ -542,7 +435,7 @@
         }
       },
       {
-        "id": 13,
+        "id": 5,
         "from": {
           "uid": 10,
           "jack": "out"
@@ -553,10 +446,10 @@
         }
       },
       {
-        "id": 14,
+        "id": 6,
         "from": {
           "uid": 1,
-          "jack": "d2"
+          "jack": "d4"
         },
         "to": {
           "uid": 12,
@@ -564,7 +457,7 @@
         }
       },
       {
-        "id": 15,
+        "id": 7,
         "from": {
           "uid": 12,
           "jack": "cv"
@@ -575,7 +468,18 @@
         }
       },
       {
-        "id": 16,
+        "id": 8,
+        "from": {
+          "uid": 1,
+          "jack": "d4"
+        },
+        "to": {
+          "uid": 13,
+          "jack": "trig"
+        }
+      },
+      {
+        "id": 9,
         "from": {
           "uid": 13,
           "jack": "out"
@@ -586,21 +490,109 @@
         }
       },
       {
-        "id": 17,
+        "id": 10,
         "from": {
-          "uid": 1,
-          "jack": "d2"
+          "uid": 13,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 2,
+          "jack": "voct"
+        }
+      },
+      {
+        "id": 11,
+        "from": {
+          "uid": 14,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 3,
+          "jack": "i1"
+        }
+      },
+      {
+        "id": 12,
+        "from": {
+          "uid": 2,
+          "jack": "l"
+        },
+        "to": {
+          "uid": 3,
+          "jack": "i2"
+        }
+      },
+      {
+        "id": 13,
+        "from": {
+          "uid": 3,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 4,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 14,
+        "from": {
+          "uid": 16,
+          "jack": "sin"
+        },
+        "to": {
+          "uid": 4,
+          "jack": "cv"
+        }
+      },
+      {
+        "id": 15,
+        "from": {
+          "uid": 16,
+          "jack": "tri"
         },
         "to": {
           "uid": 14,
-          "jack": "gate"
+          "jack": "poscv"
+        }
+      },
+      {
+        "id": 16,
+        "from": {
+          "uid": 1,
+          "jack": "d4"
+        },
+        "to": {
+          "uid": 5,
+          "jack": "trig"
+        }
+      },
+      {
+        "id": 17,
+        "from": {
+          "uid": 4,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 6,
+          "jack": "in1"
         }
       },
       {
         "id": 18,
         "from": {
-          "uid": 14,
+          "uid": 5,
           "jack": "out"
+        },
+        "to": {
+          "uid": 6,
+          "jack": "cv1"
+        }
+      },
+      {
+        "id": 19,
+        "from": {
+          "uid": 6,
+          "jack": "o1"
         },
         "to": {
           "uid": 15,
@@ -608,10 +600,10 @@
         }
       },
       {
-        "id": 19,
+        "id": 20,
         "from": {
           "uid": 16,
-          "jack": "sin"
+          "jack": "saw"
         },
         "to": {
           "uid": 15,
@@ -619,7 +611,7 @@
         }
       },
       {
-        "id": 20,
+        "id": 21,
         "from": {
           "uid": 18,
           "jack": "dust"
@@ -630,40 +622,7 @@
         }
       },
       {
-        "id": 21,
-        "from": {
-          "uid": 3,
-          "jack": "out"
-        },
-        "to": {
-          "uid": 17,
-          "jack": "in1"
-        }
-      },
-      {
         "id": 22,
-        "from": {
-          "uid": 4,
-          "jack": "out"
-        },
-        "to": {
-          "uid": 17,
-          "jack": "in2"
-        }
-      },
-      {
-        "id": 23,
-        "from": {
-          "uid": 5,
-          "jack": "out"
-        },
-        "to": {
-          "uid": 17,
-          "jack": "in3"
-        }
-      },
-      {
-        "id": 24,
         "from": {
           "uid": 11,
           "jack": "out"
@@ -674,7 +633,7 @@
         }
       },
       {
-        "id": 25,
+        "id": 23,
         "from": {
           "uid": 15,
           "jack": "out"
@@ -685,7 +644,7 @@
         }
       },
       {
-        "id": 26,
+        "id": 24,
         "from": {
           "uid": 19,
           "jack": "out"
@@ -696,7 +655,7 @@
         }
       },
       {
-        "id": 27,
+        "id": 25,
         "from": {
           "uid": 17,
           "jack": "s1l"
@@ -707,7 +666,7 @@
         }
       },
       {
-        "id": 28,
+        "id": 26,
         "from": {
           "uid": 17,
           "jack": "s1r"
@@ -718,7 +677,7 @@
         }
       },
       {
-        "id": 29,
+        "id": 27,
         "from": {
           "uid": 1,
           "jack": "x1"
@@ -729,7 +688,7 @@
         }
       },
       {
-        "id": 30,
+        "id": 28,
         "from": {
           "uid": 20,
           "jack": "outl"
@@ -740,7 +699,7 @@
         }
       },
       {
-        "id": 31,
+        "id": 29,
         "from": {
           "uid": 20,
           "jack": "outr"
@@ -751,7 +710,7 @@
         }
       },
       {
-        "id": 32,
+        "id": 30,
         "from": {
           "uid": 21,
           "jack": "outl"
@@ -762,7 +721,7 @@
         }
       },
       {
-        "id": 33,
+        "id": 31,
         "from": {
           "uid": 21,
           "jack": "outr"
@@ -773,7 +732,7 @@
         }
       },
       {
-        "id": 34,
+        "id": 32,
         "from": {
           "uid": 17,
           "jack": "s2l"
@@ -784,7 +743,7 @@
         }
       },
       {
-        "id": 35,
+        "id": 33,
         "from": {
           "uid": 1,
           "jack": "x1"
@@ -795,7 +754,7 @@
         }
       },
       {
-        "id": 36,
+        "id": 34,
         "from": {
           "uid": 22,
           "jack": "out"
@@ -806,7 +765,7 @@
         }
       },
       {
-        "id": 37,
+        "id": 35,
         "from": {
           "uid": 22,
           "jack": "out"
@@ -817,7 +776,7 @@
         }
       },
       {
-        "id": 38,
+        "id": 36,
         "from": {
           "uid": 17,
           "jack": "outl"
@@ -828,7 +787,7 @@
         }
       },
       {
-        "id": 39,
+        "id": 37,
         "from": {
           "uid": 17,
           "jack": "outr"
@@ -839,7 +798,7 @@
         }
       },
       {
-        "id": 40,
+        "id": 38,
         "from": {
           "uid": 23,
           "jack": "outl"
@@ -850,7 +809,7 @@
         }
       },
       {
-        "id": 41,
+        "id": 39,
         "from": {
           "uid": 23,
           "jack": "outr"
@@ -861,6 +820,6 @@
         }
       }
     ],
-    "rows": [[24, 1, 2, 6, 7, 3, 4, 5, 8, 9, 10, 11], [12, 13, 16, 14, 15, 18, 19, 22, 20, 21, 23], [17]]
+    "rows": [[24, 1, 8, 9, 10, 11, 12, 13, 16, 14, 2, 3, 4, 5, 6, 15], [18, 19, 22, 20, 21, 23], [17]]
   }
 }

@@ -50,6 +50,9 @@ const knobs: KnobDef[] = [
 const sws: SwitchDef[] = [
   ...chs.map((n): SwitchDef => ({ id: `m${n}`, label: `MUTE ${n}`, options: ['M'], initial: 0 })),
   ...chs.map((n): SwitchDef => ({ id: `s${n}`, label: `SOLO ${n}`, options: ['S'], initial: 0 })),
+  // PRE lifts both of a channel's sends ahead of its fader (post-EQ), so a wet effect can carry
+  // a channel whose fader is down — the classic reverb-tail trick.
+  ...chs.map((n): SwitchDef => ({ id: `pre${n}`, label: `PRE ${n}`, options: ['PRE'], initial: 0 })),
 ];
 
 const ins: JackDef[] = [
@@ -150,7 +153,8 @@ const nodes: PanelNode[] = [
     (n) => `switch:m${n}`,
     (n) => `switch:s${n}`,
   ),
-  ...strip(0.58, 0.3, 'fader', (n) => `fader:l${n}`),
+  ...strip(0.578, 0.045, 'switch', (n) => `switch:pre${n}`),
+  ...strip(0.628, 0.252, 'fader', (n) => `fader:l${n}`),
   cell('knob:ret1', 'knob', MASTER_X, 0.205, MASTER_W, KNOB_H),
   cell('knob:ret2', 'knob', MASTER_X, 0.285, MASTER_W, KNOB_H),
   cell('fader:master', 'fader', MASTER_X, 0.365, MASTER_W, 0.515),

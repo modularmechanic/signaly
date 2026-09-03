@@ -1,12 +1,12 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Glass Dorian (D dorian)",
+  "name": "Slow Glass (D dorian)",
   "snapshot": {
     "modules": [
       {
         "mtype": "out",
-        "uid": 13,
+        "uid": 17,
         "vals": {
           "level": 0.6
         },
@@ -19,9 +19,9 @@
         "mtype": "clock",
         "uid": 1,
         "vals": {
-          "bpm": 92,
+          "bpm": 60,
           "r1": 3,
-          "r2": 5,
+          "r2": 4,
           "r3": 1,
           "r4": 0
         },
@@ -33,9 +33,9 @@
         "mtype": "turing",
         "uid": 2,
         "vals": {
-          "prob": 0.85,
-          "len": 16,
-          "scale": 2,
+          "prob": 0.5,
+          "len": 8,
+          "scale": 1.5,
           "offset": 0
         },
         "sws": {}
@@ -45,123 +45,122 @@
         "uid": 3,
         "vals": {
           "root": 2,
-          "transpose": 0,
-          "glide": 0.01
+          "transpose": -12,
+          "glide": 0.5
         },
         "sws": {
           "scale": 3
         }
       },
       {
-        "mtype": "euklid",
+        "mtype": "rndwalk",
         "uid": 5,
         "vals": {
-          "steps": 16,
-          "fill": 7,
-          "rot": 2,
-          "prob": 0.9,
-          "chaos": 0,
-          "fillA": 0,
-          "probA": 0
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "bern",
-        "uid": 15,
-        "vals": {
-          "bias": 0.35,
-          "biasA": 0
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "pluck",
-        "uid": 4,
-        "vals": {
-          "tune": 220,
-          "damp": 5000,
-          "bright": 0.5,
-          "dec": 2.5,
-          "tcvA": 0.08
+          "step": 0.2,
+          "range": 1.5
         },
         "sws": {}
       },
       {
         "mtype": "fmop",
-        "uid": 6,
+        "uid": 4,
         "vals": {
-          "tune": 1,
-          "ratio": 3.5,
-          "index": 2.5,
-          "idxA": 0.4,
-          "fb": 0.1
+          "tune": 0,
+          "ratio": 2,
+          "index": 1.2,
+          "idxA": 0.3,
+          "fb": 0
         },
         "sws": {}
       },
       {
         "mtype": "ad",
-        "uid": 7,
+        "uid": 6,
         "vals": {
-          "a": 0.005,
-          "d": 1.2,
-          "curve": 0.3
+          "a": 3,
+          "d": 6,
+          "curve": 0.6
         },
         "sws": {
           "loop": 0
         }
       },
       {
-        "mtype": "vca",
-        "uid": 18,
+        "mtype": "super",
+        "uid": 8,
         "vals": {
-          "g1": 0.6,
-          "g2": 1,
-          "cv1A": 1,
-          "cv2A": 0
+          "tune": 0,
+          "det": 0.5,
+          "mix": 0.5,
+          "detA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "lfo",
+        "uid": 11,
+        "vals": {
+          "rate": 0.05,
+          "rateA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "morph",
+        "uid": 9,
+        "vals": {
+          "cut": 700,
+          "res": 0.2,
+          "shape": 0,
+          "shapeA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "func",
+        "uid": 10,
+        "vals": {
+          "rise": 5,
+          "fall": 8,
+          "inA": 0
         },
         "sws": {
-          "exp": 1
+          "cycle": 1
+        }
+      },
+      {
+        "mtype": "vca",
+        "uid": 7,
+        "vals": {
+          "g1": 0.6,
+          "g2": 0.7,
+          "cv1A": 1,
+          "cv2A": 1
+        },
+        "sws": {
+          "exp": 0
         }
       },
       {
         "mtype": "mix",
-        "uid": 9,
+        "uid": 12,
         "vals": {
-          "l1": 0.8,
-          "l2": 0.5,
+          "l1": 0.7,
+          "l2": 0.6,
           "l3": 0.8,
           "l4": 0.8
         },
         "sws": {}
       },
       {
-        "mtype": "rndwalk",
-        "uid": 16,
-        "vals": {
-          "step": 0.3,
-          "range": 2
-        },
-        "sws": {}
-      },
-      {
-        "mtype": "lfo",
-        "uid": 14,
-        "vals": {
-          "rate": 0.08,
-          "rateA": 0
-        },
-        "sws": {}
-      },
-      {
         "mtype": "tape",
-        "uid": 10,
+        "uid": 13,
         "vals": {
-          "time": 0.4,
-          "fb": 0.5,
+          "time": 1,
+          "fb": 0.55,
           "wow": 0.3,
-          "sat": 1.2,
-          "mix": 0.35,
+          "sat": 1.1,
+          "mix": 0.4,
           "tcvA": 0,
           "fcvA": 0,
           "wcvA": 0,
@@ -169,36 +168,36 @@
           "mcvA": 0
         },
         "sws": {
-          "sync": 5
+          "sync": 2
         }
       },
       {
         "mtype": "shimmer",
-        "uid": 8,
+        "uid": 14,
         "vals": {
-          "fb": 0.7,
-          "window": 0.08,
-          "damp": 6000,
-          "mix": 0.5,
-          "fcvA": 0.3
+          "fb": 0.75,
+          "window": 0.12,
+          "damp": 4500,
+          "mix": 0.45,
+          "fcvA": 0
         },
         "sws": {}
       },
       {
         "mtype": "reverb",
-        "uid": 11,
+        "uid": 15,
         "vals": {
-          "pre": 0.03,
-          "decay": 0.9,
-          "size": 1.6,
-          "diff": 0.75,
-          "inhp": 120,
+          "pre": 0.04,
+          "decay": 0.94,
+          "size": 2,
+          "diff": 0.8,
+          "inhp": 80,
           "inlp": 9000,
-          "damp": 6000,
-          "lowd": 60,
-          "mrate": 0.5,
-          "mdep": 0.4,
-          "mix": 0.5,
+          "damp": 4500,
+          "lowd": 50,
+          "mrate": 0.3,
+          "mdep": 0.5,
+          "mix": 0.55,
           "sizeA": 0,
           "decayA": 0,
           "mixA": 0
@@ -209,9 +208,9 @@
       },
       {
         "mtype": "spread",
-        "uid": 12,
+        "uid": 16,
         "vals": {
-          "width": 1.4,
+          "width": 1.3,
           "wcvA": 0,
           "bass": 150,
           "mix": 1
@@ -224,7 +223,7 @@
         "id": 1,
         "from": {
           "uid": 1,
-          "jack": "x1"
+          "jack": "d2"
         },
         "to": {
           "uid": 2,
@@ -246,7 +245,7 @@
         "id": 3,
         "from": {
           "uid": 1,
-          "jack": "x1"
+          "jack": "d2"
         },
         "to": {
           "uid": 3,
@@ -256,28 +255,6 @@
       {
         "id": 4,
         "from": {
-          "uid": 1,
-          "jack": "x2"
-        },
-        "to": {
-          "uid": 5,
-          "jack": "clk"
-        }
-      },
-      {
-        "id": 5,
-        "from": {
-          "uid": 5,
-          "jack": "trig"
-        },
-        "to": {
-          "uid": 15,
-          "jack": "gate"
-        }
-      },
-      {
-        "id": 6,
-        "from": {
           "uid": 3,
           "jack": "out"
         },
@@ -287,229 +264,240 @@
         }
       },
       {
-        "id": 7,
+        "id": 5,
+        "from": {
+          "uid": 1,
+          "jack": "d2"
+        },
+        "to": {
+          "uid": 5,
+          "jack": "clk"
+        }
+      },
+      {
+        "id": 6,
         "from": {
           "uid": 5,
-          "jack": "trig"
+          "jack": "out"
         },
         "to": {
           "uid": 4,
+          "jack": "icv"
+        }
+      },
+      {
+        "id": 7,
+        "from": {
+          "uid": 1,
+          "jack": "d2"
+        },
+        "to": {
+          "uid": 6,
           "jack": "trig"
         }
       },
       {
         "id": 8,
         "from": {
-          "uid": 3,
+          "uid": 4,
           "jack": "out"
         },
         "to": {
-          "uid": 6,
-          "jack": "voct"
+          "uid": 7,
+          "jack": "in1"
         }
       },
       {
         "id": 9,
         "from": {
-          "uid": 15,
-          "jack": "a"
+          "uid": 6,
+          "jack": "out"
         },
         "to": {
           "uid": 7,
-          "jack": "trig"
+          "jack": "cv1"
         }
       },
       {
         "id": 10,
         "from": {
-          "uid": 6,
+          "uid": 3,
           "jack": "out"
         },
         "to": {
-          "uid": 18,
-          "jack": "in1"
+          "uid": 8,
+          "jack": "voct"
         }
       },
       {
         "id": 11,
         "from": {
-          "uid": 7,
-          "jack": "out"
+          "uid": 8,
+          "jack": "l"
         },
         "to": {
-          "uid": 18,
-          "jack": "cv1"
+          "uid": 9,
+          "jack": "in"
         }
       },
       {
         "id": 12,
         "from": {
-          "uid": 1,
-          "jack": "d2"
+          "uid": 10,
+          "jack": "out"
         },
         "to": {
-          "uid": 16,
-          "jack": "clk"
+          "uid": 7,
+          "jack": "cv2"
         }
       },
       {
         "id": 13,
         "from": {
-          "uid": 16,
+          "uid": 9,
           "jack": "out"
         },
         "to": {
-          "uid": 6,
-          "jack": "icv"
+          "uid": 7,
+          "jack": "in2"
         }
       },
       {
         "id": 14,
         "from": {
-          "uid": 14,
-          "jack": "sin"
+          "uid": 11,
+          "jack": "tri"
         },
         "to": {
-          "uid": 4,
-          "jack": "tcv"
+          "uid": 9,
+          "jack": "cv"
         }
       },
       {
         "id": 15,
         "from": {
-          "uid": 14,
-          "jack": "tri"
+          "uid": 7,
+          "jack": "o1"
         },
         "to": {
-          "uid": 8,
-          "jack": "fcv"
+          "uid": 12,
+          "jack": "i1"
         }
       },
       {
         "id": 16,
         "from": {
-          "uid": 4,
-          "jack": "out"
+          "uid": 7,
+          "jack": "o2"
         },
         "to": {
-          "uid": 9,
-          "jack": "i1"
+          "uid": 12,
+          "jack": "i2"
         }
       },
       {
         "id": 17,
         "from": {
-          "uid": 18,
-          "jack": "o1"
+          "uid": 12,
+          "jack": "out"
         },
         "to": {
-          "uid": 9,
-          "jack": "i2"
+          "uid": 13,
+          "jack": "in"
         }
       },
       {
         "id": 18,
         "from": {
-          "uid": 9,
-          "jack": "out"
+          "uid": 1,
+          "jack": "x1"
         },
         "to": {
-          "uid": 10,
-          "jack": "in"
+          "uid": 13,
+          "jack": "clk"
         }
       },
       {
         "id": 19,
         "from": {
-          "uid": 1,
-          "jack": "x1"
+          "uid": 13,
+          "jack": "out"
         },
         "to": {
-          "uid": 10,
-          "jack": "clk"
+          "uid": 14,
+          "jack": "in"
         }
       },
       {
         "id": 20,
         "from": {
-          "uid": 10,
-          "jack": "out"
+          "uid": 14,
+          "jack": "l"
         },
         "to": {
-          "uid": 8,
-          "jack": "in"
+          "uid": 15,
+          "jack": "inl"
         }
       },
       {
         "id": 21,
         "from": {
-          "uid": 8,
-          "jack": "l"
+          "uid": 14,
+          "jack": "r"
         },
         "to": {
-          "uid": 11,
-          "jack": "inl"
+          "uid": 15,
+          "jack": "inr"
         }
       },
       {
         "id": 22,
         "from": {
-          "uid": 8,
-          "jack": "r"
+          "uid": 15,
+          "jack": "outl"
         },
         "to": {
-          "uid": 11,
-          "jack": "inr"
+          "uid": 16,
+          "jack": "l"
         }
       },
       {
         "id": 23,
         "from": {
-          "uid": 11,
-          "jack": "outl"
+          "uid": 15,
+          "jack": "outr"
         },
         "to": {
-          "uid": 12,
-          "jack": "l"
+          "uid": 16,
+          "jack": "r"
         }
       },
       {
         "id": 24,
         "from": {
-          "uid": 11,
-          "jack": "outr"
+          "uid": 16,
+          "jack": "l"
         },
         "to": {
-          "uid": 12,
-          "jack": "r"
+          "uid": 17,
+          "jack": "l"
         }
       },
       {
         "id": 25,
         "from": {
-          "uid": 12,
-          "jack": "l"
-        },
-        "to": {
-          "uid": 13,
-          "jack": "l"
-        }
-      },
-      {
-        "id": 26,
-        "from": {
-          "uid": 12,
+          "uid": 16,
           "jack": "r"
         },
         "to": {
-          "uid": 13,
+          "uid": 17,
           "jack": "r"
         }
       }
     ],
     "rows": [
-      [13, 1, 2, 3, 5, 15, 4, 6, 7, 18, 9],
-      [16, 14, 10, 8, 11, 12]
+      [17, 1, 2, 3, 5, 4, 6, 8, 11, 9, 10, 7, 12],
+      [13, 14, 15, 16]
     ]
   }
 }

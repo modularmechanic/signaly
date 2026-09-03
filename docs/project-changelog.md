@@ -11,7 +11,9 @@ and a catalogue that grows from 41 to 100 modules:
 
 ### Added
 
-- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key and sound family (subtractive + granular, FM + plucked, wavetable drones, four-voice chords through the valve, drums + lo-fi). `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
+- MIX 8: a PRE button per channel lifts both of that channel's sends ahead of the fader (post-EQ), so a wet return can carry a channel whose fader is down.
+
+- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key: the user's F minor arpeggio piece with a Turing-machine pad, slow FM and saw pads in D dorian, wavetable and granular drones in A minor pentatonic, gliding add9 chords through the valve in E-flat major, and a sub drone with a filtered pad and vinyl dust in G minor. Pitches move on bar clocks, swells are multi-second AD envelopes, and the wet effects carry most of the sound. `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
 
 - **Twenty-nine more modules, to 100.** Sequencing: SEQ-16, TRIG SEQ (four lanes, polymeter), CHORD,
   BERNOULLI, DIV/MULT, CV REC (records and loops a CV, persisted in the patch), SHIFT REG, RANDOM WALK.
@@ -41,6 +43,8 @@ and a catalogue that grows from 41 to 100 modules:
   crowding is now a failing build rather than something found by looking
 
 ### Fixed
+
+- Faders: the cap was positioned with a transform whose percentage resolved against the cap's own 19 px height, so it never left the top of the track; it now moves with the value again.
 
 - The remove button could not be reached on any 2–3 HP module: it was `display: none`, leaving
   Delete on a focused panel as the only removal path, which a pointer-only user cannot use

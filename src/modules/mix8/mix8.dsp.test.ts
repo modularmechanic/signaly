@@ -165,6 +165,20 @@ describe('mix8.dsp', () => {
     expect(peak(O[2]?.[0])).toBe(0);
   });
 
+  it('PRE lifts a send ahead of the fader: the send holds full level with the fader down', () => {
+    const d = unity();
+    d.p.l1 = 0.5;
+    d.p.p1 = -1;
+    d.p.snd1_1 = 1;
+    const O = makeOuts();
+    d.process(makeIns({ 0: tone() }), O);
+    expect(peak(O[0]?.[0])).toBeCloseTo(0.25, 2); // post: square-law fader 0.5 -> 0.25
+    send(d, 'pre1', 1);
+    d.process(makeIns({ 0: tone() }), O);
+    expect(peak(O[0]?.[0])).toBeCloseTo(1, 2);
+    expect(peak(O[4]?.[0])).toBeCloseTo(0.25, 2); // the main bus still obeys the fader
+  });
+
   it('adds a return to the dry mix at the return level instead of replacing it', () => {
     const d = unity();
     d.p.p1 = -1;
