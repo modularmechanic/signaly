@@ -1,5 +1,9 @@
 # Signaly
 
+[![ci](https://github.com/modularmechanic/signaly/actions/workflows/ci.yml/badge.svg)](https://github.com/modularmechanic/signaly/actions/workflows/ci.yml)
+
+Live at **https://modularmechanic.github.io/signaly/**
+
 A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 41 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
 
 ## Quickstart
@@ -116,7 +120,8 @@ Since modules can be exported and imported, running a module file from a third p
 
 The site is static: `npm run build` writes `dist/`, and anything that serves files can host it.
 
-GitHub Pages is wired up in `.github/workflows/`. One gate, two entry points:
+The live site is https://modularmechanic.github.io/signaly/. GitHub Pages is wired up in
+`.github/workflows/`. One gate, two entry points:
 
 - `gate.yml` is the single definition of "releasable" — `format:check`, `lint`, `typecheck`, `test`,
   `build`, `npm audit --audit-level=high`. It is a `workflow_call`, never run on its own.
