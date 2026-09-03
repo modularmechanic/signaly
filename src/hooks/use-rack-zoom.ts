@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useSettingsStore } from '../state/settings-store';
 import { invalidateJackRects } from './patch-state';
 
@@ -18,23 +18,24 @@ export interface RackZoom {
     keep working, `getBoundingClientRect` keeps returning screen coordinates — which is what the
     cable overlay measures — and the panels' container queries still see their own unscaled width,
     so the art scales instead of reflowing. */
+/** Where the content under the anchor sat, captured before a change and spent after layout. */
+type Anchor = { content: number; y: number } | null;
+
+/** Set the zoom, recording what the anchor was pointing at so the layout effect can hold it
+    still. A plain function, not a memoized closure over `rack.current`: reading a ref inside
+    `useCallback` is exactly the manual memoization the React Compiler cannot preserve. */
+function zoomTo(el: HTMLElement | null, anchor: { current: Anchor }, next: number, anchorY?: number): void {
+  const from = useSettingsStore.getState().zoom;
+  if (el) {
+    const y = anchorY ?? window.innerHeight / 2;
+    anchor.current = { content: (y - el.getBoundingClientRect().top) / from, y };
+  }
+  useSettingsStore.getState().setZoom(next);
+}
+
 export function useRackZoom(rack: RefObject<HTMLElement | null>): RackZoom {
   const zoom = useSettingsStore((s) => s.zoom);
-  /** content offset under the anchor, captured before the change and consumed after layout */
-  const anchor = useRef<{ content: number; y: number } | null>(null);
-
-  const zoomTo = useCallback(
-    (next: number, anchorY?: number): void => {
-      const el = rack.current;
-      const from = useSettingsStore.getState().zoom;
-      if (el) {
-        const y = anchorY ?? window.innerHeight / 2;
-        anchor.current = { content: (y - el.getBoundingClientRect().top) / from, y };
-      }
-      useSettingsStore.getState().setZoom(next);
-    },
-    [rack],
-  );
+  const anchor = useRef<Anchor>(null);
 
   useLayoutEffect(() => {
     document.documentElement.style.setProperty('--rack-zoom', String(zoom));
@@ -78,7 +79,7 @@ export function useRackZoom(rack: RefObject<HTMLElement | null>): RackZoom {
       if (!p || !start || start.gap < 1) return;
       e.preventDefault();
       const gap = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
-      zoomTo((start.zoom * gap) / start.gap, (p[0].y + p[1].y) / 2);
+      zoomTo(el, anchor, (start.zoom * gap) / start.gap, (p[0].y + p[1].y) / 2);
     };
     const up = (e: PointerEvent): void => {
       pts.delete(e.pointerId);
@@ -89,7 +90,7 @@ export function useRackZoom(rack: RefObject<HTMLElement | null>): RackZoom {
     const wheel = (e: WheelEvent): void => {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      zoomTo(useSettingsStore.getState().zoom * Math.exp(-e.deltaY * 0.01), e.clientY);
+      zoomTo(el, anchor, useSettingsStore.getState().zoom * Math.exp(-e.deltaY * 0.01), e.clientY);
     };
 
     el.addEventListener('pointerdown', down, { passive: true });
@@ -104,14 +105,12 @@ export function useRackZoom(rack: RefObject<HTMLElement | null>): RackZoom {
       el.removeEventListener('pointercancel', up);
       el.removeEventListener('wheel', wheel);
     };
-  }, [rack, zoomTo]);
+  }, [rack]);
 
   return {
     zoom,
-    zoomBy: useCallback(
-      (factor: number, anchorY?: number) => zoomTo(useSettingsStore.getState().zoom * factor, anchorY),
-      [zoomTo],
-    ),
-    reset: useCallback(() => zoomTo(1), [zoomTo]),
+    zoomBy: (factor, anchorY) =>
+      zoomTo(rack.current, anchor, useSettingsStore.getState().zoom * factor, anchorY),
+    reset: () => zoomTo(rack.current, anchor, 1),
   };
 }
