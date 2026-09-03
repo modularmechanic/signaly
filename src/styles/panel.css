@@ -2,10 +2,15 @@
    nodes, silkscreen and the display primitives. Category is a thin accent only —
    `--cat` (a CAT_COLOR hex) and `--hp-count` are set on `.module-panel`. */
 
-/* Rails: two 17px brushed strips top and bottom of every row. */
+/* Rails: two 17px brushed strips top and bottom of every row. Sized to its own content
+   (not the viewport) so the rail background still spans every module once the row's
+   scroll wrapper (.rack-row-scroll, rack.css) lets it grow past the visible width; the
+   min-width floor keeps a short row filling the available width, same as before. */
 .rack-row {
   display: flex;
   align-items: flex-start;
+  width: max-content;
+  min-width: 100%;
   gap: 2px;
   padding: 17px 0;
   background-image:

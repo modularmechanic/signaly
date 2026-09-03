@@ -91,6 +91,15 @@ describe('RackWorkspace live region', () => {
     expect(live()).toBe('Added PICKME to row 1');
   });
 
+  it('gives each row its own keyboard-reachable horizontal scroll container', () => {
+    const scrollers = [...host.querySelectorAll<HTMLElement>('.rack-row-scroll')];
+    expect(scrollers).toHaveLength(1);
+    expect(scrollers[0]?.tabIndex).toBe(0);
+    expect(scrollers[0]?.getAttribute('aria-label')).toBe('Row 1 modules');
+    // Independent per row: the scroll container wraps only that row's modules, not the whole rack.
+    expect(scrollers[0]?.querySelectorAll('.module-panel')).toHaveLength(2);
+  });
+
   it('announces an added row', () => {
     const add = [...host.querySelectorAll('button')].find((b) => b.textContent === '+ Row');
     act(() => add?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
