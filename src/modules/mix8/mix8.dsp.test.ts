@@ -130,23 +130,42 @@ describe('mix8.dsp', () => {
     expect(seen[0]?.v).toHaveLength(12);
   });
 
-  it('bypasses an insert whose return is unpatched', () => {
+  it('sends nothing until a channel send is opened', () => {
     const d = unity();
-    d.p.p1 = -1;
+    d.p.p1 = -1; // hard left, so L carries the full 5 V rather than the centre-pan 0.707
     const O = makeOuts();
     d.process(makeIns({ 0: tone(5) }), O);
-    expect(peak(O[0]?.[0])).toBeGreaterThan(4.9); // send 1 carries the bus
-    expect(peak(O[2]?.[0])).toBeGreaterThan(4.9); // send 2 sees it unchanged
-    expect(peak(O[4]?.[0])).toBeGreaterThan(4.9); // and the master is not muted
+    expect(peak(O[0]?.[0])).toBe(0); // send 1 silent
+    expect(peak(O[2]?.[0])).toBe(0); // send 2 silent
+    expect(peak(O[4]?.[0])).toBeGreaterThan(4.9); // the dry mix is unaffected
   });
 
-  it('takes the bus from a patched return', () => {
+  it('feeds a send post-fader at the channel send level', () => {
     const d = unity();
+    d.p.p1 = -1; // hard left, so send 1 L carries the whole channel
+    d.p.l1 = 0.5; // fader at half: square-law taper gives 0.25
+    d.p.snd1_1 = 0.5;
+    const O = makeOuts();
+    d.process(makeIns({ 0: tone(4) }), O);
+    // 4 V × 0.25 (fader) × 0.5 (send) = 0.5 V on send 1 L, nothing on send 2
+    expect(peak(O[0]?.[0])).toBeGreaterThan(0.49);
+    expect(peak(O[0]?.[0])).toBeLessThan(0.51);
+    expect(peak(O[2]?.[0])).toBe(0);
+  });
+
+  it('adds a return to the dry mix at the return level instead of replacing it', () => {
+    const d = unity();
+    d.p.p1 = -1;
+    d.p.ret1 = 0.5;
     const ret = new Float32Array(N).fill(2);
     const O = makeOuts();
     d.process(makeIns({ 0: tone(5), 8: ret, 9: ret }), O);
-    expect(peak(O[4]?.[0])).toBeGreaterThan(1.9);
-    expect(peak(O[4]?.[0])).toBeLessThan(2.1);
+    // dry 5 V peak on L plus 2 V × 0.5 return — the dry signal survives the patched return
+    expect(peak(O[4]?.[0])).toBeGreaterThan(5.9);
+    expect(peak(O[4]?.[0])).toBeLessThan(6.1);
+    // R has no dry (panned hard left) so it shows the return alone
+    expect(peak(O[5]?.[0])).toBeGreaterThan(0.99);
+    expect(peak(O[5]?.[0])).toBeLessThan(1.01);
   });
 
   it('stays finite at extreme settings', () => {

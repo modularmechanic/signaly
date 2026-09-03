@@ -14,6 +14,9 @@ class Mix8 extends Base {
   lv = new Float64Array(NCH);
   pl = new Float64Array(NCH);
   pr = new Float64Array(NCH);
+  /** Post-fader send gain per channel, one bus each. */
+  s1 = new Float64Array(NCH);
+  s2 = new Float64Array(NCH);
   src: (Float32Array | null)[] = Array.from({ length: NCH }, () => null);
 
   constructor(o?: BaseOptions) {
@@ -31,10 +34,14 @@ class Mix8 extends Base {
 
   defaults(): Params {
     const p: Params = { master: 0.8, sel: 0 };
+    p.ret1 = 0.8;
+    p.ret2 = 0.8;
     for (let c = 1; c <= NCH; c++) {
       p[`l${c}`] = 0.75;
       p[`p${c}`] = 0;
       p[`m${c}`] = 0;
+      p[`snd1_${c}`] = 0;
+      p[`snd2_${c}`] = 0;
     }
     for (let b = 1; b <= NB; b++) {
       p[`eq${b}f`] = EQ_F[b - 1] ?? 1000;
@@ -85,16 +92,16 @@ class Mix8 extends Base {
     const s2l = O[2]?.[0];
     const s2r = O[3]?.[0];
     // An unpatched worklet input arrives as an empty channel list, so `ch()` is the only
-    // cable state the DSP can see: null on both legs of a return means "bypass the insert".
-    // A return that IS patched but silent therefore mutes the bus — correct for a real
-    // insert, and the send still runs, so nothing is silently lost.
+    // Aux sends and returns, console style: each channel feeds the send buses post-fader at
+    // its own send level, and whatever comes back on a return is ADDED to the main bus at the
+    // return level. The dry mix is never replaced — an unpatched return simply adds nothing.
     const r1l = ch(I, NCH);
     const r1r = ch(I, NCH + 1);
     const r2l = ch(I, NCH + 2);
     const r2r = ch(I, NCH + 3);
-    const ret1 = r1l !== null || r1r !== null;
-    const ret2 = r2l !== null || r2r !== null;
     const p = this.p;
+    const rg1 = clamp(p.ret1 ?? 0, 0, 1);
+    const rg2 = clamp(p.ret2 ?? 0, 0, 1);
 
     for (let c = 0; c < NCH; c++) {
       this.src[c] = (p[`m${c + 1}`] ?? 0) >= 0.5 ? null : ch(I, c);
@@ -103,12 +110,18 @@ class Mix8 extends Base {
       const a = (clamp(p[`p${c + 1}`] ?? 0, -1, 1) + 1) * (Math.PI / 4);
       this.pl[c] = Math.cos(a);
       this.pr[c] = Math.sin(a);
+      this.s1[c] = clamp(p[`snd1_${c + 1}`] ?? 0, 0, 1);
+      this.s2[c] = clamp(p[`snd2_${c + 1}`] ?? 0, 0, 1);
     }
     const mg = clamp(p.master ?? 0, 0, 1) ** 2;
 
     for (let i = 0; i < l.length; i++) {
       let bl = 0;
       let br = 0;
+      let a1l = 0;
+      let a1r = 0;
+      let a2l = 0;
+      let a2r = 0;
       for (let c = 0; c < NCH; c++) {
         const s = this.src[c];
         if (!s) continue;
@@ -121,23 +134,23 @@ class Mix8 extends Base {
           this.z1[k] = flush((this.co[o + 1] ?? 0) * x - (this.co[o + 3] ?? 0) * y + (this.z2[k] ?? 0));
           this.z2[k] = flush((this.co[o + 2] ?? 0) * x - (this.co[o + 4] ?? 0) * y);
         }
-        bl += y * (this.pl[c] ?? 0);
-        br += y * (this.pr[c] ?? 0);
+        const yl = y * (this.pl[c] ?? 0);
+        const yr = y * (this.pr[c] ?? 0);
+        bl += yl;
+        br += yr;
+        const g1 = this.s1[c] ?? 0;
+        const g2 = this.s2[c] ?? 0;
+        a1l += yl * g1;
+        a1r += yr * g1;
+        a2l += yl * g2;
+        a2r += yr * g2;
       }
-      bl = clamp(flush(bl), -10, 10);
-      br = clamp(flush(br), -10, 10);
-      if (s1l) s1l[i] = bl;
-      if (s1r) s1r[i] = br;
-      if (ret1) {
-        bl = clamp(flush(r1l?.[i] ?? 0), -10, 10);
-        br = clamp(flush(r1r?.[i] ?? 0), -10, 10);
-      }
-      if (s2l) s2l[i] = bl;
-      if (s2r) s2r[i] = br;
-      if (ret2) {
-        bl = clamp(flush(r2l?.[i] ?? 0), -10, 10);
-        br = clamp(flush(r2r?.[i] ?? 0), -10, 10);
-      }
+      if (s1l) s1l[i] = clamp(flush(a1l), -10, 10);
+      if (s1r) s1r[i] = clamp(flush(a1r), -10, 10);
+      if (s2l) s2l[i] = clamp(flush(a2l), -10, 10);
+      if (s2r) s2r[i] = clamp(flush(a2r), -10, 10);
+      bl += (r1l?.[i] ?? 0) * rg1 + (r2l?.[i] ?? 0) * rg2;
+      br += (r1r?.[i] ?? 0) * rg1 + (r2r?.[i] ?? 0) * rg2;
       l[i] = clamp(flush(bl * mg), -10, 10);
       r[i] = clamp(flush(br * mg), -10, 10);
     }

@@ -32,6 +32,26 @@ const knobs: KnobDef[] = [
   })),
   { id: 'master', label: 'MAIN', min: 0, max: 1, initial: 0.8, fmt: 'fPc', fader: true },
   ...chs.map((n): KnobDef => ({ id: `p${n}`, label: `PAN ${n}`, min: -1, max: 1, initial: 0, fmt: 'f1' })),
+  // Post-fader aux sends, one per channel per bus, down by default as on a console.
+  ...chs.map((n): KnobDef => ({
+    id: `snd1_${n}`,
+    label: `SND1 ${n}`,
+    min: 0,
+    max: 1,
+    initial: 0,
+    fmt: 'fPc',
+  })),
+  ...chs.map((n): KnobDef => ({
+    id: `snd2_${n}`,
+    label: `SND2 ${n}`,
+    min: 0,
+    max: 1,
+    initial: 0,
+    fmt: 'fPc',
+  })),
+  // Return levels blend the effect back into the main bus in parallel with the dry mix.
+  { id: 'ret1', label: 'RET 1', min: 0, max: 1, initial: 0.8, fmt: 'fPc' },
+  { id: 'ret2', label: 'RET 2', min: 0, max: 1, initial: 0.8, fmt: 'fPc' },
   ...EQ_KNOBS,
 ];
 
@@ -84,14 +104,21 @@ const jacks = (list: JackDef[], pre: 'in' | 'out', y: number, cols: number): Pan
     h: 0.1,
   }));
 
+// A console strip reads top to bottom: fader, pan, sends, mute. Knob rows are 0.08 of the 658 px
+// panel (53 px), clear of the 37 px floor under which controls.css drops the label. The master
+// column has spare height under its fader, which is where the two return levels live.
 const nodes: PanelNode[] = [
-  ...chs.map((n, i) => row(0.108, 0.222, `fader:l${n}`, 'fader', i)),
-  { id: 'fader:master', kind: 'fader', x: MASTER_X, y: 0.108, w: MASTER_W, h: 0.222 },
-  ...chs.map((n, i) => row(0.334, 0.102, `knob:p${n}`, 'knob', i)),
-  ...chs.map((n, i) => row(0.44, 0.076, `switch:m${n}`, 'switch', i)),
-  { id: 'display:text', kind: 'display', x: 0.018, y: 0.522, w: 0.964, h: 0.24 },
-  ...jacks(ins, 'in', 0.768, 12),
-  ...jacks(outs, 'out', 0.872, 6),
+  ...chs.map((n, i) => row(0.098, 0.19, `fader:l${n}`, 'fader', i)),
+  { id: 'fader:master', kind: 'fader', x: MASTER_X, y: 0.098, w: MASTER_W, h: 0.19 },
+  ...chs.map((n, i) => row(0.292, 0.08, `knob:p${n}`, 'knob', i)),
+  ...chs.map((n, i) => row(0.376, 0.08, `knob:snd1_${n}`, 'knob', i)),
+  ...chs.map((n, i) => row(0.46, 0.08, `knob:snd2_${n}`, 'knob', i)),
+  { id: 'knob:ret1', kind: 'knob', x: MASTER_X, y: 0.292, w: MASTER_W, h: 0.08 },
+  { id: 'knob:ret2', kind: 'knob', x: MASTER_X, y: 0.376, w: MASTER_W, h: 0.08 },
+  ...chs.map((n, i) => row(0.544, 0.056, `switch:m${n}`, 'switch', i)),
+  { id: 'display:text', kind: 'display', x: 0.018, y: 0.606, w: 0.964, h: 0.148 },
+  ...jacks(ins, 'in', 0.76, 12),
+  ...jacks(outs, 'out', 0.864, 6),
 ];
 
 export const def: ModuleDef = {
