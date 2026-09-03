@@ -58,10 +58,12 @@ describe('dsp-prelude', () => {
     const seen = new Set<number>();
     const low = new Set<number>();
     let repeat = -1;
+    let min = Infinity;
+    let max = -Infinity;
     for (let i = 0; i < 200000; i++) {
       const v = rng.next();
-      expect(v).toBeGreaterThanOrEqual(-1);
-      expect(v).toBeLessThanOrEqual(1);
+      if (v < min) min = v;
+      if (v > max) max = v;
       if (seen.has(rng.s)) {
         repeat = i;
         break;
@@ -69,6 +71,10 @@ describe('dsp-prelude', () => {
       seen.add(rng.s);
       low.add(rng.s & 15);
     }
+    // Range is asserted once over the extremes, not twice per draw: 400 000 expect() calls cost
+    // seconds and timed this test out on CI while passing locally.
+    expect(min).toBeGreaterThanOrEqual(-1);
+    expect(max).toBeLessThanOrEqual(1);
     expect(repeat).toBe(-1);
     expect(low.size).toBeGreaterThan(1);
   });

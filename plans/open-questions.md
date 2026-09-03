@@ -54,60 +54,46 @@ closed in an agent session. Each item says what to do and who has to do it.
       `images/generations` was inferred, never observed. If it is blocked, remove OpenAI from
       `IMAGE_ORDER` and drop the "yes" from the OpenAI image column in the README table. Gemini is the
       fallback either way.
-- [ ] **First public push (phase 06 step 5).** *User only — it publishes the repo.*
-      From `main`, after this branch merges: `gh repo create <name> --public --source=. --remote=origin
-      --push`. Run the secrets grep on the exact commit first (`git log -p | grep` for `sk-`, `AIza`,
-      `ghp_`, `PRIVATE KEY`); the audit's sweep (S11) found only the fake `sk-ant-secret-value` fixture
-      in `anthropic.test.ts`. Then the repo-settings checklist from phase 03: Pages source **GitHub
-      Actions**; **Enforce HTTPS**; Code security → Dependabot alerts and security updates, secret
-      scanning with push protection, private vulnerability reporting. Optional: CodeQL default setup,
-      and branch protection on the integration branch requiring the `ci` check. Wait for `ci` to go
-      green. **Nothing deploys yet** — `release.yml` publishes the site only when a GitHub release is
-      published, so the site goes live at the tag step below, not at the push.
-- [ ] **Integration branch name.** The workflows added in phase 03 say `master`; this worktree's
-      integration branch is `main`. Whichever is right, `ci.yml`'s `branches:` list, the branch
-      protection rule and the workflow comments have to agree with the repo before the first push.
+- [x] **First public push (phase 06 step 5).** *Done 2026-09-03.* Repo created public at
+      https://github.com/modularmechanic/signaly with `master` as the default branch. Secrets grep and
+      the local-path grep both clean on the pushed commit. Settings applied: Pages source **GitHub
+      Actions**, Enforce HTTPS on, Dependabot alerts and security updates, secret scanning with push
+      protection, private vulnerability reporting. Branch protection on `master` requires the
+      `gate / gate` check, strict (branch must be up to date), linear history, no force pushes, no
+      deletions, conversation resolution, enforced for admins. The first `ci` run passed on GitHub's
+      runner. Nothing is deployed yet — that waits on the release below.
+- [x] **Integration branch name.** *Resolved 2026-09-03.* `master`, matching the workflows. The old
+      `main` branch and the sibling worktree still hold the pre-squash history locally and are now
+      unrelated to `origin/master`; clean them up once the other session is finished with them.
 - [ ] **Live smoke test at the Pages URL (phase 06 step 6).** *User, ~15 min, after the push.*
       Cold load with the console open on Chrome, Firefox and Safari. Add VCO, SVF and OUT with LEVEL at
       0.1 — never auto-patch VCO straight to OUT. Patch by keyboard, save, reload, load the patch, open
       Settings and list models if a key is available, import a user-module JSON, confirm DIST is in the
       browser list. On the second visit check the Network tab: the `react-*.js` chunk must come from
       cache. Do not debug a 404 in the first five minutes — Pages takes a while to propagate.
-- [ ] **Tag `v0.2.0` and publish the release (phase 06 step 8).** *User.* `package.json` still says
-      `"version": "0.1.0"`; bump it in the same commit as the tag. The changelog entry is already
+- [ ] **Tag `v0.2.0` and publish the release (phase 06 step 8).** *User.* `package.json` is already at `0.2.0`. The changelog entry is already
       written as `## [0.2.0] — 2026-09-03`. Publishing the GitHub release for that tag is what triggers
       `release.yml` and puts the site live, so the live smoke test above happens after this step, not
       before it.
-- [ ] **CI status badge in the README.** *User, one line, after the repo exists.* Deliberately omitted:
-      a badge needs a repo URL that does not exist yet, and a placeholder renders as a broken image on
-      the very site being published. Paste this under the README's title once the remote is real:
-      `[![ci](https://github.com/<user>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<user>/<repo>/actions/workflows/ci.yml)`
+- [x] **CI status badge in the README.** *Done 2026-09-03.* Badge and the live URL are under the
+      README title now that the remote is real.
 - [ ] **License and provenance (H2).** *User decision.* MIT shipped as the plan's default
       recommendation — `LICENSE` and the `package.json` `license` field are in the tree. The question
       behind it is still open: the DSP was ported from the author's earlier project (`cablewerk-v2` /
-      modvibez), so MIT is only correct if the author holds the rights to every ported module. Confirm
-      before the public push, or change the license then.
-- [ ] **Git history (S10).** *User decision.* The eight files under `plans/` that carried absolute local paths
-      (seven from the rework plan plus the audit report) are scrubbed to `<repo>` / `<cablewerk-v2>`, and the account and plan tier are out of the CodeRabbit
-      report header. The 19-commit history is **not** rewritten — the working tree is clean but the old
-      paths and the macOS username are still reachable through `git log -p`. Options: push as-is
-      (default), or push a squashed orphan branch with one commit. Rewriting history is not something to
-      do on an agent's initiative.
-- [ ] **Project site or user site (D1).** `https://<user>.github.io/<repo>/` needs `--base=/<repo>/`,
-      which is what `deploy-pages.yml` derives from the repo name today. A repo named `<user>.github.io`
-      is a user site and needs `/` — one `PAGES_BASE` line either way.
+      modvibez), so MIT is only correct if the author holds the rights to every ported module. **The public
+      push has now happened under MIT**, so confirm this; if the answer is no, change the license and
+      force a new release rather than leaving it.
+- [x] **Git history (S10).** *Resolved 2026-09-03 — user chose to squash.* `origin/master` is a single
+      root commit built from the scrubbed tree, so no local path, macOS username or `cablewerk-v2`
+      reference is reachable through `git log` on the public repo. The 26-commit history survives only
+      on the local `feature/github-pages-production-readiness-1dce56` branch.
+- [x] **Project site or user site (D1).** *Resolved 2026-09-03.* Project site. The repo is named
+      `signaly`, so Pages serves it from https://modularmechanic.github.io/signaly/ and `release.yml`
+      derives `--base=/signaly/` from the repo name.
 - [ ] **Custom domain (S13).** Every project site under one GitHub account shares the
       `<user>.github.io` origin, so any script on any of them can read Signaly's `localStorage`,
       `sessionStorage` and IndexedDB. Session-only API keys shrink that window; only a custom domain
       closes it. Out of scope for this plan unless the user wants one.
-
-### Blocking the new gate
-
-- [ ] **`npm run format` over `src/`.** Phase 03 added `format:check` (`prettier -c .`) as the first
-      step of `gate.yml`, and 32 files under `src/` have never been Prettier-formatted, so the gate is
-      red on the current tree. One command fixes it, but it rewrites files owned by other lanes, so it
-      wants to be its own commit rather than a drive-by. `README.md`, `docs/**` and `CONTEXT.md` are
-      already clean; `plans/` is in `.prettierignore`.
 
 ### Deferred, recorded not fixed
 
