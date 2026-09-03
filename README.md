@@ -142,7 +142,3 @@ context.
 Browser floor: the build targets Vite's default, `baseline-widely-available`. Below that the app shows its
 error boundary rather than a blank page. The faceplate crop needs `OffscreenCanvas.convertToBlob`
 (Safari 16.4+) and reports a message of its own when it is missing.
-
-## Deliberately absent
-
-No backend, no accounts, no public module sharing, no multiplayer, no 3D, no MIDI learn, no streaming LLM output, no end-to-end tests. Storage is one thin module per concern so a backend can replace it later without touching the engine or UI.
