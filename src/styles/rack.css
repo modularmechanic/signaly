@@ -373,6 +373,14 @@
   background: var(--surface);
 }
 
+.patch-heading {
+  margin: 12px 0 4px;
+  color: var(--text-dim);
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .patch-list {
   display: grid;
   gap: 4px;

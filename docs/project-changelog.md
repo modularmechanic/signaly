@@ -11,6 +11,8 @@ and a catalogue that grows from 41 to 100 modules:
 
 ### Added
 
+- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key and sound family (subtractive + granular, FM + plucked, wavetable drones, four-voice chords through the valve, drums + lo-fi). `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
+
 - **Twenty-nine more modules, to 100.** Sequencing: SEQ-16, TRIG SEQ (four lanes, polymeter), CHORD,
   BERNOULLI, DIV/MULT, CV REC (records and loops a CV, persisted in the patch), SHIFT REG, RANDOM WALK.
   Effects: GRAIN DELAY, SHIMMER, TREMOLO, ENV FILTER, LO-FI, REVERSE, FREQ SHIFT. Distortion: TUBE (a

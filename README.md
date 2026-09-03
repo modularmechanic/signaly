@@ -14,7 +14,7 @@ Requires Node 24 or newer.
 npm install && npm run dev
 ```
 
-Open the printed URL, click anywhere to start audio, and patch `VCO` into `OUT`.
+Open the printed URL, click anywhere to start audio, and patch `VCO` into `OUT`. Or open **Patches** and load one of the five example patches: five generative ambient pieces in five keys, from the user-built F minor arpeggio piece through FM bells in D dorian, granular drones in A minor pentatonic, valve-driven chords in E-flat major, and slow drums in G minor.
 
 ## Scripts
 

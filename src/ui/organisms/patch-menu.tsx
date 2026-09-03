@@ -10,6 +10,7 @@ import {
   savePatch,
   type Patch,
 } from '../../storage/patch-store';
+import { EXAMPLES, type ExamplePatch } from '../../patches/examples';
 import { Button } from '../atoms/button';
 
 export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
@@ -28,7 +29,7 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
     note(`Saved ${saved.name}`);
   };
 
-  const load = (p: Patch): void => {
+  const load = (p: Patch | ExamplePatch): void => {
     applySnapshot(p.snapshot);
     note(`Loaded ${p.name}`);
     onClose();
@@ -94,6 +95,18 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
           />
         </form>
 
+        <h3 className="patch-heading">Examples</h3>
+        <ul className="patch-list">
+          {EXAMPLES.map((p) => (
+            <li key={p.id}>
+              <button type="button" className="patch-name" onClick={() => load(p)}>
+                {p.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <h3 className="patch-heading">Saved</h3>
         <ul className="patch-list">
           {list.map((p) => (
             <li key={p.id}>
