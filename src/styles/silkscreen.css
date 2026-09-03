@@ -1,0 +1,191 @@
+/* Printing: what the maker puts on the plate. `data-head`, `data-silk`, `data-type` and
+   `data-jack` come from the module's kit (src/core/look.ts) and are independent of the
+   material, so twenty identities are twenty rows in that table, not twenty stylesheets.
+
+   Everything here is either a background layer on a pseudo the panel already paints, or a
+   font swap. No new element, no filter, nothing that repaints while a control moves. */
+
+.module-panel[data-silk] {
+  /* A whisper, not a pattern: the printing must never compete with the controls. */
+  --silk-ink: color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+/* Dark ink on a light plate reads stronger than light ink on a dark one. Declared here, after
+   faceplates.css, because both selectors have the same specificity and source order decides. */
+.module-panel[data-plate='alu'],
+.module-panel[data-plate='cream'],
+.module-panel[data-plate='white'] {
+  --silk-ink: color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+/* ---------- header treatment: the accent hairline panel.css draws, restyled ---------- */
+.module-panel[data-head]::after {
+  background: linear-gradient(90deg, transparent, var(--cat-line) 18% 82%, transparent);
+}
+
+/* a printed colour block behind the whole name plate */
+.module-panel[data-head='band']::after {
+  top: 0;
+  height: 9%;
+  border-bottom: 1px solid color-mix(in srgb, var(--cat-line) 75%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cat-line) 22%, transparent),
+    color-mix(in srgb, var(--cat-line) 9%, transparent)
+  );
+}
+
+/* On a colour block the sub is printed in the same ink as the name — the size and tracking
+   already carry the hierarchy, and --text-dim over the band drops to 2.8:1. */
+.module-panel[data-head='band'] .module-sub {
+  color: var(--text);
+}
+
+/* a hairline frame around the name, the way a boutique maker boxes its title */
+.module-panel[data-head='box']::after {
+  display: none;
+}
+
+.module-panel[data-head='box'] .module-head::before {
+  content: '';
+  position: absolute;
+  inset: 15px 7% 3px;
+  border: 1px solid color-mix(in srgb, var(--cat-line) 55%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* a maker's bar in the top-left corner instead of a rule */
+.module-panel[data-head='bar']::after {
+  top: 3.2%;
+  left: 5%;
+  width: 4px;
+  height: 5.8%;
+  border-radius: 1px;
+  background: var(--cat-line);
+}
+
+/* a short double rule, like a printed stamp under the sub */
+.module-panel[data-head='stamp']::after {
+  top: 9.2%;
+  left: 50%;
+  width: 34px;
+  height: 3px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--cat-line) 0 1px, transparent 1px 2px, var(--cat-line) 2px 3px);
+}
+
+.module-panel[data-head='plain']::after {
+  display: none;
+}
+
+/* ---------- silkscreen motifs: one restatement of the grain pseudo per motif ---------- */
+.module-panel[data-silk='grid']::before {
+  background-image:
+    repeating-linear-gradient(0deg, var(--silk-ink) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, var(--silk-ink) 0 1px, transparent 1px 22px), var(--grain);
+  background-size:
+    auto,
+    auto,
+    120px 120px;
+}
+
+.module-panel[data-silk='dots']::before {
+  background-image: radial-gradient(circle, var(--silk-ink) 0 1.4px, transparent 1.5px), var(--grain);
+  background-size:
+    19px 19px,
+    120px 120px;
+}
+
+.module-panel[data-silk='bars']::before {
+  background-image:
+    repeating-linear-gradient(90deg, var(--silk-ink) 0 2px, transparent 2px 26px), var(--grain);
+  background-size:
+    auto,
+    120px 120px;
+}
+
+.module-panel[data-silk='chevron']::before {
+  background-image:
+    repeating-linear-gradient(45deg, var(--silk-ink) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, var(--silk-ink) 0 1px, transparent 1px 24px), var(--grain);
+  background-size:
+    auto,
+    auto,
+    120px 120px;
+}
+
+/* a response curve printed across the plate — one arc from a circle centred off-panel */
+.module-panel[data-silk='curve']::before {
+  background-image:
+    radial-gradient(
+      circle 440px at 50% 560px,
+      transparent 0 336px,
+      var(--silk-ink) 336px 338px,
+      transparent 338px
+    ),
+    var(--grain);
+  background-size:
+    auto,
+    120px 120px;
+}
+
+.module-panel[data-silk='ring']::before {
+  background-image:
+    radial-gradient(circle 130px at 50% 72%, transparent 0 88px, var(--silk-ink) 88px 90px, transparent 90px),
+    var(--grain);
+  background-size:
+    auto,
+    120px 120px;
+}
+
+/* ---------- legend typography: family and weight only ----------
+   Size and tracking stay with panel.css's container queries, or a narrow panel would start
+   clipping its own name again. */
+.module-panel[data-type='grotesk'] .module-name {
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.module-panel[data-type='grotesk'] .module-sub {
+  font-family: var(--font-ui);
+}
+
+.module-panel[data-type='stencil'] .module-name {
+  font-weight: 700;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--cat-line) 60%, transparent);
+}
+
+.module-panel[data-type='stencil'] .module-sub {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* ---------- socket body. The kind ring — colour, line style, glyph — is never touched. */
+.module-panel[data-jack='plain'] .jack {
+  background:
+    radial-gradient(
+      circle,
+      var(--edge) 0 5.7px,
+      color-mix(in srgb, var(--metal) 50%, var(--edge)) 5.7px 7.2px,
+      transparent 7.2px
+    ),
+    radial-gradient(
+      circle closest-side at 42% 32%,
+      color-mix(in srgb, var(--metal-2) 55%, var(--metal)) 0,
+      var(--metal-2) 74%
+    );
+}
+
+/* a printed target ring silkscreened around the socket */
+.module-panel[data-jack='ringed'] .jack {
+  box-shadow:
+    0 1.5px 3px rgba(0, 0, 0, 0.9),
+    0 0 0 3px transparent,
+    0 0 0 4px color-mix(in srgb, var(--text) 26%, transparent),
+    inset 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+.module-panel[data-jack] .jack:focus-visible {
+  box-shadow: var(--focus-ring);
+}

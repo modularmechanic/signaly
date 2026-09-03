@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'FORMANT FILTER',
   hp: 4,
   cat: 'FILTERS',
+  look: 'atelier',
   worklet: 'formant',
   knobs: [
     {

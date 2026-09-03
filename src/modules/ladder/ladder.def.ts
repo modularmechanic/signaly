@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: '4-POLE TRANSISTOR',
   hp: 4,
   cat: 'FILTERS',
+  look: 'analog',
   worklet: 'ladder',
   dark: true,
   knobs: [

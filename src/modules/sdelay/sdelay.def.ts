@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'PING-PONG · SYNC',
   hp: 14,
   cat: 'FX',
+  look: 'carbon',
   worklet: 'sdelay',
   dark: true,
   knobs: [

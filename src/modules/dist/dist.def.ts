@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'DRIVE / FOLD / CLIP',
   hp: 6,
   cat: 'FX',
+  look: 'patina',
   worklet: 'dist',
   dark: true,
   knobs: [

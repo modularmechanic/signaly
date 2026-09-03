@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STEREO COMPRESSOR',
   hp: 8,
   cat: 'AMP / MIX',
+  look: 'console',
   worklet: 'comp',
   display: 'meter',
   knobs: [

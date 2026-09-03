@@ -163,6 +163,7 @@ export const def: ModuleDef = {
   sub: 'STEREO CONSOLE · 3-BAND EQ',
   hp: 36,
   cat: 'AMP / MIX',
+  look: 'console',
   worklet: 'mix8',
   knobs,
   sws,

@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'BIT / RATE REDUCE',
   hp: 6,
   cat: 'FX',
+  look: 'carbon',
   worklet: 'crush',
   dark: true,
   knobs: [

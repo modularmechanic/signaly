@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'WINDOW COMPARATOR',
   hp: 4,
   cat: 'ENV / FUNC',
+  look: 'signal',
   worklet: 'compare',
   knobs: [
     { id: 'centre', label: 'CENTRE', min: -5, max: 5, initial: 0, fmt: 'f1', big: true, cvIn: 'ccv' },

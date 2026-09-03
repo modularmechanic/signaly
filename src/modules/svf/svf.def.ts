@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'STATE VARIABLE',
   hp: 4,
   cat: 'FILTERS',
+  look: 'slateware',
   worklet: 'svf',
   knobs: [
     {

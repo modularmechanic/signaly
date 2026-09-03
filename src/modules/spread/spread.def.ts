@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'MID-SIDE IMAGER',
   hp: 4,
   cat: 'FX',
+  look: 'ether',
   worklet: 'spread',
   knobs: [
     { id: 'width', label: 'WIDTH', min: 0, max: 2, initial: 1, fmt: 'fPc', big: true, cvIn: 'wcv' },

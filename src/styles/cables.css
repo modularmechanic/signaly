@@ -57,22 +57,30 @@
   padding: 0;
   border: 2px solid var(--jc, var(--kind-a));
   border-radius: 50%;
+  /* A real 3.5mm socket: black bore, chamfered throat, then a hex nut lit from the top left.
+     The six facets are one conic gradient, so the whole socket is a single paint. */
   background:
     radial-gradient(
       circle,
       var(--edge) 0 5.7px,
-      color-mix(in srgb, var(--metal) 64%, var(--edge)) 5.7px 7.2px,
-      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 7.2px 13.6px,
-      color-mix(in srgb, var(--metal-2) 60%, var(--edge)) 13.6px 15.1px,
+      color-mix(in srgb, var(--metal) 52%, var(--edge)) 5.7px 6.6px,
+      color-mix(in srgb, var(--metal-hi) 60%, var(--pointer)) 6.6px 7.4px,
+      transparent 7.4px 13.4px,
+      color-mix(in srgb, var(--metal-2) 55%, var(--edge)) 13.4px 15.1px,
       transparent 15.1px
     ),
-    repeating-conic-gradient(
-      from 0deg,
-      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 0deg 4deg,
-      color-mix(in srgb, var(--metal-2) 85%, var(--metal)) 4deg 9deg
+    conic-gradient(
+      from 30deg,
+      color-mix(in srgb, var(--metal) 74%, var(--metal-hi)) 0deg 60deg,
+      color-mix(in srgb, var(--metal) 88%, var(--edge)) 60deg 120deg,
+      color-mix(in srgb, var(--metal-2) 62%, var(--metal)) 120deg 180deg,
+      color-mix(in srgb, var(--metal-2) 84%, var(--metal)) 180deg 240deg,
+      color-mix(in srgb, var(--metal) 82%, var(--metal-hi)) 240deg 300deg,
+      color-mix(in srgb, var(--metal-hi) 74%, var(--pointer)) 300deg 360deg
     );
   box-shadow:
     0 1.5px 3px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(0, 0, 0, 0.3),
     inset 0 0 4px rgba(0, 0, 0, 0.9);
   cursor: crosshair;
   touch-action: none;

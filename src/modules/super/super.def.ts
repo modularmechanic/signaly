@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SEVEN SAW UNISON',
   hp: 6,
   cat: 'SOURCES',
+  look: 'carbon',
   worklet: 'super',
   knobs: [
     { id: 'tune', label: 'TUNE', min: -3, max: 3, initial: 0, fmt: 'fInt', big: true },

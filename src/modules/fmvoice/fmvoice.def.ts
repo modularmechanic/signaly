@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'FOUR OPERATOR',
   hp: 12,
   cat: 'VOICES',
+  look: 'board',
   worklet: 'fmvoice',
   knobs: [
     {

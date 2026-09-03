@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'ANALOG BASS DRUM',
   hp: 6,
   cat: 'DRUMS',
+  look: 'anodic',
   worklet: 'kick',
   dark: true,
   knobs: [

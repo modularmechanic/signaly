@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'VACTROL LOW PASS GATE',
   hp: 4,
   cat: 'FILTERS',
+  look: 'atelier',
   worklet: 'lpg',
   knobs: [
     { id: 'level', label: 'LEVEL', min: 0, max: 1, initial: 0, fmt: 'fPc', big: true, cvIn: 'cv' },

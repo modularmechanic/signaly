@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'BUFFER REPEAT',
   hp: 6,
   cat: 'FX',
+  look: 'noir',
   worklet: 'glitch',
   knobs: [
     { id: 'length', label: 'LENGTH', min: 5, max: 500, initial: 80, fmt: 'fMs', curve: 'log', big: true },

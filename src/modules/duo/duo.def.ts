@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'DUAL OSCILLATOR',
   hp: 10,
   cat: 'SOURCES',
+  look: 'bronze',
   worklet: 'duo',
   knobs: [
     { id: 'oct', label: 'OCTAVE', min: -3, max: 3, initial: 0, fmt: 'fInt', curve: 'lin', big: true },

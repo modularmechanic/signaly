@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'BUFFER FREEZE',
   hp: 8,
   cat: 'FX',
+  look: 'press',
   worklet: 'freeze',
   knobs: [
     { id: 'size', label: 'SIZE', min: 20, max: 2000, initial: 250, fmt: 'fMs', curve: 'log', big: true },

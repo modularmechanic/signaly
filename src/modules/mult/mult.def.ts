@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: '1 → 4 SPLITTER',
   hp: 2,
   cat: 'AMP / MIX',
+  look: 'lab',
   native: 'mult',
   knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }],
   ins: [{ id: 'in', label: 'IN', kind: 'c' }],

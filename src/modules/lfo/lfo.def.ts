@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'MOD SOURCE',
   hp: 4,
   cat: 'SOURCES',
+  look: 'analog',
   worklet: 'lfo',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.02, max: 30, initial: 2, fmt: 'fHz', curve: 'log', cvIn: 'rate' },

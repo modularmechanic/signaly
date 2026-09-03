@@ -1,0 +1,206 @@
+/* Knob hardware. `data-knob` is set on `.panel-node` (never on the faceplate, so exactly one
+   ancestor matches) from `knobLookOf(def, knobDef)` in src/core/look.ts.
+
+   Every look reuses the markup and the geometry from controls.css — only the body's gradient
+   stack and the pointer change. Nothing here adds an element, a filter or a shadow stack to
+   `.knob::before`, which is the one part that repaints while a knob is being dragged. */
+
+.panel-node {
+  --track: rgba(255, 255, 255, 0.1);
+  /* graduations are cut through the ring in the plate's own colour, so one rule prints
+     legible marks on cream, aluminium, PCB green and black alike */
+  --dial: var(--panel);
+}
+
+/* Printed value track: a shallow groove with the accent arc in it, graduated at the five
+   quarter-points on the looks that earn a printed scale. One extra static background layer,
+   so a drag repaints two gradients in a ~60px box instead of one. */
+.knob::before {
+  inset: calc(var(--d) * -0.19);
+  background:
+    var(--dial-marks, none),
+    conic-gradient(
+      from 225deg,
+      var(--cat-line, var(--cat, var(--amber))) calc(var(--pct, 0) * 270deg),
+      var(--track) 0 270deg,
+      transparent 0
+    );
+  mask: radial-gradient(closest-side, transparent 0 84%, currentColor 87%);
+}
+
+.panel-node[data-knob='davies'],
+.panel-node[data-knob='chicken'] {
+  --dial-marks: conic-gradient(
+    from 222deg,
+    var(--dial) 0 6deg,
+    transparent 6deg 67.5deg,
+    var(--dial) 67.5deg 73.5deg,
+    transparent 73.5deg 135deg,
+    var(--dial) 135deg 141deg,
+    transparent 141deg 202.5deg,
+    var(--dial) 202.5deg 208.5deg,
+    transparent 208.5deg 270deg,
+    var(--dial) 270deg 276deg,
+    transparent 276deg
+  );
+}
+
+/* ---------- davies: skirted phenolic, fluted edge, pointer to the skirt rim ---------- */
+[data-knob='davies'] .knob {
+  background:
+    radial-gradient(
+      circle closest-side at 40% 28%,
+      color-mix(in srgb, var(--metal-hi) 66%, var(--pointer)) 0,
+      transparent 60%
+    ),
+    radial-gradient(circle closest-side, var(--metal) 0 50%, transparent 51%),
+    radial-gradient(
+      circle closest-side,
+      transparent 0 51%,
+      color-mix(in srgb, var(--metal-2) 62%, var(--metal)) 53% 74%,
+      transparent 75%
+    ),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--metal) 76%, var(--pointer)) 0deg 4deg,
+      var(--metal-2) 4deg 12deg
+    );
+  box-shadow:
+    0 5px 9px rgba(0, 0, 0, 0.62),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+[data-knob='davies'] .knob-cap {
+  width: 4px;
+  height: 46%;
+  margin-left: -2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(var(--pointer), color-mix(in srgb, var(--pointer) 74%, var(--metal)));
+}
+
+/* ---------- chicken head: a small hub, the blade is the pointer ---------- */
+[data-knob='chicken'] .knob {
+  background:
+    radial-gradient(
+      circle closest-side at 42% 32%,
+      color-mix(in srgb, var(--metal-hi) 58%, var(--pointer)) 0,
+      transparent 46%
+    ),
+    radial-gradient(
+      circle closest-side,
+      var(--metal) 0 26%,
+      color-mix(in srgb, var(--metal-2) 76%, var(--edge)) 28% 34%,
+      color-mix(in srgb, var(--metal-2) 40%, transparent) 36% 43%,
+      transparent 44%
+    );
+  box-shadow: none;
+}
+
+/* The blade is the whole knob: it straddles the shaft, so the rotation pivot moves off the
+   cap's bottom edge to the point that still sits on the knob centre. */
+[data-knob='chicken'] .knob-cap {
+  bottom: calc(50% - var(--d) * 0.15);
+  width: 42%;
+  height: 68%;
+  margin-left: -21%;
+  border-radius: 0;
+  background: linear-gradient(
+    116deg,
+    color-mix(in srgb, var(--metal-hi) 80%, var(--pointer)),
+    var(--metal) 34%,
+    var(--metal-2) 84%
+  );
+  box-shadow: none;
+  transform-origin: 50% 77.9%;
+  clip-path: polygon(50% 0, 92% 46%, 100% 74%, 78% 100%, 22% 100%, 0 74%, 8% 46%);
+}
+
+[data-knob='chicken'] .knob-cap::after {
+  content: '';
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  width: 2px;
+  height: 22%;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--pointer);
+}
+
+/* ---------- trimmer: a D-shaft set pot, slot across the full hub, no printed scale ---------- */
+[data-knob='trimmer'] .knob {
+  background:
+    radial-gradient(
+      circle closest-side at 40% 30%,
+      color-mix(in srgb, var(--metal-hi) 62%, var(--pointer)) 0,
+      transparent 44%
+    ),
+    radial-gradient(
+      circle closest-side,
+      color-mix(in srgb, var(--metal) 86%, var(--edge)) 0 32%,
+      color-mix(in srgb, var(--chrome) 60%, var(--edge)) 33% 37%,
+      var(--edge) 38% 40%,
+      transparent 41%
+    );
+  box-shadow: none;
+}
+
+[data-knob='trimmer'] .knob::before {
+  inset: calc(var(--d) * 0.09);
+}
+
+[data-knob='trimmer'] .knob-cap {
+  width: 4px;
+  height: 26%;
+  margin-left: -2px;
+  border-radius: 0;
+  background: var(--edge);
+  box-shadow: none;
+}
+
+/* the other half of the screwdriver slot, mirrored through the shaft centre */
+[data-knob='trimmer'] .knob-cap::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--edge);
+}
+
+/* ---------- rubber: soft-touch moulded cap, matte dome, recessed indicator ---------- */
+[data-knob='rubber'] .knob {
+  background:
+    radial-gradient(circle closest-side at 42% 24%, rgba(255, 255, 255, 0.12) 0, transparent 62%),
+    radial-gradient(
+      circle closest-side,
+      color-mix(in srgb, var(--metal) 82%, var(--metal-hi)) 0 62%,
+      color-mix(in srgb, var(--metal) 70%, var(--edge)) 64% 78%,
+      color-mix(in srgb, var(--metal-hi) 62%, var(--edge)) 80% 86%,
+      transparent 87%
+    ),
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.05) 0deg 2deg, transparent 2deg 9deg);
+  box-shadow:
+    0 5px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px var(--edge),
+    inset 0 2px 3px rgba(255, 255, 255, 0.07);
+}
+
+[data-knob='rubber'] .knob-cap {
+  width: 5px;
+  height: 30%;
+  margin-left: -2.5px;
+  border-radius: 2.5px;
+  background: linear-gradient(color-mix(in srgb, var(--pointer) 88%, var(--cat)), var(--pointer));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+
+/* controls.css's `.knob:focus-visible` is (0,2,0); every look's body rule above is (0,2,0) too
+   and lands in a later sheet, so the focus ring has to be restated at (0,3,0) or a keyboard
+   user loses it on four of the five knobs. Same reason for the switch and jack rules below. */
+[data-knob] .knob:focus-visible {
+  box-shadow: var(--focus-ring);
+}

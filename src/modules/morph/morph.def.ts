@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'SWEEPING MULTIMODE',
   hp: 4,
   cat: 'FILTERS',
+  look: 'patina',
   worklet: 'morph',
   knobs: [
     {

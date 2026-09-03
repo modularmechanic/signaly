@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'KARPLUS-STRONG',
   hp: 6,
   cat: 'VOICES',
+  look: 'voice',
   worklet: 'pluck',
   knobs: [
     {

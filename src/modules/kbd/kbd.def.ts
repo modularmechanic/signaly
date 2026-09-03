@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CV / GATE CONTROLLER',
   hp: 10,
   cat: 'SEQ / CTRL',
+  look: 'atelier',
   native: 'kbd',
   knobs: [],
   ins: [],

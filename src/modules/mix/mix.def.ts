@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'UNITY MIXER',
   hp: 4,
   cat: 'AMP / MIX',
+  look: 'console',
   native: 'mix',
   knobs: [
     { id: 'l1', label: 'CH 1', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },

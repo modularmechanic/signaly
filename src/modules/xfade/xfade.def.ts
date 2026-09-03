@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'CROSSFADE / PAN',
   hp: 4,
   cat: 'AMP / MIX',
+  look: 'slateware',
   worklet: 'xfade',
   knobs: [
     { id: 'fade', label: 'FADE', min: 0, max: 1, initial: 0.5, fmt: 'fPc', big: true, cvIn: 'fcv' },

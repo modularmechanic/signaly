@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'FOUR-OSC STACK',
   hp: 6,
   cat: 'SOURCES',
+  look: 'bronze',
   worklet: 'quad',
   knobs: [
     { id: 'oct', label: 'OCTAVE', min: -3, max: 3, initial: 0, fmt: 'fInt', curve: 'lin', big: true },

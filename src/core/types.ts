@@ -1,3 +1,5 @@
+import type { Kit, KnobLook, SwitchLook } from './look';
+
 export type Kind = 'a' | 'p' | 'g' | 'c';
 
 /** Canonical display name per signal kind — jack aria-labels and the module-builder prompt. */
@@ -36,6 +38,8 @@ export interface KnobDef {
   cvIn?: string;
   /** input jack id this knob attenuverts (engine inserts a GainNode) */
   attenuates?: string;
+  /** overrides ModuleDef.look.knob for this one control (a trimmer among Davies knobs) */
+  look?: KnobLook;
 }
 
 export interface SwitchDef {
@@ -43,6 +47,8 @@ export interface SwitchDef {
   label: string;
   options: string[];
   initial?: number;
+  /** overrides ModuleDef.look.sw for this one control */
+  look?: SwitchLook;
 }
 
 export interface JackDef {
@@ -87,6 +93,8 @@ export interface ModuleDef {
   leds?: string[];
   /** optional authored geometry (user modules); built-ins use the computed layout */
   panel?: PanelLayout;
+  /** visual identity; falls back to CAT_KIT[cat]. See src/core/look.ts. */
+  look?: Kit;
 }
 
 export const CAT_COLOR: Record<Cat, string> = {

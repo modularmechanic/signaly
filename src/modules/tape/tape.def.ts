@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'WOW + SATURATION · SYNC',
   hp: 14,
   cat: 'FX',
+  look: 'tape',
   worklet: 'tape',
   dark: true,
   knobs: [

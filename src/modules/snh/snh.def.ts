@@ -6,6 +6,7 @@ export const def: ModuleDef = {
   sub: 'DUAL SAMPLE & HOLD',
   hp: 10,
   cat: 'ENV / FUNC',
+  look: 'lab',
   worklet: 'snh',
   knobs: [
     {

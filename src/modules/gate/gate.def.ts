@@ -7,6 +7,7 @@ export const def: ModuleDef = {
   sub: 'NOISE GATE',
   hp: 8,
   cat: 'AMP / MIX',
+  look: 'slateware',
   worklet: 'gate',
   display: 'meter',
   knobs: [

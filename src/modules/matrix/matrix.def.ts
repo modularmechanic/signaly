@@ -21,6 +21,7 @@ export const def: ModuleDef = {
   sub: '4 x 4 MATRIX MIXER',
   hp: 12,
   cat: 'AMP / MIX',
+  look: 'grid',
   worklet: 'matrix',
   knobs: cells,
   ins: ROWS.map((r) => ({ id: r, label: r.toUpperCase(), kind: 'a' as const })),
