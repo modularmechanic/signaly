@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { addModule, addRow, removeModule, removeRow } from '../../engine/rack';
 import type { ModuleInstance } from '../../engine/types';
 import { registerUserModule } from '../../features/user-modules/runtime-registry';
@@ -22,6 +22,16 @@ export function BuilderWorkspace(): ReactNode {
   const [draft, setDraft] = useState<UserModule | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const setView = useUiStore((s) => s.setView);
+  const alive = useRef(true);
+
+  // register() awaits a verify that can outlive the page; without this the continuation
+  // would add a row and a module nobody can see, let alone remove.
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   // Unconditional teardown: replacing or leaving the builder always clears the throwaway row.
   useEffect(() => {
@@ -36,6 +46,7 @@ export function BuilderWorkspace(): ReactNode {
   const register = useCallback(async (um: UserModule): Promise<string | null> => {
     setDraft(um);
     const r = await registerUserModule(um);
+    if (!alive.current) return null;
     if (!r.ok) {
       setPreview(null);
       return r.error;

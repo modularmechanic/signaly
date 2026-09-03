@@ -11,7 +11,7 @@
 - **Waits for:** 01, 02, 03, 04, 05 (needs the full atom/molecule kit and at least one module to render)
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - Assemble the playable app: organisms that render a module panel from its `PanelLayout` (authored for built-ins, computed fallback for user modules), rows of panels, the module browser, the patch menu, the settings dialog with BYOK key entry, and the app shell that switches between the rack and builder views. **This phase owns `main.tsx` and `app.tsx`** — it is the first phase where `npm run dev` and `npm run build` work.
 
 ## Key Insights

@@ -11,7 +11,7 @@
 - **Waits for:** 01 (needs `core/types.ts`, `engine/{types,dsp-prelude,audio-context}.ts`, `modules/registry.ts` `registerSpec`/`unregisterSpec`, `storage/{local-json,image-store,api-key-store}.ts`)
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - Headless core for user-authored modules: validate a JSON def, transpile TS DSP, verify it renders finite audio, register it at runtime, and generate both the def and the faceplate image from an LLM using the user's own key. Zero UI — phase 08 is the face on top of this.
 
 ## Key Insights

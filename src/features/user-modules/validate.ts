@@ -11,6 +11,14 @@ import type {
   SwitchDef,
 } from '../../core/types';
 import { CAT_ORDER } from '../../core/types';
+import {
+  BOTTOM_PAD,
+  HEADER_GAP,
+  HEADER_H,
+  JACK_GAP,
+  JACK_ROW_H,
+  jackColsFor,
+} from '../../modules/panel-layout';
 import type { UserDef } from './schema';
 import { bad, bool, list, num, obj, opt, pick, str, unit } from './validate-primitives';
 
@@ -32,6 +40,14 @@ export const JACK_KINDS: readonly string[] = ['a', 'p', 'g', 'c'];
 const NODE_KIND: readonly string[] = ['knob', 'fader', 'switch', 'led', 'in', 'out', 'display', 'label'];
 const FREE_PREFIX: readonly string[] = ['label', 'display'];
 const EPS = 1e-9;
+const FIXED_H = HEADER_H + HEADER_GAP + JACK_GAP + BOTTOM_PAD;
+
+/** The auto layout pins jack rows to the bottom under a fixed header; past that the knob
+    band collapses to zero height and jacks stack on top of each other. */
+function jacksFit(hp: number, ins: number, outs: number): boolean {
+  const cols = jackColsFor(hp);
+  return FIXED_H + (Math.ceil(ins / cols) + Math.ceil(outs / cols)) * JACK_ROW_H <= 1 + EPS;
+}
 
 export function validateSlug(v: unknown): v is string {
   return typeof v === 'string' && SLUG.test(v);
@@ -57,6 +73,7 @@ function jacks(v: unknown, at: string): JackDef[] {
 function knobs(v: unknown, ins: JackDef[]): KnobDef[] {
   const out: KnobDef[] = [];
   const seen = new Set<string>();
+  const att1 = new Set<string>();
   list(v, 'knobs', 16).forEach((raw, i) => {
     const at = `knobs[${i}]`;
     const o = obj(raw, at);
@@ -88,6 +105,9 @@ function knobs(v: unknown, ins: JackDef[]): KnobDef[] {
       const j = str(att, `${at}.attenuates`, 24);
       if (!ins.some((x) => x.id === j && x.kind === 'c'))
         bad(`${at}.attenuates "${j}" must name a 'c' input`);
+      // Two gains on one jack would leave the second unwired; one attenuator per input.
+      if (att1.has(j)) bad(`${at}.attenuates "${j}" is already attenuated by another knob`);
+      att1.add(j);
       k.attenuates = j;
     }
     out.push(k);
@@ -139,10 +159,13 @@ function panel(v: unknown, d: UserDef): PanelLayout {
     in: new Set(d.ins.map((j) => j.id)),
     out: new Set(d.outs.map((j) => j.id)),
   };
+  const seen = new Set<string>();
   const nodes = list(o.nodes, 'panel.nodes', 64).map((raw, i): PanelNode => {
     const at = `panel.nodes[${i}]`;
     const n = obj(raw, at);
     const id = str(n.id, `${at}.id`, 48);
+    if (seen.has(id)) bad(`panel.nodes has a duplicate id "${id}"`);
+    seen.add(id);
     const sep = id.indexOf(':');
     const prefix = sep < 0 ? id : id.slice(0, sep);
     const target = sep < 0 ? '' : id.slice(sep + 1);
@@ -173,6 +196,16 @@ export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: 
     const hp = num(r.hp, 'def.hp');
     if (!Number.isInteger(hp) || hp < 1 || hp > 24) bad('def.hp must be an integer from 1 to 24');
     const ins = jacks(r.ins, 'ins');
+    const outs = jacks(r.outs, 'outs');
+    if (!jacksFit(hp, ins.length, outs.length)) {
+      let need = hp;
+      while (need < 24 && !jacksFit(need, ins.length, outs.length)) need++;
+      bad(
+        jacksFit(need, ins.length, outs.length)
+          ? `def.hp ${hp} is too narrow for ${ins.length} in and ${outs.length} out jacks — use at least ${need} HP`
+          : `${ins.length} in and ${outs.length} out jacks fit no panel — use fewer jacks`,
+      );
+    }
     const def: UserDef = {
       name: str(r.name, 'def.name', 24),
       sub: str(r.sub, 'def.sub', 32),
@@ -180,7 +213,7 @@ export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: 
       cat: pick(r.cat, 'def.cat', CAT_ORDER) as Cat,
       knobs: knobs(r.knobs, ins),
       ins,
-      outs: jacks(r.outs, 'outs'),
+      outs,
     };
     const dark = opt(r.dark);
     if (dark !== undefined) def.dark = bool(dark, 'def.dark');

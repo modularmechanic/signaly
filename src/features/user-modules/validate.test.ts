@@ -68,12 +68,20 @@ describe('validateUserDef', () => {
     expect(errorOf(withDef({ name: 'x'.repeat(25) }))).toMatch(/def.name/));
 
   it('rejects more than 16 knobs', () => {
-    const knobs = Array.from({ length: 17 }, (_, i) => ({ id: `k${i}`, label: 'K', min: 0, max: 1, initial: 0 }));
+    const knobs = Array.from({ length: 17 }, (_, i) => ({
+      id: `k${i}`,
+      label: 'K',
+      min: 0,
+      max: 1,
+      initial: 0,
+    }));
     expect(errorOf(withDef({ knobs }))).toMatch(/at most 16/);
   });
 
   it('rejects a knob default outside [min,max]', () => {
-    expect(errorOf(withDef({ knobs: [{ id: 'a', label: 'A', min: 0, max: 1, initial: 2 }] }))).toMatch(/within/);
+    expect(errorOf(withDef({ knobs: [{ id: 'a', label: 'A', min: 0, max: 1, initial: 2 }] }))).toMatch(
+      /within/,
+    );
   });
 
   it('rejects attenuates naming a non-CV input', () => {
@@ -133,5 +141,29 @@ describe('validateUserDef', () => {
       h: 0.1,
     }));
     expect(errorOf(withDef({ panel: { nodes } }))).toMatch(/at most 64/);
+  });
+
+  it('rejects two knobs attenuating the same input jack', () => {
+    const knobs = [
+      { id: 'a', label: 'A', min: -1, max: 1, initial: 0, attenuates: 'cv' },
+      { id: 'b', label: 'B', min: -1, max: 1, initial: 0, attenuates: 'cv' },
+    ];
+    expect(errorOf(withDef({ knobs, panel: null }))).toMatch(/already attenuated/);
+  });
+
+  it('rejects duplicate panel node ids', () => {
+    const node = { id: 'knob:rate', kind: 'knob', x: 0, y: 0, w: 0.2, h: 0.2 };
+    expect(errorOf(withDef({ panel: { nodes: [node, { ...node, y: 0.3 }] } }))).toMatch(
+      /panel.nodes has a duplicate id "knob:rate"/,
+    );
+  });
+
+  it('rejects a jack count that cannot fit the declared hp', () => {
+    const many = (p: string): unknown[] =>
+      Array.from({ length: 8 }, (_, i) => ({ id: `${p}${i}`, label: 'J', kind: 'a' }));
+    const dense = { knobs: [], ins: many('i'), outs: many('o'), panel: null };
+    expect(errorOf(withDef({ ...dense, hp: 1 }))).toMatch(/too narrow for 8 in and 8 out jacks/);
+    expect(errorOf(withDef({ ...dense, hp: 1 }))).toMatch(/use at least 4 HP/);
+    expect(validateUserDef(withDef({ ...dense, hp: 4 })).ok).toBe(true);
   });
 });

@@ -11,7 +11,7 @@
 - **Waits for:** 01
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - The awkward batch: 6 worklet, 5 native, one module with custom React parts and a serializer (`seq`), and every module that needs a `display`. Everything else in batches A and B is a plain def+dsp copy; this phase carries all the exceptions.
 
 ## Key Insights

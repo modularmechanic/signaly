@@ -44,6 +44,9 @@ function installCvAttenuverters(m: ModuleInstance): void {
   for (const knob of m.def.knobs) {
     const jackId = knob.attenuates;
     if (!jackId) continue;
+    // A second gain on the same jack would swallow the first: wireCable only ever
+    // connects one cvGains pair, so the earlier gain would never reach the real input.
+    if (m.cvGains?.[jackId]) continue;
     const target = m.jacks.in[jackId];
     if (!target) continue;
     const gain = ac.createGain();

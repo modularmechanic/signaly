@@ -11,7 +11,7 @@
 - **Waits for:** 01 (needs `core/types.ts`, `hooks/{patch-state,module-api,render-bus,formatters,use-canvas}`, `styles/tokens.css`, the five display atoms)
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - The Eurorack look and the accessibility contract. Interactive atoms (knob, fader, switch, button, jack, screw, label, select), the molecules that group them, the cable canvas, and the three CSS files that carry the faceplate/knob/jack/cable visual language mined from the source's 8210-line stylesheet.
 
 ## Key Insights

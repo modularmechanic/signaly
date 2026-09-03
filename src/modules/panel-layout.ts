@@ -8,21 +8,28 @@ import {
   type PanelNodeKind,
 } from '../core/types';
 
-const HEADER_H = 0.09;
-const HEADER_GAP = 0.02;
-const JACK_ROW_H = 0.1;
-const JACK_GAP = 0.02;
+export const HEADER_H = 0.09;
+export const HEADER_GAP = 0.02;
+export const JACK_ROW_H = 0.1;
+export const JACK_GAP = 0.02;
 const SW_ROW_H = 0.075;
 const LED_ROW_H = 0.05;
 const LED_W = 0.12;
 const DISPLAY_GAP = 0.01;
-const BOTTOM_PAD = 0.018;
+export const BOTTOM_PAD = 0.018;
 const ROW_MAX = 0.15;
 const BIG_ROW = 1.27;
 
 const cache = new Map<string, PanelLayout>();
 
 const clamp = (n: number, lo: number, hi: number): number => (n < lo ? lo : n > hi ? hi : n);
+
+const panelPad = (hp: number): number => (hp <= 3 ? 0.03 : 0.06);
+
+/** Jacks per row for an `hp`-wide panel — the density check in user-module validation
+    needs the same number computePanel lays out with. */
+export const jackColsFor = (hp: number): number =>
+  clamp(Math.floor((hp * HP_PX * (1 - 2 * panelPad(hp))) / 43), 1, 8);
 
 /** Authored geometry wins; every built-in and any user module without `panel` gets this. */
 export function layoutPanel(def: ModuleDef): PanelLayout {
@@ -115,11 +122,11 @@ function knobWeight(knobs: readonly KnobDef[], cols: number): number {
 }
 
 function computePanel(def: ModuleDef): PanelLayout {
-  const pad = def.hp <= 3 ? 0.03 : 0.06;
+  const pad = panelPad(def.hp);
   const box = { pad, usable: 1 - 2 * pad };
   const usablePx = def.hp * HP_PX * box.usable;
   const cols = clamp(Math.floor(usablePx / 66), 1, 4);
-  const jackCols = clamp(Math.floor(usablePx / 43), 1, 8);
+  const jackCols = jackColsFor(def.hp);
   const swCols = def.hp < 10 ? Math.min(cols, 2) : cols;
   const sws = def.sws ?? [];
   const leds = def.leds ?? [];

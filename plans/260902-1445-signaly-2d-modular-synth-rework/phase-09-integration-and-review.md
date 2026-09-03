@@ -10,7 +10,7 @@
 - **Waits for:** 01–08, all complete
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: partial · Review status: partial — CodeRabbit pass never ran and the Minor/Nit `code-reviewer` findings are still open; integration checklist cleared, gate green (typecheck, lint, 207 tests, build), README written
 - Close the loop: prove the 40 modules are all present and working, run the full gate, write the README, and put the whole codebase through CodeRabbit and the `code-reviewer` subagent. Also the collection point for every "raise it in phase 09" item the parallel phases deferred.
 
 ## Key Insights

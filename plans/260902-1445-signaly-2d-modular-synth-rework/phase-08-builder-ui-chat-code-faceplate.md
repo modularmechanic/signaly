@@ -11,7 +11,7 @@
 - **Waits for:** 01, 05, 07 (needs the atom kit and the whole headless user-module/LLM core)
 
 ## Overview
-- Date: 2026-09-02 · Priority: P3 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P3 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - The face on phase 07: describe a module in chat, see the proposed def and DSP, edit the code, verify it, preview it in a throwaway rack row, give it a faceplate (imported+cropped or prompt-generated), and save it to the library. Everything here is presentation — no transpile, verify, provider, or storage logic lives in this phase.
 
 ## Key Insights

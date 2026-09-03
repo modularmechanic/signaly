@@ -1,7 +1,7 @@
 ---
 title: "Signaly: lean 2D modular synth rework of modvibez"
 description: "Rebuild modvibez as a lean 2D-only accessible React SPA with 40 built-in modules and BYOK LLM-assisted user module authoring"
-status: pending
+status: in-progress
 priority: P2
 effort: 54h
 branch: main
@@ -14,22 +14,26 @@ created: 2026-09-02
 New lean SPA at `/Users/clemensvanderwalt/Developer/clem/signaly`, rewritten from `cablewerk-v2` (121K LOC → target ~12K).
 2D only, no backend, no auth, no multiplayer, no 3D. Vite 8 + React 19 + TS strict + Zustand 5 + Vitest 4.
 Runtime deps: react, react-dom, zustand, sucrase, idb-keyval. Nothing else.
-40 built-in modules ported def+dsp/native+`<id>.panel.ts` (authored 0..1 coords converted from source `.front-panel.ts`). Computed auto-layout is the fallback for user modules that omit `panel`.
+41 built-in modules (the planned 40 plus MIX 8) as def+dsp/native. Panels are computed from the def; authored `panel` coords are the exception, not the rule (ADR 0001).
 Users author modules from JSON def + TS DSP; BYOK chat (localStorage key) generates them; sucrase transpile → blob → `audioWorklet.addModule`.
 Storage: localStorage (versioned envelope) for JSON, IndexedDB (idb-keyval) for faceplate blobs. One thin module each, no adapters.
 
 ## Phases
 | # | phase | status | progress | group | effort | link |
 |---|---|---|---|---|---|---|
-| 01 | Foundation: engine, state, storage | pending | 0% | 1 | 8 | [phase-01](phase-01-foundation-engine-state-storage.md) |
-| 02 | Modules batch A (15: sources/filters/env) | pending | 0% | 2 | 6 | [phase-02](phase-02-modules-batch-a-sources-filters-env.md) |
-| 03 | Modules batch B (14: amp/mix/fx/voices) | pending | 0% | 2 | 6 | [phase-03](phase-03-modules-batch-b-amp-fx-voices.md) |
-| 04 | Modules batch C (11: seq/drums/meters/out) | pending | 0% | 2 | 7 | [phase-04](phase-04-modules-batch-c-seq-meters-output.md) |
-| 05 | UI kit: atoms, molecules, panel CSS | pending | 0% | 2 | 6 | [phase-05](phase-05-ui-kit-atoms-molecules-styles.md) |
-| 06 | Rack workspace + app shell | pending | 0% | 3 | 6 | [phase-06](phase-06-rack-workspace-and-app-shell.md) |
-| 07 | User-module core + BYOK LLM | pending | 0% | 2 | 7 | [phase-07](phase-07-user-modules-and-byok-llm.md) |
-| 08 | Builder UI: chat, code, faceplate | pending | 0% | 3 | 5 | [phase-08](phase-08-builder-ui-chat-code-faceplate.md) |
-| 09 | Integration, tests, README, review | pending | 0% | 4 | 3 | [phase-09](phase-09-integration-and-review.md) |
+| 01 | Foundation: engine, state, storage | done | 100% | 1 | 8 | [phase-01](phase-01-foundation-engine-state-storage.md) |
+| 02 | Modules batch A (15: sources/filters/env) | done | 100% | 2 | 6 | [phase-02](phase-02-modules-batch-a-sources-filters-env.md) |
+| 03 | Modules batch B (14: amp/mix/fx/voices) | done | 100% | 2 | 6 | [phase-03](phase-03-modules-batch-b-amp-fx-voices.md) |
+| 04 | Modules batch C (11: seq/drums/meters/out) | done | 100% | 2 | 7 | [phase-04](phase-04-modules-batch-c-seq-meters-output.md) |
+| 05 | UI kit: atoms, molecules, panel CSS | done | 100% | 2 | 6 | [phase-05](phase-05-ui-kit-atoms-molecules-styles.md) |
+| 06 | Rack workspace + app shell | done | 100% | 3 | 6 | [phase-06](phase-06-rack-workspace-and-app-shell.md) |
+| 07 | User-module core + BYOK LLM | done | 100% | 2 | 7 | [phase-07](phase-07-user-modules-and-byok-llm.md) |
+| 08 | Builder UI: chat, code, faceplate | done | 100% | 3 | 5 | [phase-08](phase-08-builder-ui-chat-code-faceplate.md) |
+| 09 | Integration, tests, README, review | partial | 85% | 4 | 3 | [phase-09](phase-09-integration-and-review.md) |
+
+Phase 09 outstanding: the planned CodeRabbit pass never ran, and the Minor/Nit findings from the
+`code-reviewer` pass are still open. Everything else in phase 09 landed — the integration checklist
+is cleared, the gate is green (typecheck, lint, 207 tests, build), and the README is written.
 
 ## Dependency graph
 ```
@@ -59,11 +63,14 @@ Storage: localStorage (versioned envelope) for JSON, IndexedDB (idb-keyval) for 
 | 09 | `README.md`, `tests/module-catalog.test.ts` |
 
 ## Key decisions
+- **Superseded by [ADR 0001](../../docs/adr/0001-panel-geometry-computed-by-default.md):** every
+  built-in panel is now computed by `layoutPanel(def)`; the per-module `<id>.panel.ts` files are gone
+  and authored `panel` survives as the documented exception (MIX 8). Original decision below.
 - **Panel geometry is authored for built-ins, computed as fallback.** Each of the 40 modules ships `<id>.panel.ts` (coords converted from source `.front-panel.ts`, stripped of `assetId`/`labelStyle`/`elementId`). `layoutPanel(def)` returns `def.panel ?? computed`. User modules may supply `panel` (e.g. to align with a faceplate image) or omit it. The `panel-runtime-model.ts` (942 L) `if (id === …)` chain is still dropped. <!-- Updated: Validation Session 1 - panel geometry -->
 - **Worklet URL**: `import workletUrl from './worklet-entry.ts?worker&url'`. The brief's `new URL(…, import.meta.url)` is documented in the source as broken under Vite build (raw `.ts` served as an asset, glob never expanded). Corrected.
 - `ui.display` collapses 12 `PanelDisplayVariant`s to `def.display?: 'scope'|'meter'|'steps'|'env'|'piano'|'text'`.
 - Dropped from `ModuleDef`: `v1ui`, `brand`, `subtype`, `extraOuts`, `ui`, `PanelBlueprint`, vibes, finishes. `cvIn` becomes a plain string.
-- Dropped from `Cable`: `color`. From `RackRow`: `rackId`. No racks/stacks/power. **Rows have fixed HP capacity**: `settings.rowWidthHp` (default 120, user-adjustable); `rack.ts` rejects an add/duplicate/move whose declared `def.hp` would overflow the target row (no effective-HP solver). <!-- Updated: Validation Session 1 - row capacity -->
+- Dropped from `Cable`: `color`. From `RackRow`: `rackId`. No racks/stacks/power. **Rows have fixed HP capacity**: `settings.rowWidthHp` (default 120, user-adjustable); `rack.ts` rejects an add/duplicate/move whose declared `def.hp` would overflow the target row (no effective-HP solver). **Superseded by [ADR 0002](../../docs/adr/0002-adding-a-module-is-never-blocked-by-a-full-row.md):** add/duplicate into a full row spawns a new row beneath instead of refusing (only a drag still refuses), and the row-width range is now 120–240 HP, default 120. <!-- Updated: Validation Session 1 - row capacity -->
 - No barrel `index.ts` in hot paths (defeats tree-shaking). No router lib — `ui-store.view: 'rack' | 'builder'`.
 - Provider model IDs are fetched at runtime (`/v1/models` etc.), never hardcoded.
 
@@ -71,9 +78,8 @@ Storage: localStorage (versioned envelope) for JSON, IndexedDB (idb-keyval) for 
 Backend, accounts, public module sharing, multiplayer, entitlements, marketing site, 3D/Three.js, E2E/Playwright, MIDI learn, streaming LLM responses, checkpoints, cable colour picker, drum bus.
 
 ## Unresolved questions
-1. CVD palette (`#E8871E`/`#3B82F6`/`#D6336C`/`#0FA3A3`) is a reasoned default — needs a contrast/CVD-simulator pass in phase 05.
-3. `navigator.storage.persist()` on first save — include or skip? Currently in phase 01, one line.
-4. Keyboard patching flow (arm source → arm dest) has no W3C precedent; unverified with screen readers.
+Tracked in [../open-questions.md](../open-questions.md). 1 (CVD palette) and 3 (`navigator.storage.persist()`)
+are closed; the keyboard-patching flow is still unverified with a real screen reader.
 
 ## Validation Log
 

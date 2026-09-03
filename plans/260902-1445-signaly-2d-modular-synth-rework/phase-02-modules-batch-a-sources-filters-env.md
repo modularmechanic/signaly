@@ -11,7 +11,7 @@
 - **Waits for:** 01 (needs `core/types.ts`, `engine/dsp-prelude.ts`, `engine/types.ts`, `modules/registry.ts`)
 
 ## Overview
-- Date: 2026-09-02 · Priority: P2 · Implementation status: pending · Review status: pending
+- Date: 2026-09-02 · Priority: P2 · Implementation status: done · Review status: reviewed (phase 09 integration pass + grilling; findings landed in `45aee02`, `5d10263`, `5f32a27`)
 - Port 15 worklet modules — all `def` + `dsp`, zero native, zero custom parts. The easiest batch: every DSP file is 35–149 lines and depends only on prelude exports.
 
 ## Key Insights
