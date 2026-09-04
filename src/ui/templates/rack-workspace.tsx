@@ -167,7 +167,7 @@ export function RackWorkspace(): ReactNode {
         ))}
       </main>
 
-      <CableCanvas />
+      <CableCanvas rack={rack} />
       <ZoomControls rack={rack} />
 
       {browserOpen && <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />}

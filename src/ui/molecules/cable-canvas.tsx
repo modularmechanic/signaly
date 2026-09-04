@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Kind } from '../../core/types';
 import { addDraw } from '../../hooks/render-bus';
 import {
@@ -77,7 +77,29 @@ function distToRope(s: Seg, p: Pt, z: number): number {
 
 /** One canvas for every cable. Never re-renders: endpoints and cables are read
     inside the shared render-bus draw, and an unchanged signature skips the repaint. */
-export function CableCanvas(): ReactNode {
+/** Where a jack really is on screen.
+
+    The rack is scaled with CSS `zoom`, and engines disagree about what `getBoundingClientRect`
+    reports inside a zoomed box: Chromium and Firefox scale it by the zoom, others hand back
+    unscaled layout pixels. Guessing wrong puts every cable at a fraction of its true position,
+    which is exactly what "the cables go all over the place when you zoom" looks like.
+
+    So it is measured, never assumed: the rack's painted width over its layout width IS the
+    browser's answer. When that already matches the zoom (Chromium, Firefox) this returns null
+    and nothing is corrected; otherwise the jack points are mapped into real screen space. */
+export function jackSpace(
+  rect: { left: number; top: number; width: number },
+  layoutWidth: number,
+  zoom: number,
+): { ox: number; oy: number; k: number } | null {
+  if (zoom === 1 || layoutWidth <= 0 || rect.width <= 0) return null;
+  const reported = rect.width / layoutWidth;
+  const k = zoom / reported;
+  if (!Number.isFinite(k) || Math.abs(k - 1) < 0.01) return null;
+  return { ox: rect.left, oy: rect.top, k };
+}
+
+export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): ReactNode {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -170,19 +192,23 @@ export function CableCanvas(): ReactNode {
     const draw = (): void => {
       const segs: Seg[] = [];
       let sig = `${cv.width}x${cv.height}z${z}`;
+      const el = rack.current;
+      const sp = el ? jackSpace(el.getBoundingClientRect(), el.offsetWidth, z) : null;
+      const map = (p: Pt): Pt =>
+        sp ? { x: sp.ox + (p.x - sp.ox) * sp.k, y: sp.oy + (p.y - sp.oy) * sp.k } : p;
       for (const c of useRackStore.getState().cables) {
         const out = getJack(jackKey(c.from.uid, 'out', c.from.jack));
         const inp = getJack(jackKey(c.to.uid, 'in', c.to.jack));
         if (!out || !inp) continue;
-        const a = jackCenter(out);
-        const b = jackCenter(inp);
+        const a = map(jackCenter(out));
+        const b = map(jackCenter(inp));
         segs.push({ a, b, kind: out.kind, color: kindColor[out.kind], id: c.id });
         sig += `|${c.id},${a.x | 0},${a.y | 0},${b.x | 0},${b.y | 0}`;
       }
       const drag = getDrag();
       if (drag) {
         const fixed: JackInfo = drag.fixed;
-        const at = jackCenter(fixed);
+        const at = map(jackCenter(fixed));
         const mouse = { x: drag.x, y: drag.y };
         segs.push({
           a: fixed.dir === 'out' ? at : mouse,
@@ -285,6 +311,10 @@ export function CableCanvas(): ReactNode {
     };
     window.addEventListener('resize', relayout);
     window.addEventListener('scroll', reflow, true);
+    // Pinching the page itself moves painted content under a fixed canvas; re-measure when the
+    // visual viewport changes so a phone pinch cannot leave the cables behind.
+    window.visualViewport?.addEventListener('resize', relayout);
+    window.visualViewport?.addEventListener('scroll', reflow);
     // Removing or reordering a module reflows the row without a resize or scroll event, so the
     // cached jack rects would otherwise keep drawing every cable at its old position.
     const unsubRack = useRackStore.subscribe(reflow);
@@ -309,6 +339,8 @@ export function CableCanvas(): ReactNode {
       unsubZoom();
       window.removeEventListener('resize', relayout);
       window.removeEventListener('scroll', reflow, true);
+      window.visualViewport?.removeEventListener('resize', relayout);
+      window.visualViewport?.removeEventListener('scroll', reflow);
       window.removeEventListener('pointerdown', onDown, { capture: true });
       window.removeEventListener('pointerup', onUp, { capture: true });
       window.removeEventListener('pointercancel', onCancel, { capture: true });
@@ -317,7 +349,7 @@ export function CableCanvas(): ReactNode {
       window.removeEventListener('click', onClick);
       document.body.classList.remove('cable-hover');
     };
-  }, []);
+  }, [rack]);
 
   return <canvas className="cable-canvas" ref={ref} aria-hidden="true" />;
 }
