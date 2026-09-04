@@ -6,7 +6,12 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- Cables ignored the rack zoom. Plug, rope width, dash and sag were drawn in fixed screen pixels
+  while the panels behind them scaled, so a plug swallowed a zoomed-out socket and shrank to a
+  speck against a zoomed-in one, and the cable ends stopped lining up with the jack graphics.
+  Every cable metric is now multiplied by the live zoom, hit-testing included.
 
 ## [0.0.4] — 2026-09-04
 
