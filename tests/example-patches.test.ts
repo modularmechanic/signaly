@@ -8,8 +8,8 @@ import { isRackSnapshot } from '../src/engine/snapshot';
     every module sits in exactly one row. A patch that fails here would load with silently
     dropped cables — the worst kind of broken showcase. */
 describe('example patches', () => {
-  it('ships five examples', () => {
-    expect(EXAMPLES).toHaveLength(5);
+  it('ships every bundled example', () => {
+    expect(EXAMPLES).toHaveLength(21);
   });
 
   it.each(EXAMPLES.map((e) => [e.name, e] as const))('%s is consistent with the registry', (_name, ex) => {
@@ -57,6 +57,14 @@ describe('example patches', () => {
       const key = `${c.to.uid}:${c.to.jack}`;
       expect(inUse.has(key), `input ${to!.mtype}#${key} patched twice`).toBe(false);
       inUse.add(key);
+    }
+
+    // A patch that cannot be heard is a broken example: the output has to exist and stay quiet
+    // enough to open safely, and a stopped clock leaves a sequenced patch silent forever.
+    for (const m of modules) {
+      if (m.mtype === 'out')
+        expect(m.vals.level ?? 0.5, `${_name}: MAIN OUT too loud`).toBeLessThanOrEqual(0.7);
+      if (m.mtype === 'clock') expect(m.sws.run, `${_name}: CLOCK is stopped`).toBe(1);
     }
 
     const placed = rows.flat();
