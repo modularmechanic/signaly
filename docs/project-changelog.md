@@ -6,6 +6,10 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.0.5] — 2026-09-04
+
 ### Added
 
 - **Sixteen new example patches across four genres, and the five ambient ones rebuilt wetter.**
