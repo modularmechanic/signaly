@@ -8,6 +8,22 @@ tag and shipped inside v0.0.1.
 
 Nothing yet.
 
+## [0.0.4] — 2026-09-04
+
+### Fixed
+
+- Turning a knob and letting go with the cursor over a patch cable deleted that cable. The knob
+  holds pointer capture, so the click ending the drag is retargeted to the knob and bubbles to the
+  window listener that removes cables, with whatever cable the cursor drifted over still hovered.
+  A cable is now removed only by a press that began away from the controls and did not travel, and
+  a cable is no longer highlighted as removable while a control is being dragged over it.
+
+### Added
+
+- `tests/module-contract-sweep.test.ts` reads every processor's source and proves that each
+  declared input is read, each declared output is written, and neither runs past what the def
+  declares — a jack that renders and accepts a cable but does nothing is now a failing build.
+
 ## [0.0.3] — 2026-09-04
 
 Zoom and a layout that fits a phone.

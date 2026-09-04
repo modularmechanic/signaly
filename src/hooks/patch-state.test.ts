@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectCable } from '../engine/rack';
-import { getDrag, jackKey, registerJack, startJackDrag, unregisterJack, type JackInfo } from './patch-state';
+import {
+  CLICK_SLOP,
+  clickRemovesCable,
+  getDrag,
+  jackKey,
+  registerJack,
+  startJackDrag,
+  type JackInfo,
+  unregisterJack,
+} from './patch-state';
 
 vi.mock('../engine/rack', () => ({
   connectCable: vi.fn(),
@@ -62,5 +71,26 @@ describe('startJackDrag', () => {
     window.dispatchEvent(ptr('pointerup'));
     expect(getDrag()).toBeNull();
     expect(connectCable).not.toHaveBeenCalled();
+  });
+});
+
+describe('clickRemovesCable', () => {
+  it('removes the cable under a real click', () => {
+    expect(clickRemovesCable({ onControl: false, travel: 0 })).toBe(true);
+    // A hand is never perfectly still; the slop is what keeps a click a click.
+    expect(clickRemovesCable({ onControl: false, travel: CLICK_SLOP })).toBe(true);
+  });
+
+  it('keeps the cable when the press began on a control', () => {
+    // The reported bug: turn a knob, let go over a cable, and the cable vanished. The knob has
+    // pointer capture, so the click is retargeted to it and bubbles to the window listener with
+    // whatever cable the cursor drifted over still hovered.
+    expect(clickRemovesCable({ onControl: true, travel: 0 })).toBe(false);
+    expect(clickRemovesCable({ onControl: true, travel: 300 })).toBe(false);
+  });
+
+  it('keeps the cable when the press travelled, wherever it began', () => {
+    expect(clickRemovesCable({ onControl: false, travel: CLICK_SLOP + 1 })).toBe(false);
+    expect(clickRemovesCable({ onControl: false, travel: 200 })).toBe(false);
   });
 });

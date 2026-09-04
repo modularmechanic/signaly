@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import type { Kind } from '../../core/types';
 import { addDraw } from '../../hooks/render-bus';
 import {
+  clickRemovesCable,
   getDrag,
   getJack,
   invalidateJackRects,
@@ -90,6 +91,10 @@ export function CableCanvas(): ReactNode {
     const pin = read('--edge', '#050506');
 
     const ptr = { x: -1, y: -1, inside: false };
+    /** The press in progress: where it started, whether it started on a control, still down. */
+    const press = { x: 0, y: 0, onControl: false, down: false };
+    /** Set at pointerup; the click that follows may remove a cable only if this survives. */
+    let armed = false;
     let dpr = 1;
     const size = (): void => {
       dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -177,7 +182,9 @@ export function CableCanvas(): ReactNode {
         });
         sig += `|d${drag.x | 0},${drag.y | 0},${drag.kind}`;
       }
-      if (drag) hover = null;
+      // While a control is being dragged the cursor is only passing over cables — highlighting
+      // one as "click to remove" would advertise something this gesture must not do.
+      if (drag || (press.down && press.onControl)) hover = null;
       else if (moved) hover = hitTest(segs);
       moved = false;
       sig += `|h${hover ?? ''}`;
@@ -218,8 +225,27 @@ export function CableCanvas(): ReactNode {
       ptr.inside = false;
       moved = true;
     };
+    const onDown = (e: PointerEvent): void => {
+      press.x = e.clientX;
+      press.y = e.clientY;
+      press.down = true;
+      press.onControl = e.target instanceof Element && e.target.closest(INTERACTIVE) !== null;
+      moved = true;
+    };
+    const onUp = (e: PointerEvent): void => {
+      press.down = false;
+      armed = clickRemovesCable({
+        onControl: press.onControl,
+        travel: Math.hypot(e.clientX - press.x, e.clientY - press.y),
+      });
+      moved = true;
+    };
     const onClick = (): void => {
-      if (hover === null) return;
+      const remove = armed;
+      // One press, one chance: a click with no press behind it (a keyboard Enter, say) must
+      // never fall through to whatever cable the cursor was last resting on.
+      armed = false;
+      if (!remove || hover === null) return;
       disconnectCable(hover);
       hover = null;
       document.body.classList.remove('cable-hover');
@@ -243,6 +269,11 @@ export function CableCanvas(): ReactNode {
     // Removing or reordering a module reflows the row without a resize or scroll event, so the
     // cached jack rects would otherwise keep drawing every cable at its old position.
     const unsubRack = useRackStore.subscribe(reflow);
+    // Capture phase: a control's own handler calls stopPropagation, and pointer capture
+    // retargets the event to it, so the bubble phase never reliably reaches the window.
+    window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
+    window.addEventListener('pointerup', onUp, { capture: true, passive: true });
+    window.addEventListener('pointercancel', onUp, { capture: true, passive: true });
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerleave', onLeave, { passive: true });
     window.addEventListener('click', onClick);
@@ -252,6 +283,9 @@ export function CableCanvas(): ReactNode {
       unsubRack();
       window.removeEventListener('resize', relayout);
       window.removeEventListener('scroll', reflow, true);
+      window.removeEventListener('pointerdown', onDown, { capture: true });
+      window.removeEventListener('pointerup', onUp, { capture: true });
+      window.removeEventListener('pointercancel', onUp, { capture: true });
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('click', onClick);

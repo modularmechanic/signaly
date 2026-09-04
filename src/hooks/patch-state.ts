@@ -177,3 +177,22 @@ export function startJackDrag(info: JackInfo, e: PointerEvent): void {
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', cleanup);
 }
+
+/** Slop in px: a press that travels further than this was a drag, not a click. */
+export const CLICK_SLOP = 4;
+
+export interface Press {
+  /** the press began on a knob, fader, switch or jack */
+  onControl: boolean;
+  /** distance in px between pointerdown and pointerup */
+  travel: number;
+}
+
+/** Whether the click ending this press should remove the cable under the cursor.
+
+    A click that began on a control is the end of that control's drag, not a click on a cable:
+    the knob captures the pointer, so the click is retargeted to the knob and bubbles to the
+    window with whatever cable the cursor happens to have wandered over. Turning a knob and
+    letting go over a cable used to delete it. A press that travelled is a drag for the same
+    reason, whether or not it started on a control. */
+export const clickRemovesCable = (p: Press): boolean => !p.onControl && p.travel <= CLICK_SLOP;
