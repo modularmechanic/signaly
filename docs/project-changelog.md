@@ -6,6 +6,10 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.0.7] — 2026-09-04
+
 ### Added
 
 - **WAV REC** — a stereo tape recorder. Patch a mix into it, arm REC, and it captures the audio
