@@ -37,7 +37,7 @@ Evidence: `plans/reports/audit-260903-0939-production-readiness-findings.md`.
 Phase 06's browser rehearsal, screen-reader walkthrough, OpenAI CORS check, first public push and live
 smoke test all need a person at the keyboard and are listed in `plans/open-questions.md`.
 
-Gate on the shipped tree: `typecheck` clean, `lint` clean, `vitest run` 53 files / 281 tests passing,
+Gate on the shipped tree: `typecheck` clean, `lint` clean, `vitest run` 120 files / 965 tests passing,
 `npm audit --audit-level=high` 0 vulnerabilities. 101 modules under `src/modules/`.
 
 ## Deferred / future

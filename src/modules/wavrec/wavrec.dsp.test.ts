@@ -11,6 +11,7 @@ class FakeProcessor {
 interface Proc {
   p: Params;
   port: { postMessage: ReturnType<typeof vi.fn> };
+  msg(m: { t: string }): void;
   process(I: Float32Array[][], O: Float32Array[][]): boolean;
 }
 let WavRec: new () => Proc;
@@ -84,6 +85,36 @@ describe('wavrec.dsp', () => {
     d.p.rec = 0;
     d.process([[ramp(1)], [ramp(1)]], outs());
     expect(pcm(d)).toHaveLength(256); // 128 frames, two channels
+  });
+
+  /** The last status line the processor published. */
+  const line = (d: Proc): string | undefined =>
+    d.port.postMessage.mock.calls
+      .map(([m]) => m as { t: string; v?: string })
+      .filter((m) => m.t === 'text')
+      .pop()?.v;
+
+  it('says STOP as soon as recording stops, even mid-second', () => {
+    const d = new WavRec();
+    d.p.rec = 1;
+    d.process([[ramp(1)], [ramp(1)]], outs());
+    expect(line(d)).toBe('REC 0:00');
+    d.p.rec = 0;
+    d.process([[ramp(1)], [ramp(1)]], outs());
+    // Keying the readout on the second alone left a stopped take still reading REC.
+    expect(line(d)).toBe('STOP 0:00');
+  });
+
+  it('erase clears the processor’s own counter, not just the main thread’s copy', () => {
+    const d = new WavRec();
+    d.p.rec = 1;
+    for (let i = 0; i < SR / N; i++) d.process([[ramp(1)], [ramp(1)]], outs());
+    expect(line(d)).toBe('REC 0:01');
+    d.p.rec = 0;
+    d.process([[ramp(1)], [ramp(1)]], outs());
+    d.msg({ t: 'erase' });
+    d.process([[ramp(0)], [ramp(0)]], outs());
+    expect(line(d)).toBe('READY 0:00');
   });
 
   it('reports the elapsed time', () => {

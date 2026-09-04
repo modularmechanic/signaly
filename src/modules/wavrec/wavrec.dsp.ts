@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
 
 /** Interleaved samples per message. 4096 frames is ~85 ms at 48 kHz: often enough that the
     readout moves, rarely enough that the port is not the bottleneck. */
@@ -14,10 +14,20 @@ class WavRec extends Base {
   n = 0;
   frames = 0;
   wasRec = false;
-  sent = -1;
+  sentLine = '';
 
   defaults(): Params {
     return { rec: 0, gain: 1 };
+  }
+
+  /** Erase is a two-sided reset: clearing the main thread's copy alone would leave this counter
+      running toward the cap, so a wiped recorder would still read STOP 3:20 and could never
+      record a full take again. */
+  override msg(m: InMsg): void {
+    if (m.t !== 'erase') return;
+    this.n = 0;
+    this.frames = 0;
+    this.sentLine = '';
   }
 
   flush(): void {
@@ -48,23 +58,22 @@ class WavRec extends Base {
       this.chunk[this.n++] = (a * gain) / 5;
       this.chunk[this.n++] = (b * gain) / 5;
       this.frames++;
-      if (this.n >= CHUNK) this.flush();
+      // Flushing at the cap too, or the last partial chunk is stranded until REC is toggled.
+      if (this.n >= CHUNK || this.frames >= cap) this.flush();
     }
 
-    // Stopping flushes the tail; the readout only moves when the whole second changes.
+    // Stopping flushes the tail. The readout follows the whole line, not just the seconds:
+    // keying on the second alone left a take stopped at 0:00 still reading READY, and a take
+    // stopped mid-second still reading REC.
     if (this.wasRec && !rec) this.flush();
     this.wasRec = rec;
     const sec = Math.floor(this.frames / sampleRate);
-    if (sec !== this.sent) {
-      this.sent = sec;
-      const mm = Math.floor(sec / 60);
-      const ss = sec % 60;
-      const full = this.frames >= cap;
-      const label = rec && !full ? 'REC' : full ? 'FULL' : this.frames > 0 ? 'STOP' : 'READY';
-      this.port.postMessage({
-        t: 'text',
-        v: `${label} ${mm}:${String(ss).padStart(2, '0')}`,
-      });
+    const full = this.frames >= cap;
+    const label = rec && !full ? 'REC' : full ? 'FULL' : this.frames > 0 ? 'STOP' : 'READY';
+    const line = `${label} ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+    if (line !== this.sentLine) {
+      this.sentLine = line;
+      this.port.postMessage({ t: 'text', v: line });
     }
     return true;
   }

@@ -62,6 +62,9 @@ export function WavRecParts({ m }: { m: ModuleInstance }): ReactNode {
   const erase = (): void => {
     tape.chunks.length = 0;
     tape.bytes = 0;
+    // The processor holds the elapsed count and the ten-minute cap, so it has to forget too.
+    m.node?.port.postMessage({ t: 'erase' });
+    m.ext.text = 'READY 0:00';
     bump();
   };
 
