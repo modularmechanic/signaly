@@ -226,6 +226,8 @@ export function CableCanvas(): ReactNode {
       moved = true;
     };
     const onDown = (e: PointerEvent): void => {
+      // A press that was cancelled, or that never produced a click, must not arm this one.
+      armed = false;
       press.x = e.clientX;
       press.y = e.clientY;
       press.down = true;
@@ -238,6 +240,12 @@ export function CableCanvas(): ReactNode {
         onControl: press.onControl,
         travel: Math.hypot(e.clientX - press.x, e.clientY - press.y),
       });
+      moved = true;
+    };
+    /** A cancelled press produces no click, so it must leave nothing armed behind it. */
+    const onCancel = (): void => {
+      press.down = false;
+      armed = false;
       moved = true;
     };
     const onClick = (): void => {
@@ -273,7 +281,7 @@ export function CableCanvas(): ReactNode {
     // retargets the event to it, so the bubble phase never reliably reaches the window.
     window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
     window.addEventListener('pointerup', onUp, { capture: true, passive: true });
-    window.addEventListener('pointercancel', onUp, { capture: true, passive: true });
+    window.addEventListener('pointercancel', onCancel, { capture: true, passive: true });
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerleave', onLeave, { passive: true });
     window.addEventListener('click', onClick);
@@ -285,7 +293,7 @@ export function CableCanvas(): ReactNode {
       window.removeEventListener('scroll', reflow, true);
       window.removeEventListener('pointerdown', onDown, { capture: true });
       window.removeEventListener('pointerup', onUp, { capture: true });
-      window.removeEventListener('pointercancel', onUp, { capture: true });
+      window.removeEventListener('pointercancel', onCancel, { capture: true });
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('click', onClick);
