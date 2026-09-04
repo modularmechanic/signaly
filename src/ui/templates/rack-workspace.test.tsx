@@ -122,13 +122,17 @@ describe('RackWorkspace live region', () => {
     expect(live()).toBe('Added PICKME to row 1');
   });
 
-  it('gives each row its own keyboard-reachable horizontal scroll container', () => {
-    const scrollers = [...host.querySelectorAll<HTMLElement>('.rack-row-scroll')];
-    expect(scrollers).toHaveLength(1);
-    expect(scrollers[0]?.tabIndex).toBe(0);
-    expect(scrollers[0]?.getAttribute('aria-label')).toBe('Row 1 modules');
-    // Independent per row: the scroll container wraps only that row's modules, not the whole rack.
-    expect(scrollers[0]?.querySelectorAll('.module-panel')).toHaveLength(2);
+  it('scrolls the whole rack on one keyboard-reachable container, not one per row', () => {
+    // Per-row scrollers let a wide row slide out from under its neighbours, and the cables —
+    // drawn on a viewport-fixed canvas — did not follow a row that had been scrolled.
+    const rack = host.querySelector<HTMLElement>('.rack-scroll');
+    expect(rack).not.toBeNull();
+    expect(rack?.tabIndex).toBe(0);
+    expect(rack?.getAttribute('aria-label')).toBe('Rack modules');
+    expect(rack?.querySelectorAll('.module-panel')).toHaveLength(2);
+    for (const row of host.querySelectorAll<HTMLElement>('.rack-row-scroll')) {
+      expect(row.tabIndex, 'a row must not be its own scroll region any more').toBe(-1);
+    }
   });
 
   it('announces an added row', () => {
