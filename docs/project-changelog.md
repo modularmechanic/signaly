@@ -6,6 +6,21 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.0.8] — 2026-09-04
+
+### Fixed
+
+- Cables now find a jack the same way in every engine. The rack is scaled with CSS `zoom`, and
+  engines disagree about what `getBoundingClientRect` reports inside a zoomed box: Chromium and
+  Firefox scale it by the zoom, others hand back unscaled layout pixels. The canvas assumed the
+  first, so on an engine that does the second every cable landed at a fraction of its true
+  position — cables "going all over the place" while zooming. It is now measured rather than
+  assumed: the rack's painted width over its layout width is the browser's own answer, and where
+  that already matches the zoom nothing is corrected at all. The canvas also re-measures when the
+  visual viewport changes, so pinching the page on a phone cannot leave the cables behind.
+
 ### Changed
 
 - **Techno rebuilt around the rumble.** The kick now feeds a small, fast ROOM reverb on its own
