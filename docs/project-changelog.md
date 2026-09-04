@@ -1,8 +1,40 @@
 # Changelog
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versions from
+0.0.1 are the published release tags; the 0.1.0 and 0.2.0 sections below predate the first
+tag and shipped inside v0.0.1.
 
 ## [Unreleased]
+
+Nothing yet.
+
+## [0.0.3] — 2026-09-04
+
+Zoom and a layout that fits a phone.
+
+### Added
+
+- Rack zoom: a − / level / + dock, a two-finger pinch on the rack, and ctrl or cmd with the scroll wheel. Zooming in has no practical ceiling — the only limit is a 1000x runaway guard, far past the point where one knob fills the screen; zooming out floors at 20 percent. Only the rack scales, never the chrome, and the level is remembered.
+
+### Fixed
+
+- Phones and small tablets: the topbar was wrapping onto four lines and eating 145 px of an 812 px screen, so a module panel could not fit under it. It is now one scrolling line of 34 px, the status line rides with it in a single sticky header instead of a hard-coded offset, and pull-to-refresh no longer fires when a knob drag reaches the top of the page.
+
+- CI: `npm audit` exits non-zero both when it finds a vulnerability and when npmjs.org cannot answer, so an outage of the advisories endpoint blocked every merge and release. The two are now told apart by the payload — a vulnerability still fails the gate, an unreachable advisory database retries three times and then warns.
+
+## [0.0.2] — 2026-09-03
+
+### Added
+
+- MIX 8: a PRE button per channel lifts both of that channel's sends ahead of the fader (post-EQ), so a wet return can carry a channel whose fader is down.
+
+- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key: the user's F minor arpeggio piece with a Turing-machine pad, slow FM and saw pads in D dorian, wavetable and granular drones in A minor pentatonic, gliding add9 chords through the valve in E-flat major, and a sub drone with a filtered pad and vinyl dust in G minor. Pitches move on bar clocks, swells are multi-second AD envelopes, and the wet effects carry most of the sound. `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
+
+### Fixed
+
+- Faders: the cap was positioned with a transform whose percentage resolved against the cap's own 19 px height, so it never left the top of the track; it now moves with the value again.
+
+## [0.0.1] — 2026-09-03
 
 Panel geometry rework, a console-style MIX 8, live CV markers, row scrolling, twenty maker kits,
 and a catalogue that grows from 41 to 100 modules:
@@ -10,12 +42,6 @@ and a catalogue that grows from 41 to 100 modules:
 `plans/reports/audit-260903-1032-module-panel-visual.md`.
 
 ### Added
-
-- Rack zoom: a − / level / + dock, a two-finger pinch on the rack, and ctrl or cmd with the scroll wheel. Zooming in has no practical ceiling — the only limit is a 1000x runaway guard, far past the point where one knob fills the screen; zooming out floors at 20 percent. Only the rack scales, never the chrome, and the level is remembered.
-
-- MIX 8: a PRE button per channel lifts both of that channel's sends ahead of the fader (post-EQ), so a wet return can carry a channel whose fader is down.
-
-- Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key: the user's F minor arpeggio piece with a Turing-machine pad, slow FM and saw pads in D dorian, wavetable and granular drones in A minor pentatonic, gliding add9 chords through the valve in E-flat major, and a sub drone with a filtered pad and vinyl dust in G minor. Pitches move on bar clocks, swells are multi-second AD envelopes, and the wet effects carry most of the sound. `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
 
 - **Twenty-nine more modules, to 100.** Sequencing: SEQ-16, TRIG SEQ (four lanes, polymeter), CHORD,
   BERNOULLI, DIV/MULT, CV REC (records and loops a CV, persisted in the patch), SHIFT REG, RANDOM WALK.
@@ -25,45 +51,56 @@ and a catalogue that grows from 41 to 100 modules:
   STEINER, FIXED BANK, DUAL BP, POLIVOKS, DJ FILTER. Sampler: SAMPLER loads a WAV or MP3 from disk,
   SLICER chops it, CLOUD scatters grains over it, on new IndexedDB sample storage and a shared picker
   with a 20 MB / 60 s guard; a saved patch keeps the sample id and reloads the audio
+
 - **Twenty maker kits.** Every module names a `look` that resolves to a faceplate finish, knob hardware,
   switch hardware, name-plate treatment, silkscreen, type face and socket body, so the rack reads as
   kit from twenty makers instead of one product (`src/core/look.ts`)
+
 - **MIX 8 is a console strip**: input, three-band EQ per channel, two aux sends, pan, M and S, fader;
   returns add into the mix at their level instead of replacing it. A one-option switch renders as a
   lit push-button toggle
+
 - **Knob CV markers follow the live control voltage** at about 30 Hz, read from the attenuverter gain
   node on the main thread, so nothing changes in the audio thread
+
 - **Rows scroll horizontally** when wider than the viewport, with a focusable, named scroll region
+
 - **Thirty new modules**, none ported from the earlier project, chosen to fill the gaps a Eurorack
   user would notice. Sources: WAVETABLE, FM OP, SUPER, CHAOS, GRAIN. Filters: DIODE, LPG, MORPH,
   RESON. Function: AD, SLEW, LOGIC, COMPARE. Amp and mix: XFADE, RING, MATRIX. Effects: PHASER,
   WAVEFOLD, FREEZE, PITCH, GLITCH, SPREAD. Voices: FM VOICE, PLUCK. Sequencing: QUANT, TURING,
   BURST, SWITCH. Drums: KICK, HATS. The catalogue previously had no low pass gate, quantizer,
   Turing machine, wavefolder, ring modulator, matrix mixer, sequential switch or logic
+
 - `src/modules/panel-fit.test.ts` — 198 assertions that no node leaves its panel, no two nodes
   overlap, and no knob row falls under the 37 px at which `controls.css` deletes its label. Panel
   crowding is now a failing build rather than something found by looking
 
 ### Fixed
 
-- Phones and small tablets: the topbar was wrapping onto four lines and eating 145 px of an 812 px screen, so a module panel could not fit under it. It is now one scrolling line of 34 px, the status line rides with it in a single sticky header instead of a hard-coded offset, and pull-to-refresh no longer fires when a knob drag reaches the top of the page.
-
-- Faders: the cap was positioned with a transform whose percentage resolved against the cap's own 19 px height, so it never left the top of the track; it now moves with the value again.
-
 - The remove button could not be reached on any 2–3 HP module: it was `display: none`, leaving
   Delete on a focused panel as the only removal path, which a pointer-only user cannot use
+
 - On 4 HP the full-width centred header ran the module name underneath that button by up to 20 px.
   It now sits on its own opaque chip
+
 - Knob rows have a minimum height. DRUM 2 was laying out 26 px rows and losing all seven knob labels
+
 - Spare panel height is split above and below the control block instead of pooling into one dead
   band above the pinned jacks; NOISE was wasting 482 px of its 658
+
 - Knob labels ellipsise instead of clipping, so THRESHOLD no longer reads as THRESHO
+
 - Jack labels break between words instead of splitting a token, so START/STOP no longer wraps as
   "START/S" over "TOP"
+
 - Switch selects no longer paint the OS dropdown chevron over the faceplate
+
 - FREEZE played its captured window twice per cycle: the dual-tap constant-power crossfade makes
   `tap(ph)` and `tap(ph + 0.5)` identical for a static buffer, halving the loop period
+
 - PLUCK's decay gain ignored the loop length, so DECAY barely moved the ring time
+
 - The LED contract sweep grepped for a literal id and so failed any module driving its LEDs from an
   id table, which SWITCH and TURING both correctly do
 
