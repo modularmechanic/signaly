@@ -14,7 +14,7 @@ Requires Node 24 or newer.
 npm install && npm run dev
 ```
 
-Open the printed URL, click anywhere to start audio, and patch `VCO` into `OUT`. On a phone or tablet, pinch the rack to zoom or use the − / + dock in the corner. Or open **Patches** and load one of the five example patches: five generative ambient pieces in five keys, from the user-built F minor arpeggio piece through slow FM and saw pads in D dorian, granular drones in A minor pentatonic, gliding chords through the valve in E-flat major, and a sub drone with a filtered pad in G minor.
+Open the printed URL, click anywhere to start audio, and patch `VCO` into `OUT`. On a phone or tablet, pinch the rack to zoom or use the − / + dock in the corner. Or open **Patches** and load one of the twenty-one examples: five generative ambient pieces, then four each of Deep House (128), Psy-Trance (140), Dub (70) and Warehouse Techno (145). The techno patches are arrangements rather than loops — they play intro, build, drop, breakdown and outro on their own.
 
 ## Scripts
 

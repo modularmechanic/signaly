@@ -12,6 +12,7 @@ import {
 } from '../../hooks/patch-state';
 import { disconnectCable } from '../../engine/rack';
 import { useRackStore } from '../../state/rack-store';
+import { useSettingsStore } from '../../state/settings-store';
 
 interface Pt {
   x: number;
@@ -27,8 +28,14 @@ interface Seg {
   id?: number;
 }
 
+/* Cable metrics are quoted at 100% rack zoom and scaled by it before use: the panels behind
+   them scale, so a plug drawn at a fixed 12px would swallow a zoomed-out socket and shrink to a
+   speck against a zoomed-in one. `z` below is the live rack zoom. */
 const SAG = 14;
 const WIDTH = 3;
+/** Socket the plug seats in, and the pin inside it. */
+const PLUG_R = 6;
+const PIN_R = 2;
 /** kind is legible without colour: the highlight pass carries a per-kind dash */
 const DASH: Record<Kind, number[]> = { a: [], p: [10, 5], g: [3, 3], c: [1, 4] };
 /** how close the pointer must come to a cable's centre line to grab it */
@@ -37,14 +44,15 @@ const HIT_PX = 7;
 const HIT_STEPS = 24;
 const INTERACTIVE = 'button, input, select, textarea, a, [role="slider"], [role="radio"], [contenteditable]';
 
-const control = (s: Seg): Pt => ({
+const control = (s: Seg, z: number): Pt => ({
   x: (s.a.x + s.b.x) / 2,
-  y: (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16,
+  // The droop term is already proportional to the on-screen span; only the constant needs `z`.
+  y: (s.a.y + s.b.y) / 2 + SAG * z + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16,
 });
 
 /** Squared distance from p to the quadratic through a -> control -> b, by sampling. */
-function distToRope(s: Seg, p: Pt): number {
-  const c = control(s);
+function distToRope(s: Seg, p: Pt, z: number): number {
+  const c = control(s, z);
   let best = Infinity;
   let px = s.a.x;
   let py = s.a.y;
@@ -90,6 +98,8 @@ export function CableCanvas(): ReactNode {
     const plug = read('--metal-2', '#0f1012');
     const pin = read('--edge', '#050506');
 
+    /** Live rack zoom: every cable metric below is multiplied by it. */
+    let z = useSettingsStore.getState().zoom;
     const ptr = { x: -1, y: -1, inside: false };
     /** The press in progress: where it started, whether it started on a control, still down. */
     const press = { x: 0, y: 0, onControl: false, down: false };
@@ -110,8 +120,9 @@ export function CableCanvas(): ReactNode {
     let moved = true;
 
     const rope = (s: Seg, lit: boolean): void => {
+      const w = WIDTH * z;
       const mx = (s.a.x + s.b.x) / 2;
-      const my = (s.a.y + s.b.y) / 2 + SAG + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16;
+      const my = (s.a.y + s.b.y) / 2 + SAG * z + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16;
       const curve = (dy: number): void => {
         ctx.beginPath();
         ctx.moveTo(s.a.x, s.a.y + dy);
@@ -121,34 +132,34 @@ export function CableCanvas(): ReactNode {
       ctx.lineCap = 'round';
       ctx.globalAlpha = s.alpha ?? 1;
       ctx.strokeStyle = 'rgba(0,0,0,.55)';
-      ctx.lineWidth = WIDTH + 4;
-      curve(5);
+      ctx.lineWidth = w + 4 * z;
+      curve(5 * z);
       ctx.strokeStyle = jacket;
-      ctx.lineWidth = WIDTH + 2;
+      ctx.lineWidth = w + 2 * z;
       curve(0);
       if (lit) {
         ctx.strokeStyle = 'rgba(255,255,255,.85)';
-        ctx.lineWidth = WIDTH + 4;
+        ctx.lineWidth = w + 4 * z;
         curve(0);
       }
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = lit ? WIDTH + 1 : WIDTH;
+      ctx.lineWidth = lit ? w + z : w;
       curve(0);
       ctx.strokeStyle = 'rgba(255,255,255,.22)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash(DASH[s.kind]);
-      curve(-0.5);
+      ctx.lineWidth = Math.max(0.5, z);
+      ctx.setLineDash(DASH[s.kind].map((d) => d * z));
+      curve(-0.5 * z);
       ctx.setLineDash([]);
       for (const p of [s.a, s.b]) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, PLUG_R * z, 0, Math.PI * 2);
         ctx.fillStyle = plug;
         ctx.fill();
         ctx.strokeStyle = s.color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * z;
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, PIN_R * z, 0, Math.PI * 2);
         ctx.fillStyle = pin;
         ctx.fill();
       }
@@ -158,7 +169,7 @@ export function CableCanvas(): ReactNode {
     let last = '';
     const draw = (): void => {
       const segs: Seg[] = [];
-      let sig = `${cv.width}x${cv.height}`;
+      let sig = `${cv.width}x${cv.height}z${z}`;
       for (const c of useRackStore.getState().cables) {
         const out = getJack(jackKey(c.from.uid, 'out', c.from.jack));
         const inp = getJack(jackKey(c.to.uid, 'in', c.to.jack));
@@ -201,10 +212,10 @@ export function CableCanvas(): ReactNode {
     const hitTest = (segs: Seg[]): number | null => {
       if (!ptr.inside) return null;
       let best: number | null = null;
-      let bestD = HIT_PX;
+      let bestD = HIT_PX * z;
       for (const s of segs) {
         if (s.id === undefined) continue;
-        const d = distToRope(s, ptr);
+        const d = distToRope(s, ptr, z);
         if (d < bestD) {
           bestD = d;
           best = s.id;
@@ -277,6 +288,12 @@ export function CableCanvas(): ReactNode {
     // Removing or reordering a module reflows the row without a resize or scroll event, so the
     // cached jack rects would otherwise keep drawing every cable at its old position.
     const unsubRack = useRackStore.subscribe(reflow);
+    // Zoom moves every jack and changes every cable metric.
+    const unsubZoom = useSettingsStore.subscribe((st) => {
+      if (st.zoom === z) return;
+      z = st.zoom;
+      reflow();
+    });
     // Capture phase: a control's own handler calls stopPropagation, and pointer capture
     // retargets the event to it, so the bubble phase never reliably reaches the window.
     window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
@@ -289,6 +306,7 @@ export function CableCanvas(): ReactNode {
     return () => {
       unregister();
       unsubRack();
+      unsubZoom();
       window.removeEventListener('resize', relayout);
       window.removeEventListener('scroll', reflow, true);
       window.removeEventListener('pointerdown', onDown, { capture: true });

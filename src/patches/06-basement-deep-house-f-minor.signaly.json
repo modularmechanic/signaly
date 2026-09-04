@@ -1,0 +1,1109 @@
+{
+  "format": "signaly.patch",
+  "version": 1,
+  "name": "Basement Deep House (F minor)",
+  "snapshot": {
+    "modules": [
+      {
+        "mtype": "out",
+        "uid": 1,
+        "vals": {
+          "level": 0.6
+        },
+        "sws": {
+          "spectrum": 1,
+          "phase": 0
+        }
+      },
+      {
+        "mtype": "clock",
+        "uid": 2,
+        "vals": {
+          "bpm": 128,
+          "r1": 5,
+          "r2": 4,
+          "r3": 3,
+          "r4": 1
+        },
+        "sws": {
+          "run": 1
+        }
+      },
+      {
+        "mtype": "trigseq",
+        "uid": 3,
+        "vals": {
+          "len1": 16,
+          "len2": 16,
+          "len3": 16,
+          "len4": 16
+        },
+        "sws": {},
+        "ext": {
+          "lanes": [
+            [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+          ]
+        }
+      },
+      {
+        "mtype": "kick",
+        "uid": 4,
+        "vals": {
+          "tune": 48,
+          "pdec": 0.045,
+          "adec": 0.42,
+          "click": 0.28,
+          "drive": 0.3,
+          "level": 0.85
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "drum2",
+        "uid": 5,
+        "vals": {
+          "tone": 0.62,
+          "snap": 0.55,
+          "click": 0.4,
+          "length": 0.22,
+          "pitch": 0,
+          "resonance": 0.45,
+          "adsr": 0.3
+        },
+        "sws": {
+          "mode": 1
+        }
+      },
+      {
+        "mtype": "hats",
+        "uid": 6,
+        "vals": {
+          "tone": 6500,
+          "cdec": 0.03,
+          "odec": 0.28,
+          "metal": 0.75,
+          "level": 0.5
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "adsr",
+        "uid": 7,
+        "vals": {
+          "a": 0.001,
+          "d": 0.2,
+          "s": 0,
+          "r": 0.14
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "seq16",
+        "uid": 8,
+        "vals": {
+          "len": 16,
+          "glide": 0.02
+        },
+        "sws": {},
+        "ext": {
+          "steps": [
+            {
+              "pitch": 0,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 12,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 7,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 12,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 10,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 7,
+              "gate": 1,
+              "slide": 0
+            },
+            {
+              "pitch": 0,
+              "gate": 0,
+              "slide": 0
+            },
+            {
+              "pitch": 5,
+              "gate": 1,
+              "slide": 0
+            }
+          ]
+        }
+      },
+      {
+        "mtype": "voct",
+        "uid": 9,
+        "vals": {
+          "steps": -19,
+          "cvA": 0
+        },
+        "sws": {
+          "lock": 0
+        }
+      },
+      {
+        "mtype": "monov",
+        "uid": 10,
+        "vals": {
+          "glide": 0.02,
+          "cut": 420,
+          "res": 0.3,
+          "env": 0.5,
+          "fcv": 0,
+          "a": 0.004,
+          "d": 0.22,
+          "s": 0.4,
+          "r": 0.18,
+          "accA": 0
+        },
+        "sws": {
+          "wave": 0
+        }
+      },
+      {
+        "mtype": "vca",
+        "uid": 11,
+        "vals": {
+          "g1": 1.0,
+          "g2": 1.0,
+          "cv1A": 1,
+          "cv2A": 1
+        },
+        "sws": {
+          "exp": 0
+        }
+      },
+      {
+        "mtype": "seq",
+        "uid": 12,
+        "vals": {
+          "len": 8,
+          "glide": 0.01
+        },
+        "sws": {},
+        "ext": {
+          "steps": [
+            {
+              "pitch": 0,
+              "gate": 1
+            },
+            {
+              "pitch": 0,
+              "gate": 1
+            },
+            {
+              "pitch": 5,
+              "gate": 1
+            },
+            {
+              "pitch": 5,
+              "gate": 1
+            },
+            {
+              "pitch": 3,
+              "gate": 1
+            },
+            {
+              "pitch": 3,
+              "gate": 1
+            },
+            {
+              "pitch": 7,
+              "gate": 1
+            },
+            {
+              "pitch": 7,
+              "gate": 1
+            }
+          ]
+        }
+      },
+      {
+        "mtype": "voct",
+        "uid": 13,
+        "vals": {
+          "steps": 5,
+          "cvA": 0
+        },
+        "sws": {
+          "lock": 0
+        }
+      },
+      {
+        "mtype": "chords",
+        "uid": 14,
+        "vals": {
+          "type": 3,
+          "inv": 1
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "duo",
+        "uid": 15,
+        "vals": {
+          "oct": 0,
+          "semi": 0,
+          "det": 9,
+          "mix": 0.5,
+          "fmA": 0,
+          "mixA": 0
+        },
+        "sws": {
+          "w1": 2,
+          "w2": 0,
+          "sync": 0
+        }
+      },
+      {
+        "mtype": "super",
+        "uid": 16,
+        "vals": {
+          "tune": 0,
+          "det": 0.3,
+          "mix": 0.5,
+          "detA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "mix",
+        "uid": 17,
+        "vals": {
+          "l1": 0.55,
+          "l2": 0.5,
+          "l3": 0,
+          "l4": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "svf",
+        "uid": 18,
+        "vals": {
+          "cut": 1500,
+          "res": 0.3,
+          "cv": 0.4,
+          "rcvamt": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "ad",
+        "uid": 19,
+        "vals": {
+          "a": 0.006,
+          "d": 0.42,
+          "curve": 0.4
+        },
+        "sws": {
+          "loop": 0
+        }
+      },
+      {
+        "mtype": "vca",
+        "uid": 20,
+        "vals": {
+          "g1": 0.9,
+          "g2": 1.0,
+          "cv1A": 1,
+          "cv2A": 1
+        },
+        "sws": {
+          "exp": 0
+        }
+      },
+      {
+        "mtype": "lfo",
+        "uid": 21,
+        "vals": {
+          "rate": 0.08,
+          "rateA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "super",
+        "uid": 22,
+        "vals": {
+          "tune": 0,
+          "det": 0.42,
+          "mix": 0.5,
+          "detA": 0
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "djfilt",
+        "uid": 23,
+        "vals": {
+          "sweep": -0.1,
+          "cvA": 0.5
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "sdelay",
+        "uid": 24,
+        "vals": {
+          "timel": 0.375,
+          "timer": 0.5,
+          "fb": 0.42,
+          "swing": 0.12,
+          "tone": 3800,
+          "width": 1.0,
+          "mix": 1.0,
+          "tcvA": 0,
+          "fcvA": 0,
+          "mcvA": 0
+        },
+        "sws": {
+          "mode": 1,
+          "sync": 6
+        }
+      },
+      {
+        "mtype": "reverb",
+        "uid": 25,
+        "vals": {
+          "pre": 0.02,
+          "decay": 0.72,
+          "size": 1.5,
+          "diff": 0.8,
+          "inhp": 80,
+          "inlp": 9000,
+          "damp": 6000,
+          "lowd": 50,
+          "mrate": 0.4,
+          "mdep": 0.35,
+          "mix": 1.0,
+          "sizeA": 0,
+          "decayA": 0,
+          "mixA": 0
+        },
+        "sws": {
+          "algo": 1
+        }
+      },
+      {
+        "mtype": "mix8",
+        "uid": 26,
+        "vals": {
+          "master": 0.9,
+          "ret1": 0.8,
+          "ret2": 0.75,
+          "l1": 0.9,
+          "p1": 0,
+          "snd1_1": 0,
+          "snd2_1": 0,
+          "lo1": 3,
+          "hi1": -2,
+          "l2": 0.55,
+          "p2": 0,
+          "snd1_2": 0.4,
+          "snd2_2": 0.3,
+          "l3": 0.42,
+          "p3": 0.25,
+          "snd1_3": 0.35,
+          "snd2_3": 0.5,
+          "l4": 0.8,
+          "p4": 0,
+          "snd1_4": 0,
+          "snd2_4": 0,
+          "lo4": 2,
+          "hi4": -3,
+          "l5": 0.62,
+          "p5": -0.2,
+          "snd1_5": 0.55,
+          "snd2_5": 0.65,
+          "lo5": -6,
+          "l6": 0.5,
+          "p6": 0.3,
+          "snd1_6": 0.6,
+          "snd2_6": 0.7,
+          "lo6": -8,
+          "l7": 0,
+          "p7": 0,
+          "snd1_7": 0,
+          "snd2_7": 0,
+          "l8": 0,
+          "p8": 0,
+          "snd1_8": 0,
+          "snd2_8": 0
+        },
+        "sws": {
+          "m1": 0,
+          "s1": 0,
+          "pre1": 0,
+          "m2": 0,
+          "s2": 0,
+          "pre2": 0,
+          "m3": 0,
+          "s3": 0,
+          "pre3": 0,
+          "m4": 0,
+          "s4": 0,
+          "pre4": 0,
+          "m5": 0,
+          "s5": 0,
+          "pre5": 0,
+          "m6": 0,
+          "s6": 0,
+          "pre6": 1,
+          "m7": 0,
+          "s7": 0,
+          "pre7": 0,
+          "m8": 0,
+          "s8": 0,
+          "pre8": 0
+        }
+      },
+      {
+        "mtype": "spread",
+        "uid": 27,
+        "vals": {
+          "width": 1.15,
+          "wcvA": 0,
+          "bass": 110,
+          "mix": 1
+        },
+        "sws": {}
+      },
+      {
+        "mtype": "comp",
+        "uid": 28,
+        "vals": {
+          "thr": -12,
+          "ratio": 4,
+          "atk": 0.005,
+          "rel": 0.12,
+          "knee": 6,
+          "makeup": 4
+        },
+        "sws": {
+          "limit": 1
+        }
+      }
+    ],
+    "cables": [
+      {
+        "id": 1,
+        "from": {
+          "uid": 2,
+          "jack": "x1"
+        },
+        "to": {
+          "uid": 3,
+          "jack": "clk"
+        }
+      },
+      {
+        "id": 2,
+        "from": {
+          "uid": 3,
+          "jack": "t1"
+        },
+        "to": {
+          "uid": 4,
+          "jack": "trig"
+        }
+      },
+      {
+        "id": 3,
+        "from": {
+          "uid": 3,
+          "jack": "t2"
+        },
+        "to": {
+          "uid": 5,
+          "jack": "trig"
+        }
+      },
+      {
+        "id": 4,
+        "from": {
+          "uid": 3,
+          "jack": "t4"
+        },
+        "to": {
+          "uid": 6,
+          "jack": "closed"
+        }
+      },
+      {
+        "id": 5,
+        "from": {
+          "uid": 3,
+          "jack": "t3"
+        },
+        "to": {
+          "uid": 6,
+          "jack": "open"
+        }
+      },
+      {
+        "id": 6,
+        "from": {
+          "uid": 3,
+          "jack": "t1"
+        },
+        "to": {
+          "uid": 7,
+          "jack": "gate"
+        }
+      },
+      {
+        "id": 7,
+        "from": {
+          "uid": 2,
+          "jack": "x2"
+        },
+        "to": {
+          "uid": 8,
+          "jack": "clk"
+        }
+      },
+      {
+        "id": 8,
+        "from": {
+          "uid": 8,
+          "jack": "cv"
+        },
+        "to": {
+          "uid": 9,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 9,
+        "from": {
+          "uid": 9,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 10,
+          "jack": "voct"
+        }
+      },
+      {
+        "id": 10,
+        "from": {
+          "uid": 8,
+          "jack": "gate"
+        },
+        "to": {
+          "uid": 10,
+          "jack": "gate"
+        }
+      },
+      {
+        "id": 11,
+        "from": {
+          "uid": 10,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 11,
+          "jack": "in1"
+        }
+      },
+      {
+        "id": 12,
+        "from": {
+          "uid": 7,
+          "jack": "inv"
+        },
+        "to": {
+          "uid": 11,
+          "jack": "cv1"
+        }
+      },
+      {
+        "id": 13,
+        "from": {
+          "uid": 2,
+          "jack": "d4"
+        },
+        "to": {
+          "uid": 12,
+          "jack": "clk"
+        }
+      },
+      {
+        "id": 14,
+        "from": {
+          "uid": 12,
+          "jack": "cv"
+        },
+        "to": {
+          "uid": 13,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 15,
+        "from": {
+          "uid": 13,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 14,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 16,
+        "from": {
+          "uid": 14,
+          "jack": "v1"
+        },
+        "to": {
+          "uid": 15,
+          "jack": "voct"
+        }
+      },
+      {
+        "id": 17,
+        "from": {
+          "uid": 14,
+          "jack": "v3"
+        },
+        "to": {
+          "uid": 16,
+          "jack": "voct"
+        }
+      },
+      {
+        "id": 18,
+        "from": {
+          "uid": 15,
+          "jack": "mix"
+        },
+        "to": {
+          "uid": 17,
+          "jack": "i1"
+        }
+      },
+      {
+        "id": 19,
+        "from": {
+          "uid": 16,
+          "jack": "l"
+        },
+        "to": {
+          "uid": 17,
+          "jack": "i2"
+        }
+      },
+      {
+        "id": 20,
+        "from": {
+          "uid": 17,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 18,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 21,
+        "from": {
+          "uid": 21,
+          "jack": "tri"
+        },
+        "to": {
+          "uid": 18,
+          "jack": "cv"
+        }
+      },
+      {
+        "id": 22,
+        "from": {
+          "uid": 3,
+          "jack": "t3"
+        },
+        "to": {
+          "uid": 19,
+          "jack": "trig"
+        }
+      },
+      {
+        "id": 23,
+        "from": {
+          "uid": 18,
+          "jack": "lp"
+        },
+        "to": {
+          "uid": 20,
+          "jack": "in1"
+        }
+      },
+      {
+        "id": 24,
+        "from": {
+          "uid": 19,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 20,
+          "jack": "cv1"
+        }
+      },
+      {
+        "id": 25,
+        "from": {
+          "uid": 14,
+          "jack": "v4"
+        },
+        "to": {
+          "uid": 22,
+          "jack": "voct"
+        }
+      },
+      {
+        "id": 26,
+        "from": {
+          "uid": 22,
+          "jack": "l"
+        },
+        "to": {
+          "uid": 23,
+          "jack": "in"
+        }
+      },
+      {
+        "id": 27,
+        "from": {
+          "uid": 21,
+          "jack": "sin"
+        },
+        "to": {
+          "uid": 23,
+          "jack": "cv"
+        }
+      },
+      {
+        "id": 28,
+        "from": {
+          "uid": 23,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 20,
+          "jack": "in2"
+        }
+      },
+      {
+        "id": 29,
+        "from": {
+          "uid": 7,
+          "jack": "inv"
+        },
+        "to": {
+          "uid": 20,
+          "jack": "cv2"
+        }
+      },
+      {
+        "id": 30,
+        "from": {
+          "uid": 4,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in1"
+        }
+      },
+      {
+        "id": 31,
+        "from": {
+          "uid": 5,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in2"
+        }
+      },
+      {
+        "id": 32,
+        "from": {
+          "uid": 6,
+          "jack": "out"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in3"
+        }
+      },
+      {
+        "id": 33,
+        "from": {
+          "uid": 11,
+          "jack": "o1"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in4"
+        }
+      },
+      {
+        "id": 34,
+        "from": {
+          "uid": 20,
+          "jack": "o1"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in5"
+        }
+      },
+      {
+        "id": 35,
+        "from": {
+          "uid": 20,
+          "jack": "o2"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "in6"
+        }
+      },
+      {
+        "id": 36,
+        "from": {
+          "uid": 26,
+          "jack": "s1l"
+        },
+        "to": {
+          "uid": 24,
+          "jack": "inl"
+        }
+      },
+      {
+        "id": 37,
+        "from": {
+          "uid": 26,
+          "jack": "s1r"
+        },
+        "to": {
+          "uid": 24,
+          "jack": "inr"
+        }
+      },
+      {
+        "id": 38,
+        "from": {
+          "uid": 2,
+          "jack": "x1"
+        },
+        "to": {
+          "uid": 24,
+          "jack": "clk"
+        }
+      },
+      {
+        "id": 39,
+        "from": {
+          "uid": 24,
+          "jack": "outl"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "r1l"
+        }
+      },
+      {
+        "id": 40,
+        "from": {
+          "uid": 24,
+          "jack": "outr"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "r1r"
+        }
+      },
+      {
+        "id": 41,
+        "from": {
+          "uid": 26,
+          "jack": "s2l"
+        },
+        "to": {
+          "uid": 25,
+          "jack": "inl"
+        }
+      },
+      {
+        "id": 42,
+        "from": {
+          "uid": 26,
+          "jack": "s2r"
+        },
+        "to": {
+          "uid": 25,
+          "jack": "inr"
+        }
+      },
+      {
+        "id": 43,
+        "from": {
+          "uid": 25,
+          "jack": "outl"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "r2l"
+        }
+      },
+      {
+        "id": 44,
+        "from": {
+          "uid": 25,
+          "jack": "outr"
+        },
+        "to": {
+          "uid": 26,
+          "jack": "r2r"
+        }
+      },
+      {
+        "id": 45,
+        "from": {
+          "uid": 26,
+          "jack": "outl"
+        },
+        "to": {
+          "uid": 27,
+          "jack": "l"
+        }
+      },
+      {
+        "id": 46,
+        "from": {
+          "uid": 26,
+          "jack": "outr"
+        },
+        "to": {
+          "uid": 27,
+          "jack": "r"
+        }
+      },
+      {
+        "id": 47,
+        "from": {
+          "uid": 27,
+          "jack": "l"
+        },
+        "to": {
+          "uid": 28,
+          "jack": "inl"
+        }
+      },
+      {
+        "id": 48,
+        "from": {
+          "uid": 27,
+          "jack": "r"
+        },
+        "to": {
+          "uid": 28,
+          "jack": "inr"
+        }
+      },
+      {
+        "id": 49,
+        "from": {
+          "uid": 28,
+          "jack": "outl"
+        },
+        "to": {
+          "uid": 1,
+          "jack": "l"
+        }
+      },
+      {
+        "id": 50,
+        "from": {
+          "uid": 28,
+          "jack": "outr"
+        },
+        "to": {
+          "uid": 1,
+          "jack": "r"
+        }
+      }
+    ],
+    "rows": [
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+      [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+      [28]
+    ]
+  }
+}

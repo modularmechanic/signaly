@@ -6,7 +6,23 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Sixteen new example patches across four genres, and the five ambient ones rebuilt wetter.**
+  Deep House at 128, Psy-Trance at 140, Dub at 70 and Warehouse Techno at 145, four variants
+  each, every one in its own key. The techno four are arrangements rather than loops: a CLOCK /N
+  counts twelve bars into a SEQ-16 whose CV is the track's intensity, and each element watches
+  that voltage through a COMPARE, so the patch plays intro, build, drop, breakdown, second drop
+  and outro on its own over about five and a half minutes.
+- `docs/patch-authoring-notes.md` — the house style, starting with the rule that most
+  instrumentation should be wet.
+
+### Fixed
+
+- Cables ignored the rack zoom. Plug, rope width, dash and sag were drawn in fixed screen pixels
+  while the panels behind them scaled, so a plug swallowed a zoomed-out socket and shrank to a
+  speck against a zoomed-in one, and the cable ends stopped lining up with the jack graphics.
+  Every cable metric is now multiplied by the live zoom, hit-testing included.
 
 ## [0.0.4] — 2026-09-04
 
