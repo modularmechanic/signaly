@@ -528,9 +528,14 @@
     letter-spacing: 0.18em;
   }
 
-  /* The Builder button's own title says the same thing, and it is disabled without a key. */
+  /* The Builder button is disabled without a key, so it can be neither focused nor hovered to
+     read its title: on a phone this hint is the only thing that explains it. Keep it, compact
+     and ordered last, so it never pushes the actions out of reach in the scroller. */
   .topbar-hint {
-    display: none;
+    order: 1;
+    flex: none;
+    padding-right: 2px;
+    font-size: 10px;
   }
 
   .topbar-gap {

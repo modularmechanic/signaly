@@ -11,7 +11,7 @@ and a catalogue that grows from 41 to 100 modules:
 
 ### Added
 
-- Rack zoom: a − / level / + dock, a two-finger pinch on the rack, and ctrl or cmd with the scroll wheel. Zooming in has no ceiling; zooming out floors at 20 percent. Only the rack scales, never the chrome, and the level is remembered.
+- Rack zoom: a − / level / + dock, a two-finger pinch on the rack, and ctrl or cmd with the scroll wheel. Zooming in has no practical ceiling — the only limit is a 1000x runaway guard, far past the point where one knob fills the screen; zooming out floors at 20 percent. Only the rack scales, never the chrome, and the level is remembered.
 
 - MIX 8: a PRE button per channel lifts both of that channel's sends ahead of the fader (post-EQ), so a wet return can carry a channel whose fader is down.
 
