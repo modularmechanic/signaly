@@ -24,4 +24,27 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - run: npm audit --audit-level=high
+      # A vulnerability must fail the gate; npm's advisory service being down must not.
+      # `npm audit` exits non-zero for both, so the two are told apart by the payload: a real
+      # report carries `auditReportVersion`, a service failure carries `error`. Without this,
+      # an npmjs.org outage blocks every merge and every release (it did, twice, on 2026-09-04).
+      - name: npm audit (high or above)
+        run: |
+          err="$RUNNER_TEMP/audit.err"
+          for attempt in 1 2 3; do
+            if out=$(npm audit --audit-level=high --json 2>"$err"); then
+              echo "No advisories at high or above."
+              exit 0
+            fi
+            # A report names its own format; an error payload cannot. Anything that parses as a
+            # report is authoritative, so only an unrecognisable payload counts as an outage.
+            if printf '%s' "$out" | grep -qE '"(auditReportVersion|vulnerabilities)"'; then
+              echo "::error::npm audit found advisories at high or above."
+              printf '%s\n' "$out"
+              exit 1
+            fi
+            echo "Attempt $attempt of 3: advisory service unreachable."
+            cat "$err" || true
+            if [ "$attempt" -lt 3 ]; then sleep 20; fi
+          done
+          echo "::warning::npm advisory service unreachable after 3 attempts - audit skipped, not passed."
