@@ -101,11 +101,12 @@ const EXPECTED = [
   'wasp',
   'wavefold',
   'wavetable',
+  'wavrec',
   'xfade',
 ] as const;
 
-test('catalog is exactly the 100 planned modules', () => {
-  expect(EXPECTED).toHaveLength(100);
+test('catalog is exactly the 101 planned modules', () => {
+  expect(EXPECTED).toHaveLength(101);
   expect(new Set(allSpecs().map((s) => s.def.id))).toEqual(new Set(EXPECTED));
 });
 

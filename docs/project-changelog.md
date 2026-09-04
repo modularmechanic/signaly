@@ -6,7 +6,11 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **WAV REC** — a stereo tape recorder. Patch a mix into it, arm REC, and it captures the audio
+  while passing it straight through, so it drops in ahead of MAIN OUT without changing the patch.
+  Save WAV writes a 16-bit RIFF file; a take is capped at ten minutes. The catalogue is 101 modules.
 
 ## [0.0.6] — 2026-09-04
 
