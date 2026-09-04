@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Valve Cathedral (E-flat major)",
+  "name": "Ambient \u00b7 Valve Cathedral (E-flat major)",
+  "tags": ["Ambient", "42 BPM", "E-flat major"],
   "snapshot": {
     "modules": [
       {

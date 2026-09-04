@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Hard Groove Machine (G minor)",
+  "name": "Techno \u00b7 Hard Groove Machine (G minor)",
+  "tags": ["Techno", "145 BPM", "G minor"],
   "snapshot": {
     "modules": [
       {

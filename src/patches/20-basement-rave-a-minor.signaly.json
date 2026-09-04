@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Basement Rave (A minor)",
+  "name": "Techno \u00b7 Basement Rave (A minor)",
+  "tags": ["Techno", "145 BPM", "A minor"],
   "snapshot": {
     "modules": [
       {

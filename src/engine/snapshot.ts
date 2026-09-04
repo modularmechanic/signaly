@@ -26,6 +26,9 @@ export interface PatchFile {
   format: 'signaly.patch';
   version: 1;
   name: string;
+  /** Free-form labels — the bundled examples carry genre, tempo and key. Optional, so a patch
+      saved before tags existed still parses. */
+  tags?: string[];
   snapshot: RackSnapshot;
 }
 

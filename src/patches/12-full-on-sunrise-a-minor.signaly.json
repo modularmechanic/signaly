@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Full-On Sunrise (A minor)",
+  "name": "Psy-Trance \u00b7 Full-On Sunrise (A minor)",
+  "tags": ["Psy-Trance", "140 BPM", "A minor"],
   "snapshot": {
     "modules": [
       {

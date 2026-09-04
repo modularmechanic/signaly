@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Dread Bassline (G minor)",
+  "name": "Dub \u00b7 Dread Bassline (G minor)",
+  "tags": ["Dub", "70 BPM", "G minor"],
   "snapshot": {
     "modules": [
       {

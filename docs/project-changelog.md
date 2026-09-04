@@ -8,6 +8,17 @@ tag and shipped inside v0.0.1.
 
 Nothing yet.
 
+## [0.0.6] — 2026-09-04
+
+### Added
+
+- Every example patch now says what it is. The name leads with the genre — `Techno · Warehouse
+Cathedral (F minor)` — so a patch is identifiable in the saved list, in an export and as a file
+  on disk, and each one carries genre, tempo and key as tags. The Patches menu groups the
+  examples under genre headings and shows the tempo and key as chips.
+- The patch file format gained an optional `tags` array, so an exported patch keeps its labels
+  and an imported one restores them. Patches saved before tags existed still load.
+
 ## [0.0.5] — 2026-09-04
 
 ### Added

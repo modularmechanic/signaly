@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getSpec } from '../src/modules/registry';
-import { EXAMPLES } from '../src/patches/examples';
+import { EXAMPLES, EXAMPLES_BY_GENRE } from '../src/patches/examples';
 import { isRackSnapshot } from '../src/engine/snapshot';
 
 /** Every bundled example must load cleanly: known modules only, every knob, switch and jack
@@ -10,6 +10,29 @@ import { isRackSnapshot } from '../src/engine/snapshot';
 describe('example patches', () => {
   it('ships every bundled example', () => {
     expect(EXAMPLES).toHaveLength(21);
+  });
+
+  it('labels every example with a genre, a tempo and a key, and says the genre in the name', () => {
+    for (const ex of EXAMPLES) {
+      const [genre, bpm, key] = ex.tags;
+      expect(ex.tags, `${ex.name}: expected [genre, tempo, key]`).toHaveLength(3);
+      expect(bpm, `${ex.name}: second tag should be a tempo`).toMatch(/^\d{2,3} BPM$/);
+      expect(key, `${ex.name}: third tag should be a key`).toBeTruthy();
+      // The name has to carry the genre on its own: a saved copy or an exported file has no chips.
+      expect(ex.name.startsWith(`${genre} \u00b7 `), `${ex.name}: does not lead with its genre`).toBe(true);
+      expect(ex.name.length, `${ex.name}: over the 60-character name cap`).toBeLessThanOrEqual(60);
+    }
+  });
+
+  it('groups the examples by genre without losing one', () => {
+    expect(EXAMPLES_BY_GENRE.map((g) => g.genre)).toEqual([
+      'Ambient',
+      'Deep House',
+      'Psy-Trance',
+      'Dub',
+      'Techno',
+    ]);
+    expect(EXAMPLES_BY_GENRE.reduce((n, g) => n + g.patches.length, 0)).toBe(EXAMPLES.length);
   });
 
   it.each(EXAMPLES.map((e) => [e.name, e] as const))('%s is consistent with the registry', (_name, ex) => {

@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Hypnotic Twilight (D minor)",
+  "name": "Psy-Trance \u00b7 Hypnotic Twilight (D minor)",
+  "tags": ["Psy-Trance", "140 BPM", "D minor"],
   "snapshot": {
     "modules": [
       {

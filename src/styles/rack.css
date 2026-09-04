@@ -418,6 +418,19 @@
   text-transform: uppercase;
 }
 
+/* Tempo and key ride beside the name; the genre is already the heading above. */
+.patch-tag {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font: 500 9px/1.5 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .patch-list {
   display: grid;
   gap: 4px;

@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Tunnel Vision (C minor)",
+  "name": "Techno \u00b7 Tunnel Vision (C minor)",
+  "tags": ["Techno", "145 BPM", "C minor"],
   "snapshot": {
     "modules": [
       {

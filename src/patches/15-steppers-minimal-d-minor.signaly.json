@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Steppers Minimal (D minor)",
+  "name": "Dub \u00b7 Steppers Minimal (D minor)",
+  "tags": ["Dub", "70 BPM", "D minor"],
   "snapshot": {
     "modules": [
       {
