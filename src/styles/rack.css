@@ -33,7 +33,6 @@
   flex: 1;
 }
 
-.topbar-hint,
 .settings-hint {
   color: var(--text-dim);
   font-size: 12.5px;
@@ -53,6 +52,12 @@
    and finger-sized at any magnification. `zoom` scales the layout box rather than painting a
    transform over it, so the row scrollers, hit-testing and the cable overlay's screen-space
    measurements all keep working untouched. */
+.rack-scroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -4px;
+}
+
+/* The rack's single horizontal scrollbar: one bar at the bottom moves every row together. */
 .rack-scroll {
   flex: 1;
   padding: 6px 10px 40px;
@@ -111,22 +116,18 @@
 
 /* ---------- row ---------- */
 .rack-row-shell {
+  /* As wide as its widest row so the shared scroller can reach the end of every row. */
+  width: max-content;
+  min-width: 100%;
   margin-bottom: 10px;
 }
 
-/* Horizontal scroll viewport for one row. Padding is a buffer only — it keeps the panel
-   drop shadow (.module-panel's box-shadow reaches ~20px past its box) from being clipped
-   by the overflow box, without touching .rack-row's own padding, which is calibrated to
-   its rail background. Vertical overflow is left to compute to `auto`: nothing genuinely
-   overflows past this buffer, so no vertical scrollbar ever appears. */
+/* Padding is a buffer only — it keeps the panel drop shadow (.module-panel's box-shadow reaches
+   ~20px past its box) from being clipped, without touching .rack-row's own padding, which is
+   calibrated to its rail background. The row does NOT scroll: the whole rack moves together on
+   the single scrollbar below it, so rows stay aligned with each other and with the cables. */
 .rack-row-scroll {
-  overflow-x: auto;
   padding: 10px 0;
-}
-
-.rack-row-scroll:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
 }
 
 .row-head {
@@ -539,16 +540,6 @@
     flex: none;
     font-size: 11px;
     letter-spacing: 0.18em;
-  }
-
-  /* The Builder button is disabled without a key, so it can be neither focused nor hovered to
-     read its title: on a phone this hint is the only thing that explains it. Keep it, compact
-     and ordered last, so it never pushes the actions out of reach in the scroller. */
-  .topbar-hint {
-    order: 1;
-    flex: none;
-    padding-right: 2px;
-    font-size: 10px;
   }
 
   .topbar-gap {

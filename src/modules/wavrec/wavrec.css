@@ -1,0 +1,27 @@
+/* WAV REC's display slot: a transport readout, the take's size, and the two buttons that get
+   the audio out of the browser. */
+.wavrec {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.wavrec-size {
+  color: var(--text-dim);
+  font: 500 9.5px var(--font-mono);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.wavrec-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}

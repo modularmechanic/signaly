@@ -51,10 +51,9 @@ export function RackRow({ row, index, onAddHere }: RackRowProps): ReactNode {
         <Button onClick={() => onAddHere(index)}>+ Module</Button>
         {row.uids.length === 0 && <Button onClick={() => removeRow(row.id)}>Remove row</Button>}
       </header>
-      {/* Own scroll container per row: a wide row scrolls independently of its neighbours.
-          tabIndex + aria-label make it keyboard-reachable per WAI guidance for scrollable
-          regions — Chrome focuses overflow containers automatically, Firefox does not. */}
-      <div className="rack-row-scroll" tabIndex={0} aria-label={`Row ${index + 1} modules`}>
+      {/* No scroll container of its own: the whole rack shares one scrollbar, so every row
+          moves together and a wide row cannot slide out from under its neighbours. */}
+      <div className="rack-row-scroll">
         <div
           className="rack-row"
           onDragOver={(e) => {

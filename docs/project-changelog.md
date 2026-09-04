@@ -6,7 +6,22 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **WAV REC** — a stereo tape recorder. Patch a mix into it, arm REC, and it captures the audio
+  while passing it straight through, so it drops in ahead of MAIN OUT without changing the patch.
+  Save WAV writes a 16-bit RIFF file; a take is capped at ten minutes. The catalogue is 101 modules.
+
+### Changed
+
+- **One scrollbar for the whole rack** instead of one per row. Rows scrolled independently, so a
+  wide row slid out from under its neighbours — and because the cables are drawn on a
+  viewport-fixed canvas, scrolling a row left every cable in that row 40 px or more from its
+  jack. Measured after the change: every visible plug sits within 0 px of its socket at four
+  different scroll positions.
+- The **Builder** button is hidden until an API key exists, rather than shown greyed-out beside
+  an explanation. Without a key the builder cannot do anything, and a disabled button plus a hint
+  was two pieces of furniture for a feature the user has not set up.
 
 ## [0.0.6] — 2026-09-04
 

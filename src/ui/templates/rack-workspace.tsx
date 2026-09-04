@@ -124,14 +124,14 @@ export function RackWorkspace(): ReactNode {
           <Button pressed onClick={() => ui.setView('rack')}>
             Rack
           </Button>
-          <Button
-            disabled={!hasKey}
-            title={hasKey ? 'Module builder' : 'Add an API key in Settings to use the builder'}
-            onClick={() => ui.setView('builder')}
-          >
-            Builder
-          </Button>
-          {!hasKey && <span className="topbar-hint">Builder needs an API key — see Settings</span>}
+          {/* Hidden rather than disabled: without a key the builder cannot do anything, and a
+              greyed-out button with an explanation beside it was two pieces of furniture for a
+              feature the user has not set up. */}
+          {hasKey && (
+            <Button title="Module builder" onClick={() => ui.setView('builder')}>
+              Builder
+            </Button>
+          )}
           <span className="topbar-gap" />
           <Button onClick={() => openBrowser(rows.length - 1)}>+ Module</Button>
           <Button onClick={() => addRow()}>+ Row</Button>
@@ -158,7 +158,10 @@ export function RackWorkspace(): ReactNode {
         </p>
       </header>
 
-      <main className="rack-scroll" ref={rack}>
+      {/* The rack is the one scrollable region now, so it carries the keyboard affordance the
+          per-row containers used to: Chrome focuses overflow containers on its own, Firefox
+          does not. */}
+      <main className="rack-scroll" ref={rack} tabIndex={0} aria-label="Rack modules">
         {rows.map((row, i) => (
           <RackRow key={row.id} row={row} index={i} onAddHere={openBrowser} />
         ))}
