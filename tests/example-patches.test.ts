@@ -67,6 +67,14 @@ describe('example patches', () => {
       if (m.mtype === 'clock') expect(m.sws.run, `${_name}: CLOCK is stopped`).toBe(1);
     }
 
+    // A module whose output goes nowhere is dead weight that still costs CPU and confuses the
+    // reader: an envelope wired to a gate but never patched onward is a part that does not play.
+    const feeds = new Set(cables.map((c) => c.from.uid));
+    for (const m of modules) {
+      if (m.mtype === 'out') continue;
+      expect(feeds.has(m.uid), `${_name}: ${m.mtype}#${m.uid} output is never patched anywhere`).toBe(true);
+    }
+
     const placed = rows.flat();
     expect(new Set(placed).size).toBe(placed.length);
     expect(new Set(placed)).toEqual(new Set(byUid.keys()));
