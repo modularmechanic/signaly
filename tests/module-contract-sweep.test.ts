@@ -96,3 +96,60 @@ describe('declared LEDs are driven', () => {
     });
   }
 });
+
+/** A jack is a promise: a cable into it does something. A declared jack the DSP never touches
+    still renders, still accepts a patch, and then silently does nothing — the worst kind of bug
+    to find by ear. This sweep reads each processor's source and checks that every declared
+    input index is read and every declared output index is written, and that neither runs past
+    what the def declares (the node is built with exactly `ins.length` / `outs.length` ports, so
+    an over-range access can never be reached). */
+describe('declared jacks are wired', () => {
+  /** `process(I, O)` names its own parameters; find them rather than assuming. */
+  const signature = (src: string): [string, string] | null => {
+    const m = /process\(\s*(\w+)\s*:[^,]+,\s*(\w+)\s*:/.exec(src);
+    return m?.[1] && m[2] ? [m[1], m[2]] : null;
+  };
+  const indices = (src: string, re: RegExp): Set<number> => {
+    const out = new Set<number>();
+    for (const m of src.matchAll(re)) if (m[1]) out.add(Number(m[1]));
+    return out;
+  };
+
+  for (const spec of specs.filter((s) => s.def.worklet)) {
+    it(`${spec.def.id} reads every input and writes every output it declares`, () => {
+      const { id, ins, outs } = spec.def;
+      const src = dspBySlug.get(id) ?? '';
+      expect(src, `${id}: no ${id}.dsp.ts`).not.toBe('');
+      const sig = signature(src);
+      expect(sig, `${id}.dsp.ts: could not read the process() signature`).not.toBeNull();
+      const [I, O] = sig!;
+      const read = indices(src, new RegExp(`ch\\(${I},\\s*(\\d+)\\)`, 'g'));
+      for (const n of indices(src, new RegExp(`(?<![A-Za-z0-9_])${I}\\[(\\d+)\\]`, 'g'))) read.add(n);
+      const written = indices(src, new RegExp(`(?<![A-Za-z0-9_])${O}\\[(\\d+)\\]`, 'g'));
+
+      // A module that indexes its jacks through a variable is covered by its own tests; only
+      // its out-of-range access is visible from here.
+      const dynamic =
+        new RegExp(`ch\\(${I},\\s*[A-Za-z_]`).test(src) ||
+        new RegExp(`(?<![A-Za-z0-9_])[${I}${O}]\\[[A-Za-z_]`).test(src);
+
+      for (const n of read)
+        expect(n, `${id}.dsp.ts reads input #${n}, but the def declares ${ins.length}`).toBeLessThan(
+          ins.length,
+        );
+      for (const n of written)
+        expect(n, `${id}.dsp.ts writes output #${n}, but the def declares ${outs.length}`).toBeLessThan(
+          outs.length,
+        );
+      if (dynamic) return;
+      ins.forEach((j, i) =>
+        expect(read.has(i), `${id}: input '${j.id}' is declared but ${id}.dsp.ts never reads it`).toBe(true),
+      );
+      outs.forEach((j, i) =>
+        expect(written.has(i), `${id}: output '${j.id}' is declared but ${id}.dsp.ts never writes it`).toBe(
+          true,
+        ),
+      );
+    });
+  }
+});
