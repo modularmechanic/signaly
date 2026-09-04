@@ -43,7 +43,17 @@ const isPatch = (v: unknown): v is Patch => {
   );
 };
 
-const read = (): Patch[] => readJson<unknown[]>(KEYS.patches, []).filter(isPatch);
+/** Tags are sanitised on the way in AND on the way out: `isPatch` only proves `tags` is an
+    array, and localStorage is editable, so a record holding `[{}, 42]` must not reach the UI. */
+function sanitise(p: Patch): Patch {
+  const tags = readTags(p.tags);
+  if (tags) return { ...p, tags };
+  const copy = { ...p };
+  delete copy.tags;
+  return copy;
+}
+
+const read = (): Patch[] => readJson<unknown[]>(KEYS.patches, []).filter(isPatch).map(sanitise);
 const persist = (list: Patch[]): void => writeJson(KEYS.patches, list);
 
 const normalise = (name: string): string => name.trim().slice(0, 60) || 'Untitled patch';
@@ -71,7 +81,7 @@ export function savePatch(name: string, snapshot: RackSnapshot = snapshotRack(),
   const patch: Patch = {
     id: crypto.randomUUID(),
     name: uniqueName(normalise(name), list),
-    ...(tags?.length ? { tags } : {}),
+    ...(readTags(tags) ? { tags: readTags(tags) } : {}),
     createdAt: now,
     updatedAt: now,
     snapshot,
