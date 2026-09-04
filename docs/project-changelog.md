@@ -11,6 +11,8 @@ and a catalogue that grows from 41 to 100 modules:
 
 ### Added
 
+- Rack zoom: a − / level / + dock, a two-finger pinch on the rack, and ctrl or cmd with the scroll wheel. Zooming in has no practical ceiling — the only limit is a 1000x runaway guard, far past the point where one knob fills the screen; zooming out floors at 20 percent. Only the rack scales, never the chrome, and the level is remembered.
+
 - MIX 8: a PRE button per channel lifts both of that channel's sends ahead of the fader (post-EQ), so a wet return can carry a channel whose fader is down.
 
 - Five bundled example patches under **Patches › Examples**, each a generative ambient piece in a different key: the user's F minor arpeggio piece with a Turing-machine pad, slow FM and saw pads in D dorian, wavetable and granular drones in A minor pentatonic, gliding add9 chords through the valve in E-flat major, and a sub drone with a filtered pad and vinyl dust in G minor. Pitches move on bar clocks, swells are multi-second AD envelopes, and the wet effects carry most of the sound. `src/patches/*.signaly.json` is the plain export format; `tests/example-patches.test.ts` checks every module, knob, switch, jack and ext blob against the registry.
@@ -43,6 +45,8 @@ and a catalogue that grows from 41 to 100 modules:
   crowding is now a failing build rather than something found by looking
 
 ### Fixed
+
+- Phones and small tablets: the topbar was wrapping onto four lines and eating 145 px of an 812 px screen, so a module panel could not fit under it. It is now one scrolling line of 34 px, the status line rides with it in a single sticky header instead of a hard-coded offset, and pull-to-refresh no longer fires when a knob drag reaches the top of the page.
 
 - Faders: the cap was positioned with a transform whose percentage resolved against the cap's own 19 px height, so it never left the top of the track; it now moves with the value again.
 

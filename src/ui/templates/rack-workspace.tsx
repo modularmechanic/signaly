@@ -11,6 +11,7 @@ import { ModuleBrowser } from '../organisms/module-browser';
 import { PatchMenu } from '../organisms/patch-menu';
 import { RackRow } from '../organisms/rack-row';
 import { SettingsDialog } from '../organisms/settings-dialog';
+import { ZoomControls } from '../molecules/zoom-controls';
 
 const say = (text: string): void => useUiStore.getState().setNotice(text);
 
@@ -45,6 +46,7 @@ export function RackWorkspace(): ReactNode {
   const [patchesOpen, setPatchesOpen] = useState(false);
   const [targetRow, setTargetRow] = useState(0);
   const opener = useRef<HTMLElement | null>(null);
+  const rack = useRef<HTMLElement | null>(null);
 
   const ui = useUiStore.getState();
   const anyModal = browserOpen || settingsOpen || patchesOpen;
@@ -114,51 +116,56 @@ export function RackWorkspace(): ReactNode {
 
   return (
     <div className="workspace">
-      <nav className="topbar">
-        <span className="brand">SIGNALY</span>
-        <Button pressed onClick={() => ui.setView('rack')}>
-          Rack
-        </Button>
-        <Button
-          disabled={!hasKey}
-          title={hasKey ? 'Module builder' : 'Add an API key in Settings to use the builder'}
-          onClick={() => ui.setView('builder')}
-        >
-          Builder
-        </Button>
-        {!hasKey && <span className="topbar-hint">Builder needs an API key — see Settings</span>}
-        <span className="topbar-gap" />
-        <Button onClick={() => openBrowser(rows.length - 1)}>+ Module</Button>
-        <Button onClick={() => addRow()}>+ Row</Button>
-        <Button
-          onClick={(e) => {
-            opener.current = e.currentTarget;
-            setPatchesOpen(true);
-          }}
-        >
-          Patches
-        </Button>
-        <Button
-          onClick={(e) => {
-            opener.current = e.currentTarget;
-            ui.setSettingsOpen(true);
-          }}
-        >
-          Settings
-        </Button>
-      </nav>
+      {/* Chrome and status line stick together: a topbar that wraps on a phone would otherwise
+          leave the live region pinned at a hard-coded offset, floating over the rack. */}
+      <header className="rack-head">
+        <nav className="topbar">
+          <span className="brand">SIGNALY</span>
+          <Button pressed onClick={() => ui.setView('rack')}>
+            Rack
+          </Button>
+          <Button
+            disabled={!hasKey}
+            title={hasKey ? 'Module builder' : 'Add an API key in Settings to use the builder'}
+            onClick={() => ui.setView('builder')}
+          >
+            Builder
+          </Button>
+          {!hasKey && <span className="topbar-hint">Builder needs an API key — see Settings</span>}
+          <span className="topbar-gap" />
+          <Button onClick={() => openBrowser(rows.length - 1)}>+ Module</Button>
+          <Button onClick={() => addRow()}>+ Row</Button>
+          <Button
+            onClick={(e) => {
+              opener.current = e.currentTarget;
+              setPatchesOpen(true);
+            }}
+          >
+            Patches
+          </Button>
+          <Button
+            onClick={(e) => {
+              opener.current = e.currentTarget;
+              ui.setSettingsOpen(true);
+            }}
+          >
+            Settings
+          </Button>
+        </nav>
 
-      <p className="live-region" role="status" aria-live="polite">
-        {notice}
-      </p>
+        <p className="live-region" role="status" aria-live="polite">
+          {notice}
+        </p>
+      </header>
 
-      <main className="rack-scroll">
+      <main className="rack-scroll" ref={rack}>
         {rows.map((row, i) => (
           <RackRow key={row.id} row={row} index={i} onAddHere={openBrowser} />
         ))}
       </main>
 
       <CableCanvas />
+      <ZoomControls rack={rack} />
 
       {browserOpen && <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />}
       {patchesOpen && <PatchMenu onClose={() => setPatchesOpen(false)} />}

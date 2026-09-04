@@ -6,10 +6,14 @@
   min-height: 100%;
 }
 
-.topbar {
+/* Chrome and status line share one sticky box, so neither needs to know the other's height. */
+.rack-head {
   position: sticky;
   z-index: 50;
   top: 0;
+}
+
+.topbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -36,9 +40,6 @@
 }
 
 .live-region {
-  position: sticky;
-  z-index: 45;
-  top: 36px;
   min-height: 18px;
   margin: 0;
   padding: 2px 10px;
@@ -48,10 +49,46 @@
   letter-spacing: 0.06em;
 }
 
+/* The rack surface is the only thing that zooms — never the chrome, so the controls stay legible
+   and finger-sized at any magnification. `zoom` scales the layout box rather than painting a
+   transform over it, so the row scrollers, hit-testing and the cable overlay's screen-space
+   measurements all keep working untouched. */
 .rack-scroll {
   flex: 1;
   padding: 6px 10px 40px;
   overflow-x: auto;
+  zoom: var(--rack-zoom, 1);
+  /* One finger still scrolls; two fingers reach the pinch handler instead of the browser's
+     own page zoom, which would blow up the chrome along with the rack. */
+  touch-action: pan-x pan-y;
+}
+
+/* ---------- zoom dock ---------- */
+.zoom-dock {
+  position: fixed;
+  z-index: 60;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--rail);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.zoom-dock .btn {
+  min-width: 34px;
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+.zoom-dock .zoom-level {
+  min-width: 52px;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
 }
 
 .app-loading {
@@ -463,4 +500,59 @@
   margin: 0;
   color: var(--danger);
   font-size: 12.5px;
+}
+
+/* ---------- phones and small tablets ---------- */
+@media (max-width: 700px) {
+  /* Six buttons wrapped onto four lines cost 145 px of an 812 px phone — a panel could not even
+     fit under them. One scrolling line costs 34 px. */
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 5px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .topbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .topbar .btn {
+    flex: none;
+  }
+
+  .brand {
+    flex: none;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+  }
+
+  /* The Builder button is disabled without a key, so it can be neither focused nor hovered to
+     read its title: on a phone this hint is the only thing that explains it. Keep it, compact
+     and ordered last, so it never pushes the actions out of reach in the scroller. */
+  .topbar-hint {
+    order: 1;
+    flex: none;
+    padding-right: 2px;
+    font-size: 10px;
+  }
+
+  .topbar-gap {
+    flex: 0 0 6px;
+  }
+
+  .live-region {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+
+  /* Clears the zoom dock so the last row is never trapped under it. */
+  .rack-scroll {
+    padding: 4px 6px 76px;
+  }
+
+  .modal-backdrop {
+    padding: 6px;
+  }
 }
