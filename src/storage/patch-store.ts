@@ -6,12 +6,28 @@ export const PATCH_VERSION = 1 as const;
 /** Caller-side cap before JSON.parse — an untrusted file must not blow the main thread. */
 export const MAX_PATCH_BYTES = 2_000_000;
 
+/** A label is short and plain: it is rendered as a chip, not a paragraph. */
+export const MAX_TAGS = 6;
+const MAX_TAG_LEN = 32;
+
 export interface Patch {
   id: string;
   name: string;
+  tags?: string[];
   createdAt: number;
   updatedAt: number;
   snapshot: RackSnapshot;
+}
+
+/** Untrusted input: anything that is not a short list of short strings is dropped, not repaired. */
+export function readTags(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const tags = v
+    .filter((t): t is string => typeof t === 'string')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0 && t.length <= MAX_TAG_LEN)
+    .slice(0, MAX_TAGS);
+  return tags.length ? tags : undefined;
 }
 
 const isPatch = (v: unknown): v is Patch => {
@@ -22,6 +38,7 @@ const isPatch = (v: unknown): v is Patch => {
     typeof p.name === 'string' &&
     typeof p.createdAt === 'number' &&
     typeof p.updatedAt === 'number' &&
+    (p.tags === undefined || Array.isArray(p.tags)) &&
     isRackSnapshot(p.snapshot)
   );
 };
@@ -48,12 +65,13 @@ export function getPatch(id: string): Patch | undefined {
   return read().find((p) => p.id === id);
 }
 
-export function savePatch(name: string, snapshot: RackSnapshot = snapshotRack()): Patch {
+export function savePatch(name: string, snapshot: RackSnapshot = snapshotRack(), tags?: string[]): Patch {
   const list = read();
   const now = Date.now();
   const patch: Patch = {
     id: crypto.randomUUID(),
     name: uniqueName(normalise(name), list),
+    ...(tags?.length ? { tags } : {}),
     createdAt: now,
     updatedAt: now,
     snapshot,
@@ -79,13 +97,18 @@ export function serializePatch(patch: Patch): string {
     format: PATCH_FORMAT,
     version: PATCH_VERSION,
     name: patch.name,
+    ...(patch.tags?.length ? { tags: patch.tags } : {}),
     snapshot: patch.snapshot,
   };
   return JSON.stringify(file, null, 2);
 }
 
 /** Parse an imported patch file. Throws Error with a user-facing message on anything malformed. */
-export function parsePatchFile(raw: string): { name: string; snapshot: RackSnapshot } {
+export function parsePatchFile(raw: string): {
+  name: string;
+  tags?: string[];
+  snapshot: RackSnapshot;
+} {
   if (raw.length > MAX_PATCH_BYTES) throw new Error('Patch file is too large.');
   let parsed: unknown;
   try {
@@ -98,7 +121,11 @@ export function parsePatchFile(raw: string): { name: string; snapshot: RackSnaps
   if (file.format !== PATCH_FORMAT || file.version !== PATCH_VERSION)
     throw new Error('Unsupported patch format.');
   if (!isRackSnapshot(file.snapshot)) throw new Error('Patch file contains an invalid rack.');
-  return { name: normalise(typeof file.name === 'string' ? file.name : ''), snapshot: file.snapshot };
+  return {
+    name: normalise(typeof file.name === 'string' ? file.name : ''),
+    tags: readTags(file.tags),
+    snapshot: file.snapshot,
+  };
 }
 
 export function downloadPatch(patch: Patch): void {

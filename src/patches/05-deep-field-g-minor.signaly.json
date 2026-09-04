@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Deep Field (G minor)",
+  "name": "Ambient \u00b7 Deep Field (G minor)",
+  "tags": ["Ambient", "50 BPM", "G minor"],
   "snapshot": {
     "modules": [
       {

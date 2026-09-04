@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Spring Reverb Skank (C minor)",
+  "name": "Dub \u00b7 Spring Reverb Skank (C minor)",
+  "tags": ["Dub", "70 BPM", "C minor"],
   "snapshot": {
     "modules": [
       {

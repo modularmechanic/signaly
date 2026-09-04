@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Late Night Rollers (C minor)",
+  "name": "Deep House \u00b7 Late Night Rollers (C minor)",
+  "tags": ["Deep House", "128 BPM", "C minor"],
   "snapshot": {
     "modules": [
       {

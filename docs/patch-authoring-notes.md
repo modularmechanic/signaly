@@ -52,6 +52,13 @@ For a track rather than a loop, drive one **intensity CV** and let every element
 The same intensity CV can open filters and swell reverb size, so the room grows into the drops.
 `src/patches/18-warehouse-cathedral-f-minor.signaly.json` is the worked example.
 
+## Naming and tags
+
+The name leads with the genre and ends with the key: `Deep House · Basement (F minor)`. Chips in
+the menu come from `tags`, which is `[genre, tempo, key]` — the first tag is what the menu groups
+by. The name has to carry the genre on its own, because a saved copy or an exported file has no
+chips beside it. Sixty characters is the cap.
+
 ## Levels
 
 MAIN OUT stays at or below 0.7 so a patch is safe to open. The test enforces it, along with

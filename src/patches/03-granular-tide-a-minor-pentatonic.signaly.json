@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Granular Tide (A minor pentatonic)",
+  "name": "Ambient \u00b7 Granular Tide (A minor pentatonic)",
+  "tags": ["Ambient", "56 BPM", "A minor pentatonic"],
   "snapshot": {
     "modules": [
       {

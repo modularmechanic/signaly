@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Warehouse Cathedral (F minor)",
+  "name": "Techno \u00b7 Warehouse Cathedral (F minor)",
+  "tags": ["Techno", "145 BPM", "F minor"],
   "snapshot": {
     "modules": [
       {

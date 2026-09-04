@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Echo Chamber Dub (A minor)",
+  "name": "Dub \u00b7 Echo Chamber (A minor)",
+  "tags": ["Dub", "70 BPM", "A minor"],
   "snapshot": {
     "modules": [
       {

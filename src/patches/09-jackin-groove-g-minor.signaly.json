@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Jackin\u2019 Groove (G minor)",
+  "name": "Deep House \u00b7 Jackin\u2019 Groove (G minor)",
+  "tags": ["Deep House", "128 BPM", "G minor"],
   "snapshot": {
     "modules": [
       {

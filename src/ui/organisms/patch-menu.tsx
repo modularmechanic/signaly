@@ -10,7 +10,7 @@ import {
   savePatch,
   type Patch,
 } from '../../storage/patch-store';
-import { EXAMPLES, type ExamplePatch } from '../../patches/examples';
+import { EXAMPLES_BY_GENRE, type ExamplePatch } from '../../patches/examples';
 import { Button } from '../atoms/button';
 
 export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
@@ -50,7 +50,7 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
     try {
       const patch = parsePatchFile(await f.text());
       applySnapshot(patch.snapshot);
-      savePatch(patch.name, patch.snapshot);
+      savePatch(patch.name, patch.snapshot, patch.tags);
       refresh();
       note(`Imported ${patch.name}`);
     } catch (err) {
@@ -95,16 +95,27 @@ export function PatchMenu({ onClose }: { onClose: () => void }): ReactNode {
           />
         </form>
 
-        <h3 className="patch-heading">Examples</h3>
-        <ul className="patch-list">
-          {EXAMPLES.map((p) => (
-            <li key={p.id}>
-              <button type="button" className="patch-name" onClick={() => load(p)}>
-                {p.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {/* Twenty-one examples read as a wall unless they are grouped: the first tag is the
+            genre, the rest (tempo, key) ride along as chips. */}
+        {EXAMPLES_BY_GENRE.map((group) => (
+          <section key={group.genre}>
+            <h3 className="patch-heading">{group.genre}</h3>
+            <ul className="patch-list">
+              {group.patches.map((p) => (
+                <li key={p.id}>
+                  <button type="button" className="patch-name" onClick={() => load(p)}>
+                    {p.name}
+                  </button>
+                  {p.tags.slice(1).map((t) => (
+                    <span key={t} className="patch-tag">
+                      {t}
+                    </span>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
         <h3 className="patch-heading">Saved</h3>
         <ul className="patch-list">

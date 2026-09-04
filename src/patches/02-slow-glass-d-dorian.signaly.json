@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Slow Glass (D dorian)",
+  "name": "Ambient \u00b7 Slow Glass (D dorian)",
+  "tags": ["Ambient", "58 BPM", "D dorian"],
   "snapshot": {
     "modules": [
       {

@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Basement Deep House (F minor)",
+  "name": "Deep House \u00b7 Basement (F minor)",
+  "tags": ["Deep House", "128 BPM", "F minor"],
   "snapshot": {
     "modules": [
       {

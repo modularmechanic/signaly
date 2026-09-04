@@ -1,7 +1,8 @@
 {
   "format": "signaly.patch",
   "version": 1,
-  "name": "Zenon Bounce (F# minor)",
+  "name": "Psy-Trance \u00b7 Zenon Bounce (F# minor)",
+  "tags": ["Psy-Trance", "140 BPM", "F# minor"],
   "snapshot": {
     "modules": [
       {
