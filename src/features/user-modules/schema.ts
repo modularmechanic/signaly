@@ -37,11 +37,12 @@ export function toRecord(um: UserModule): UserModuleRecord {
 }
 
 /** The only door from the loose stored record into the typed module. */
-export function fromRecord(rec: UserModuleRecord): UserModule | { error: string } {
+/** `saved` reads back work that already exists — see checkDef for what it relaxes, and why. */
+export function fromRecord(rec: UserModuleRecord, saved = false): UserModule | { error: string } {
   if (!validateSlug(rec.slug)) return { error: 'slug must match [a-z0-9-]{3,32}' };
   if (typeof rec.dsp !== 'string' || !rec.dsp.trim()) return { error: 'dsp source is empty' };
   if (rec.dsp.length > MAX_DSP_BYTES) return { error: `dsp source exceeds ${MAX_DSP_BYTES} bytes` };
-  const v = validateUserDef(rec.def);
+  const v = validateUserDef(rec.def, saved);
   if (!v.ok) return { error: v.error };
   return {
     slug: rec.slug,

@@ -21,7 +21,7 @@ function dupes(ids: readonly string[], say: (id: string) => string): void {
   }
 }
 
-function checkKnobs(def: Def): void {
+function checkKnobs(def: Def, saved: boolean): void {
   const ins = new Set(def.ins.map((j) => j.id));
   const cvIns = new Set(def.ins.filter((j) => j.kind === 'c').map((j) => j.id));
   const att1 = new Set<string>();
@@ -32,7 +32,7 @@ function checkKnobs(def: Def): void {
     if (k.cvIn !== undefined && !ins.has(k.cvIn)) bad(`${at}.cvIn "${k.cvIn}" names no input jack`);
     // Last, so a knob that breaks a stronger rule still reports that rule. fmt itself is required
     // by the type; what needs checking is that the range suits the unit it declares.
-    const range = FMT_RANGE[k.fmt];
+    const range = saved ? undefined : FMT_RANGE[k.fmt];
     if (range && (k.min < range[0] || k.max > range[1]))
       bad(`${at} is fmt '${k.fmt}', so [${at}.min, ${at}.max] must stay within [${range[0]}, ${range[1]}]`);
     if (k.attenuates === undefined) return;
@@ -44,7 +44,7 @@ function checkKnobs(def: Def): void {
   });
 }
 
-function checkPanel(def: Def, nodes: readonly PanelNode[]): void {
+function checkPanel(def: Def, nodes: readonly PanelNode[], saved: boolean): void {
   const knobIds = new Set(def.knobs.map((k) => k.id));
   const targets: Record<string, Set<string> | undefined> = {
     knob: knobIds,
@@ -80,12 +80,12 @@ function checkPanel(def: Def, nodes: readonly PanelNode[]): void {
     if (n.x + n.w > 1 + EPS) bad(`${at} overflows the panel horizontally`);
     if (n.y + n.h > 1 + EPS) bad(`${at} overflows the panel vertically`);
     // Authored geometry skips the computed layout, so it is held to the same control minimums.
-    if (n.kind === 'fader' && n.h * PANEL_H < MIN_CONTROL_PX.fader - EPS)
+    if (!saved && n.kind === 'fader' && n.h * PANEL_H < MIN_CONTROL_PX.fader - EPS)
       bad(`${at} is too short for a fader — it needs at least ${MIN_CONTROL_PX.fader}px of the panel`);
   });
 }
 
-function rules(def: Def): void {
+function rules(def: Def, saved: boolean): void {
   if (!Number.isInteger(def.hp) || def.hp < 1 || def.hp > MIN_ROW_HP)
     bad(
       `def.hp must be an integer from 1 to ${MIN_ROW_HP}: a module has to fit the narrowest row a rack can be set to (${MIN_ROW_HP} HP), or it could never be placed`,
@@ -98,14 +98,21 @@ function rules(def: Def): void {
     def.outs.map((j) => j.id),
     (id) => `outs has a duplicate jack id "${id}"`,
   );
-  checkKnobs(def);
-  // One namespace, not two: makeNode writes knobs and switches into ONE param bag, switches
-  // last, so a knob and a switch sharing an id ships a worklet whose `this.p.<id>` is the
-  // switch index while the panel shows the knob.
-  dupes(
-    [...def.knobs.map((k) => k.id), ...(def.sws ?? []).map((s) => s.id)],
-    (id) => `"${id}" is a duplicate id — knobs and switches share one param namespace`,
-  );
+  checkKnobs(def, saved);
+  const knobIds = def.knobs.map((k) => k.id);
+  const swIds = (def.sws ?? []).map((s) => s.id);
+  if (saved) {
+    dupes(knobIds, (id) => `knobs has a duplicate id "${id}"`);
+    dupes(swIds, (id) => `sws has a duplicate id "${id}"`);
+  } else {
+    // One namespace, not two: makeNode writes knobs and switches into ONE param bag, switches
+    // last, so a knob and a switch sharing an id ships a worklet whose `this.p.<id>` is the
+    // switch index while the panel shows the knob.
+    dupes(
+      [...knobIds, ...swIds],
+      (id) => `"${id}" is a duplicate id — knobs and switches share one param namespace`,
+    );
+  }
   (def.sws ?? []).forEach((s, i) => {
     // One option is a lit push-button toggle (a console's M, S and PRE), so one is the floor.
     if (s.options.length < 1) bad(`sws[${i}].options needs at least 1 entry`);
@@ -122,13 +129,16 @@ function rules(def: Def): void {
     litSeen.add(id);
   });
   // A declared display that can never draw is a blank screen and no error — see display-contract.
-  const why = whyNotReady(def, null);
+  // Not held against saved work: the live panel already shows a placeholder for it.
+  const why = saved ? null : whyNotReady(def, null);
   if (why !== null) bad(`def.display '${def.display}': ${why}`);
   // Authored geometry replaces the computed layout wholesale, so only one of the two is checked.
   if (def.panel) {
-    checkPanel(def, def.panel.nodes);
+    checkPanel(def, def.panel.nodes, saved);
     return;
   }
+  // computePanel clamps whatever it is given, so saved work lays out; only new work must fit.
+  if (saved) return;
   const fit = fitPanel(def, MIN_ROW_HP);
   if (fit.fits) return;
   bad(
@@ -141,10 +151,17 @@ function rules(def: Def): void {
 /** The single answer to "is this ModuleDef well-formed" — `null`, or the first failure.
     Its two call sites are validateUserDef (untrusted JSON, after shape parsing) and the
     built-in sweep test. Input bounds that only make sense for untrusted data — string
-    lengths, list caps — stay with the parser. */
-export function checkDef(def: Def): string | null {
+    lengths, list caps — stay with the parser.
+
+    `saved` reads back work that already exists: a stored user module, or an exported one being
+    imported. It holds that work to the rules it was saved under and skips the ones added since —
+    fmt ranges, the shared knob/switch namespace, the fader minimum, the display contract and the
+    layout fit. None of those guards against a crash; they guard the quality of new work, and
+    enforcing them on old work would silently delete modules that loaded and played before. New
+    definitions, and any saved module the moment it is edited and saved again, meet all of them. */
+export function checkDef(def: Def, saved = false): string | null {
   try {
-    rules(def);
+    rules(def, saved);
     return null;
   } catch (e) {
     return e instanceof Error ? e.message : 'invalid module definition';

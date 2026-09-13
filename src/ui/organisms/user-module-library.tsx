@@ -37,20 +37,24 @@ async function readImport(file: File): Promise<UserModule | { error: string }> {
   if (typeof env.module !== 'object' || env.module === null) return { error: 'The module is missing.' };
   const m = env.module as Record<string, unknown>;
   const now = Date.now();
-  return fromRecord({
-    slug: typeof m.slug === 'string' ? m.slug : '',
-    def: m.def,
-    dsp: typeof m.dsp === 'string' ? m.dsp : '',
-    createdAt: typeof m.createdAt === 'number' ? m.createdAt : now,
-    updatedAt: now,
-  });
+  return fromRecord(
+    {
+      slug: typeof m.slug === 'string' ? m.slug : '',
+      def: m.def,
+      dsp: typeof m.dsp === 'string' ? m.dsp : '',
+      createdAt: typeof m.createdAt === 'number' ? m.createdAt : now,
+      updatedAt: now,
+      // An export is saved work: read it under the rules it was written with, not today's.
+    },
+    true,
+  );
 }
 
 export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode {
   const [, bump] = useState(0);
   const [msg, setMsg] = useState('');
   const rows = list().map((rec) => {
-    const parsed = fromRecord(rec);
+    const parsed = fromRecord(rec, true);
     return {
       rec,
       um: 'error' in parsed ? null : parsed,

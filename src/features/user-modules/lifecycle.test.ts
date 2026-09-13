@@ -3,7 +3,7 @@ import { getSpec, unregisterSpec } from '../../modules/registry';
 import { removeImage } from '../../storage/image-store';
 import { saveUserModule } from '../../storage/user-module-store';
 import { verifyDsp } from './dsp-verify';
-import { install, list, remove, restoreAll } from './lifecycle';
+import { activate, install, list, remove, restoreAll } from './lifecycle';
 import { toRecord, userModuleId, type UserModule } from './schema';
 
 const h = vi.hoisted(() => ({ brokenUrl: '' }));
@@ -65,6 +65,26 @@ describe('restoreAll', () => {
     // A patch names `user:<slug>`, so the spec has to land under that id whatever its worklet is.
     const stored = list().find((r) => r.slug === 'lc-two');
     expect(getSpec(userModuleId('lc-two'))?.def.worklet).toBe(`user:lc-two@${stored?.updatedAt}`);
+  });
+
+  it('restores a module saved before fmt was required, instead of losing it', async () => {
+    // What a module saved on an older release looks like: a knob with no fmt at all.
+    const legacy = { id: 'amt', label: 'AMT', min: 0, max: 1, initial: 0.5 };
+    saveUserModule({ ...toRecord(mod('lc-one')), def: { ...mod('lc-one').def, knobs: [legacy] } });
+    expect(await restoreAll()).toEqual([]);
+    expect(getSpec(userModuleId('lc-one'))?.def.knobs[0]?.fmt).toBe('f1');
+  });
+
+  it('restores and opens a module that breaks a rule added after it was saved', async () => {
+    // A milliseconds knob tagged fMs was legal when written; the fmt range rule came later.
+    const knob = { id: 'len', label: 'LEN', min: 20, max: 500, initial: 60, fmt: 'fMs' as const };
+    const legacy = { ...mod('lc-two'), def: { ...mod('lc-two').def, knobs: [knob] } };
+    saveUserModule(toRecord(legacy));
+    expect(await restoreAll()).toEqual([]);
+    expect(getSpec(userModuleId('lc-two'))).toBeDefined();
+    expect((await activate(legacy)).ok).toBe(true);
+    // ...but saving it again means meeting today's rules
+    expect((await install(legacy)).ok).toBe(false);
   });
 
   it('does not re-verify a module that was verified on the way in', async () => {

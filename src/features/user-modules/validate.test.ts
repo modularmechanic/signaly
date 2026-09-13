@@ -62,6 +62,81 @@ describe('validateUserDef', () => {
     if (r.ok) expect(r.def.display).toBeUndefined();
   });
 
+  it('reads a knob saved without fmt as f1, the way it has always displayed', () => {
+    // Modules saved before fmt was required must still load: they are people's saved work.
+    const legacy = good();
+    const knobs = legacy.knobs as Record<string, unknown>[];
+    delete knobs[0]!.fmt;
+    knobs[1]!.fmt = null;
+    const r = validateUserDef(legacy);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.def.knobs[0]?.fmt).toBe('f1');
+    expect(r.def.knobs[1]?.fmt).toBe('f1');
+  });
+
+  it('still rejects an fmt that names no formatter', () => {
+    const knobs = good().knobs as Record<string, unknown>[];
+    knobs[0]!.fmt = 'fFurlongs';
+    expect(errorOf(withDef({ knobs }))).toMatch(/knobs\[0\]\.fmt/);
+  });
+
+  describe('saved work is held to the rules it was written under', () => {
+    // Rules added after a module was saved must not silently delete it. Each case below is
+    // rejected as new work and accepted as saved work.
+    const both = (def: Record<string, unknown>): { fresh: boolean; saved: boolean } => ({
+      fresh: validateUserDef(def).ok,
+      saved: validateUserDef(def, true).ok,
+    });
+    const knob = (over: Record<string, unknown>): Record<string, unknown> => ({
+      id: 'x',
+      label: 'X',
+      min: 0,
+      max: 1,
+      initial: 0,
+      fmt: 'f1',
+      ...over,
+    });
+
+    it('a knob whose range does not suit its fmt', () => {
+      const def = withDef({ knobs: [knob({ fmt: 'fMs', min: 20, max: 500, initial: 60 })], panel: null });
+      expect(both(def)).toEqual({ fresh: false, saved: true });
+    });
+
+    it('a knob and a switch sharing an id', () => {
+      const def = withDef({ knobs: [knob({ id: 'wave' })], panel: null });
+      expect(both(def)).toEqual({ fresh: false, saved: true });
+    });
+
+    it('a display a worklet module can never feed', () => {
+      const def = withDef({ display: 'scope', panel: null });
+      expect(both(def)).toEqual({ fresh: false, saved: true });
+    });
+
+    it('a computed layout that does not fit its width', () => {
+      const ins = Array.from({ length: 8 }, (_, i) => ({ id: `i${i}`, label: `I${i}`, kind: 'a' }));
+      const outs = Array.from({ length: 8 }, (_, i) => ({ id: `o${i}`, label: `O${i}`, kind: 'a' }));
+      const def = withDef({ hp: 1, knobs: [], sws: null, display: null, panel: null, ins, outs });
+      expect(both(def)).toEqual({ fresh: false, saved: true });
+    });
+
+    it('an authored fader too short to use', () => {
+      const def = withDef({
+        knobs: [knob({ id: 'lvl', fader: true })],
+        sws: null,
+        panel: { nodes: [{ id: 'fader:lvl', kind: 'fader', x: 0.1, y: 0.1, w: 0.2, h: 0.02 }] },
+      });
+      expect(both(def)).toEqual({ fresh: false, saved: true });
+    });
+
+    it('but still rejects saved work that breaks a rule it was always held to', () => {
+      const dupKnobs = withDef({ knobs: [knob({ id: 'a' }), knob({ id: 'a' })], panel: null });
+      expect(both(dupKnobs)).toEqual({ fresh: false, saved: false });
+      const inverted = withDef({ knobs: [knob({ min: 1, max: 0 })], panel: null });
+      expect(both(inverted)).toEqual({ fresh: false, saved: false });
+    });
+  });
+
   it('rejects a non-object', () => expect(errorOf(null)).toMatch(/must be an object/));
   it('rejects an unknown cat', () => expect(errorOf(withDef({ cat: 'BLEEP' }))).toMatch(/def.cat/));
   it('accepts hp up to the narrowest row and rejects wider', () => {

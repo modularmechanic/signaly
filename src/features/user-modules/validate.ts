@@ -14,7 +14,7 @@ import { CAT_ORDER } from '../../core/types';
 import { DISPLAY_CONTRACT } from '../../modules/display-contract';
 import { checkDef } from './check-def';
 import type { UserDef } from './schema';
-import { bad, bool, list, num, obj, opt, pick, str } from './validate-primitives';
+import { bool, list, num, obj, opt, pick, str } from './validate-primitives';
 
 const SLUG = /^[a-z0-9-]{3,32}$/;
 export const FMT_NAMES: readonly string[] = [
@@ -56,9 +56,11 @@ function knobs(v: unknown): KnobDef[] {
   return list(v, 'knobs', 16).map((raw, i): KnobDef => {
     const at = `knobs[${i}]`;
     const o = obj(raw, at);
-    // fmt is a unit and a quantisation, not a decoration — see FMT_RANGE in core/types.
-    const fmt = opt(o.fmt);
-    if (fmt === undefined) bad(`${at}.fmt is required — say which unit the knob is in`);
+    // fmt is a unit and a quantisation, not a decoration — see FMT_RANGE in core/types. User modules
+    // saved or exported before it was required have knobs without one, and the formatter always
+    // showed those as f1, so read them that way: rejecting them would lose people's saved modules.
+    // New definitions are still told to supply one; this is lenient reading, not a lenient rule.
+    const fmt = opt(o.fmt) ?? 'f1';
     const k: KnobDef = {
       id: str(o.id, `${at}.id`, 24),
       label: str(o.label, `${at}.label`, 16),
@@ -143,13 +145,16 @@ function parse(o: unknown): UserDef {
 }
 
 /** First failure wins, with a message the builder chat can show verbatim. */
-export function validateUserDef(o: unknown): { ok: true; def: UserDef } | { ok: false; error: string } {
+export function validateUserDef(
+  o: unknown,
+  saved = false,
+): { ok: true; def: UserDef } | { ok: false; error: string } {
   let def: UserDef;
   try {
     def = parse(o);
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'invalid module definition' };
   }
-  const error = checkDef(def);
+  const error = checkDef(def, saved);
   return error === null ? { ok: true, def } : { ok: false, error };
 }

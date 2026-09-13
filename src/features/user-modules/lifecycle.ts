@@ -15,8 +15,10 @@ import { fromRecord, processorNameFor, toRecord, userModuleId, type UserModule }
 
 export type Result = { ok: true; id: string } | { ok: false; error: string };
 
-/** Validation is step one of every way in, and the stored record shape is the only door. */
-const parse = (um: UserModule): UserModule | { error: string } => fromRecord(toRecord(um));
+/** Validation is step one of every way in, and the stored record shape is the only door.
+    `saved` relaxes the rules added since a module was written — see checkDef. */
+const parse = (um: UserModule, saved = false): UserModule | { error: string } =>
+  fromRecord(toRecord(um), saved);
 
 const fail = (error: string): Result => ({ ok: false, error });
 
@@ -60,9 +62,11 @@ export async function check(um: UserModule): Promise<string | null> {
   return verifyDsp(built.code, built.name, v.def);
 }
 
-/** Load and register a draft without storing it — what the builder previews. */
+/** Load and register a draft without storing it — what the builder previews. Lenient, so a
+    module saved or exported under older rules still opens; it meets them all when installed.
+    The chat already holds a model's proposal to the full rules before it ever gets here. */
 export async function activate(um: UserModule): Promise<Result> {
-  const v = parse(um);
+  const v = parse(um, true);
   return 'error' in v ? fail(v.error) : bring(v, true);
 }
 
@@ -99,7 +103,7 @@ export function list(): UserModuleRecord[] {
 export async function restoreAll(): Promise<string[]> {
   const failed: string[] = [];
   for (const rec of listUserModules()) {
-    const um = fromRecord(rec);
+    const um = fromRecord(rec, true);
     if ('error' in um) {
       failed.push(rec.slug);
       continue;
