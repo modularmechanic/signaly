@@ -1,25 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Shimmer: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./shimmer.dsp');
-  Shimmer = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Single-frequency correlation energy (a one-bin DFT) over [start,end). */
 function toneEnergy(y: Float32Array, start: number, end: number, freq: number, sr: number): number {
@@ -34,8 +14,8 @@ function toneEnergy(y: Float32Array, start: number, end: number, freq: number, s
 }
 
 /** Run a 220 Hz burst through SHIMMER, return L for a run whose FEEDBACK is `fb`. */
-function run(fb: number): { L: Float32Array; burst: number } {
-  const s = new Shimmer();
+async function run(fb: number): Promise<{ L: Float32Array; burst: number }> {
+  const s = await loadProcessor('shimmer');
   s.p.fb = fb;
   s.p.mix = 1;
   s.p.window = 0.02;
@@ -50,8 +30,8 @@ function run(fb: number): { L: Float32Array; burst: number } {
 }
 
 describe('shimmer.dsp', () => {
-  it('passes fully dry input through unchanged', () => {
-    const s = new Shimmer();
+  it('passes fully dry input through unchanged', async () => {
+    const s = await loadProcessor('shimmer');
     s.p.mix = 0;
     s.p.fb = 0.9;
     const n = 512;
@@ -62,8 +42,8 @@ describe('shimmer.dsp', () => {
     expect(Array.from(O[0]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('sustains octave-shifted content after the burst ends, with nothing left once feedback is off', () => {
-    const { L, burst } = run(0.75);
+  it('sustains octave-shifted content after the burst ends, with nothing left once feedback is off', async () => {
+    const { L, burst } = await run(0.75);
     // clear of the 20ms window's own reach into the burst, and short of full decay
     const ts = burst + Math.round(SR * 0.03);
     const te = burst + Math.round(SR * 0.12);
@@ -72,7 +52,7 @@ describe('shimmer.dsp', () => {
       toneEnergy(L, ts, te, 440, SR) + toneEnergy(L, ts, te, 660, SR) + toneEnergy(L, ts, te, 880, SR);
     expect(upper).toBeGreaterThan(e220 * 2);
 
-    const off = run(0);
+    const off = await run(0);
     const e220Off = toneEnergy(off.L, ts, te, 220, SR);
     expect(e220Off).toBe(0);
   });

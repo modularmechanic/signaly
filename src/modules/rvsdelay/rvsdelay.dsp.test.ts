@@ -1,29 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Rvsdelay: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./rvsdelay.dsp');
-  Rvsdelay = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 describe('rvsdelay.dsp', () => {
-  it('passes fully dry input through unchanged at mix 0', () => {
-    const m = new Rvsdelay();
+  it('passes fully dry input through unchanged at mix 0', async () => {
+    const m = await loadProcessor('rvsdelay');
     m.p.mix = 0;
     const n = 512;
     const inp = new Float32Array(n);
@@ -33,7 +13,7 @@ describe('rvsdelay.dsp', () => {
     expect(Array.from(O[0]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('plays the second chunk back in reverse', () => {
+  it('plays the second chunk back in reverse', async () => {
     // matches the constructor's own initial chunk length, so the very first (silent) phase
     // and the TIME knob agree from sample 0 -- overriding TIME to something shorter would only
     // take effect at the next chunk boundary, well past this short test's window.
@@ -44,7 +24,7 @@ describe('rvsdelay.dsp', () => {
     const inp = new Float32Array(total);
     // a ramp from 0 up to ~4 across the first chunk only; the rest stays silent
     for (let i = 0; i < chunk; i++) inp[i] = (i / chunk) * 4;
-    const m = new Rvsdelay();
+    const m = await loadProcessor('rvsdelay');
     m.p.time = chunkSec;
     m.p.mix = 1;
     const O = [[new Float32Array(total)]];

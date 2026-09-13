@@ -1,27 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null, postMessage: (): void => {} };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Logic: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./logic.dsp');
-  Logic = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 /** [AND, OR, XOR, NOT A] in volts for a pair of held input voltages. */
-function row(av: number, bv: number, thr = 2.5): number[] {
-  const l = new Logic();
+async function row(av: number, bv: number, thr = 2.5): Promise<number[]> {
+  const l = await loadProcessor('logic');
   l.p.thr = thr;
   const n = 8;
   const O = [0, 1, 2, 3].map(() => [new Float32Array(n)]);
@@ -30,8 +12,8 @@ function row(av: number, bv: number, thr = 2.5): number[] {
 }
 
 describe('logic.dsp', () => {
-  it('produces the truth table from real gate voltages', () => {
-    expect([row(0, 0), row(0, 5), row(5, 0), row(5, 5)]).toEqual([
+  it('produces the truth table from real gate voltages', async () => {
+    expect([await row(0, 0), await row(0, 5), await row(5, 0), await row(5, 5)]).toEqual([
       [0, 0, 0, 5],
       [0, 5, 5, 5],
       [0, 5, 5, 0],
@@ -39,9 +21,9 @@ describe('logic.dsp', () => {
     ]);
   });
 
-  it('decides high and low at THRESHOLD, not at a fixed voltage', () => {
+  it('decides high and low at THRESHOLD, not at a fixed voltage', async () => {
     // the same 2 V input is high under a 1 V threshold and low under a 3 V one
-    expect([row(2, 0, 1), row(2, 0, 3)]).toEqual([
+    expect([await row(2, 0, 1), await row(2, 0, 3)]).toEqual([
       [0, 5, 5, 0],
       [0, 0, 0, 5],
     ]);

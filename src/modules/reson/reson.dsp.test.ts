@@ -1,26 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./reson.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` Hz within one block of `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -39,11 +18,10 @@ function mag(buf: Float32Array, f: number): number {
 const rms = (b: Float32Array): number => Math.sqrt(b.reduce((s, v) => s + v * v, 0) / b.length);
 
 describe('reson.dsp', () => {
-  it('rings at the tuned frequency and decays over DECAY', () => {
-    const r = new Ctor();
+  it('rings at the tuned frequency and decays over DECAY', async () => {
     const freq = 220;
     const dec = 0.25;
-    Object.assign(r.p, { freq, spread: 7, dec, cvA: 0, mix: 1 });
+    const r = await loadProcessor('reson', { freq, spread: 7, dec, cvA: 0, mix: 1 });
     const decSamples = Math.round(dec * SR);
     const n = decSamples * 4;
     const inp = new Float32Array(n); // no audio in: isolate the STRIKE-excited ring

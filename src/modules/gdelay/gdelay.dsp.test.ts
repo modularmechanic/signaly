@@ -1,29 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let GDelay: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./gdelay.dsp');
-  GDelay = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** RMS in the last 0.15s of a run whose input is a burst followed by silence. */
-function tailEnergy(fb: number): number {
-  const g = new GDelay();
+async function tailEnergy(fb: number): Promise<number> {
+  const g = await loadProcessor('gdelay');
   g.p.size = 0.05;
   g.p.dens = 20;
   g.p.spray = 0;
@@ -44,8 +24,8 @@ function tailEnergy(fb: number): number {
 }
 
 describe('gdelay.dsp', () => {
-  it('passes fully dry input through unchanged', () => {
-    const g = new GDelay();
+  it('passes fully dry input through unchanged', async () => {
+    const g = await loadProcessor('gdelay');
     g.p.mix = 0;
     g.p.fb = 0.9;
     g.p.dens = 20;
@@ -57,9 +37,9 @@ describe('gdelay.dsp', () => {
     expect(Array.from(O[0]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('feeds grain output back so echoes persist after the input stops', () => {
-    const withFb = tailEnergy(0.9);
-    const noFb = tailEnergy(0);
+  it('feeds grain output back so echoes persist after the input stops', async () => {
+    const withFb = await tailEnergy(0.9);
+    const noFb = await tailEnergy(0);
     expect(noFb).toBeLessThan(0.05);
     expect(withFb).toBeGreaterThan(noFb + 0.1);
   });

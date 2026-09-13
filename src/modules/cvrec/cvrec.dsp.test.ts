@@ -1,25 +1,8 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null, postMessage: (): void => {} };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let CvRec: new () => Proc;
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 const STEPS = 96; // 1 bar at 24 ppq
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./cvrec.dsp');
-  CvRec = reg.mock.calls[0]![1] as new () => Proc;
-});
 
 /** One clock pulse per call, sampling `value(step)` on IN; returns OUT read right after
     each edge (the sample the new step's held value first appears). */
@@ -38,8 +21,8 @@ function runClocks(c: Proc, steps: number, value: (step: number) => number): num
 }
 
 describe('cvrec.dsp', () => {
-  it('plays back what it recorded, one full bar looped', () => {
-    const c = new CvRec();
+  it('plays back what it recorded, one full bar looped', async () => {
+    const c = await loadProcessor('cvrec');
     c.p.bars = 1;
     c.p.rec = 1;
     // The value actually fed to IN at each step — not the DSP's own output, which during

@@ -1,31 +1,12 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Super: new () => Proc;
-
-const SR = 48000;
 const F = 100;
 const PERIOD = SR / F;
 
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./super.dsp');
-  Super = reg.mock.calls[0]![1] as new () => Proc;
-});
-
 /** How far the output strays from being periodic at exactly 100 Hz. */
-function aperiodicity(det: number): number {
-  const s = new Super();
+async function aperiodicity(det: number): Promise<number> {
+  const s = await loadProcessor('super');
   s.p.det = det;
   s.p.mix = 0.5;
   const n = 24000;
@@ -39,15 +20,15 @@ function aperiodicity(det: number): number {
 }
 
 describe('super.dsp', () => {
-  it('collapses to one frequency at detune 0 and widens as detune opens', () => {
-    const unison = aperiodicity(0);
-    const wide = aperiodicity(0.5);
+  it('collapses to one frequency at detune 0 and widens as detune opens', async () => {
+    const unison = await aperiodicity(0);
+    const wide = await aperiodicity(0.5);
     expect(unison).toBeLessThan(0.02);
     expect(wide).toBeGreaterThan(1);
   });
 
-  it('puts different content in L and R and stays inside +-5 V', () => {
-    const s = new Super();
+  it('puts different content in L and R and stays inside +-5 V', async () => {
+    const s = await loadProcessor('super');
     s.p.det = 0.6;
     const n = 4800;
     const O = [[new Float32Array(n)], [new Float32Array(n)]];

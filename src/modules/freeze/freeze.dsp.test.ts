@@ -1,31 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./freeze.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 describe('freeze.dsp', () => {
-  it('passes the dry signal through unchanged at MIX 0', () => {
-    const f = new Ctor();
-    Object.assign(f.p, { size: 200, pitch: 0, smooth: 0.3, mix: 0, mode: 0 });
+  it('passes the dry signal through unchanged at MIX 0', async () => {
+    const f = await loadProcessor('freeze', { size: 200, pitch: 0, smooth: 0.3, mix: 0, mode: 0 });
     const n = 512;
     const inp = new Float32Array(n);
     for (let i = 0; i < n; i++) inp[i] = 4.5 * Math.sin(i * 0.13);
@@ -40,7 +18,7 @@ describe('freeze.dsp', () => {
     expect(worst).toBe(0);
   });
 
-  it('after freezing, repeats with period SIZE and ignores further input', () => {
+  it('after freezing, repeats with period SIZE and ignores further input', async () => {
     const sizeMs = 40;
     const loopLen = Math.round((sizeMs / 1000) * SR);
     const preroll = loopLen * 3;
@@ -53,16 +31,15 @@ describe('freeze.dsp', () => {
     const inpB = inpA.slice();
     for (let i = preroll; i < n; i++) inpB[i] = Math.sin(i * 0.29) * 4; // different content post-freeze
 
-    function run(input: Float32Array): Float32Array {
-      const f = new Ctor();
-      Object.assign(f.p, { size: sizeMs, pitch: 0, smooth: 0, mix: 1, mode: 0 });
+    async function run(input: Float32Array): Promise<Float32Array> {
+      const f = await loadProcessor('freeze', { size: sizeMs, pitch: 0, smooth: 0, mix: 1, mode: 0 });
       const L = new Float32Array(n);
       const R = new Float32Array(n);
       f.process([[input], [gate], []], [[L], [R]]);
       return L;
     }
-    const outA = run(inpA);
-    const outB = run(inpB);
+    const outA = await run(inpA);
+    const outB = await run(inpB);
 
     // independent of further input: identical whichever post-freeze input was fed
     let indepWorst = 0;

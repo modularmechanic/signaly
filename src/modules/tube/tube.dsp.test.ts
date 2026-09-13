@@ -1,26 +1,6 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./tube.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` in `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -37,9 +17,16 @@ function mag(buf: Float32Array, f: number): number {
 }
 
 /** Run a 220 Hz, 5 V sine through the valve stage. */
-function run(params: Partial<Params>): Float32Array {
-  const t = new Ctor();
-  Object.assign(t.p, { drive: 3, bias: 0, sag: 0.3, tone: 6000, level: 0.8, type: 0, ...params });
+async function run(params: Params): Promise<Float32Array> {
+  const t = await loadProcessor('tube', {
+    drive: 3,
+    bias: 0,
+    sag: 0.3,
+    tone: 6000,
+    level: 0.8,
+    type: 0,
+    ...params,
+  });
   const n = 4800;
   const inp = new Float32Array(n);
   for (let i = 0; i < n; i++) inp[i] = 5 * Math.sin((2 * Math.PI * 220 * i) / SR);
@@ -63,21 +50,22 @@ function h23(buf: Float32Array): number {
 }
 
 describe('tube.dsp', () => {
-  it('stays near silent when LEVEL is near zero', () => {
-    const out = run({ level: 0.001, drive: 10 });
+  it('stays near silent when LEVEL is near zero', async () => {
+    const out = await run({ level: 0.001, drive: 10 });
     let peak = 0;
     for (const v of out) peak = Math.max(peak, Math.abs(v));
     expect(peak).toBeLessThan(0.05);
   });
 
-  it('gains second-harmonic content as DRIVE rises', () => {
-    const low = h2(run({ drive: 0.6 }));
-    const high = h2(run({ drive: 12 }));
+  it('gains second-harmonic content as DRIVE rises', async () => {
+    const low = h2(await run({ drive: 0.6 }));
+    const high = h2(await run({ drive: 12 }));
     expect(high).toBeGreaterThan(low * 1.5);
   });
 
-  it('gives each of the five tube types a distinct 2nd:3rd harmonic ratio', () => {
-    const ratios = [0, 1, 2, 3, 4].map((type) => h23(run({ drive: 6, type })));
+  it('gives each of the five tube types a distinct 2nd:3rd harmonic ratio', async () => {
+    const ratios: number[] = [];
+    for (const type of [0, 1, 2, 3, 4]) ratios.push(h23(await run({ drive: 6, type })));
     const sorted = [...ratios].sort((a, b) => a - b);
     for (let i = 1; i < sorted.length; i++) {
       expect(sorted[i]! - sorted[i - 1]!).toBeGreaterThan(0.02);

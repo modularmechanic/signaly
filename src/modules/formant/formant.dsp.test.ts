@@ -1,30 +1,10 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-type Ctor = new (o?: { processorOptions?: { p?: Params } }) => Proc;
-
-let Formant: Ctor;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./formant.dsp');
-  Formant = reg.mock.calls[0]![1] as Ctor;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 describe('formant.dsp', () => {
   // CONTEXT.md: audio swings +-5 V. Resonance near 1 makes the band-pass sum ring far past that.
-  it('never leaves the +-5 V audio range, even driven hard at full resonance', () => {
-    const f = new Formant({ processorOptions: { p: { vowel: 2, res: 1 } } });
+  it('never leaves the +-5 V audio range, even driven hard at full resonance', async () => {
+    const f = await loadProcessor('formant', { vowel: 2, res: 1 });
     const out = new Float32Array(128);
     let peak = 0;
     for (let b = 0; b < 200; b++) {

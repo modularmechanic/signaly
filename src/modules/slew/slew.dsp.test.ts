@@ -1,31 +1,12 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null, postMessage: (): void => {} };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Slew: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./slew.dsp');
-  Slew = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 const N = 5000;
 const STEP_DOWN = 2500;
 
 /** Both inputs step 0 -> 5 V at sample 0 and back to 0 V at STEP_DOWN. */
-function run(p: Record<string, number>): { o1: Float32Array; o2: Float32Array } {
-  const s = new Slew();
-  Object.assign(s.p, p);
+async function run(p: Record<string, number>): Promise<{ o1: Float32Array; o2: Float32Array }> {
+  const s = await loadProcessor('slew', p);
   const step = new Float32Array(N);
   for (let i = 0; i < STEP_DOWN; i++) step[i] = 5;
   const O = [[new Float32Array(N)], [new Float32Array(N)]];
@@ -44,8 +25,8 @@ const leave = (y: Float32Array): number => span(y, STEP_DOWN, (v) => v <= 0.01);
 
 // 5 V at 48 kHz: 10 ms rise = 480 samples, 20 ms = 960, 40 ms fall = 1920.
 describe('slew.dsp', () => {
-  it('takes RISE to reach the step and FALL to return, independently per channel', () => {
-    const { o1, o2 } = run({ r1: 0.01, f1: 0.04, r2: 0.02, f2: 0.01, link: 0 });
+  it('takes RISE to reach the step and FALL to return, independently per channel', async () => {
+    const { o1, o2 } = await run({ r1: 0.01, f1: 0.04, r2: 0.02, f2: 0.01, link: 0 });
     expect(arrive(o1)).toBeGreaterThan(470);
     expect(arrive(o1)).toBeLessThan(492);
     expect(leave(o1)).toBeGreaterThan(1900);
@@ -57,14 +38,14 @@ describe('slew.dsp', () => {
     expect(leave(o2)).toBeLessThan(492);
   });
 
-  it('drives both channels from channel 1 when LINK is on', () => {
-    const { o1, o2 } = run({ r1: 0.01, f1: 0.04, r2: 0.02, f2: 0.01, link: 1 });
+  it('drives both channels from channel 1 when LINK is on', async () => {
+    const { o1, o2 } = await run({ r1: 0.01, f1: 0.04, r2: 0.02, f2: 0.01, link: 1 });
     expect(arrive(o2)).toBe(arrive(o1));
     expect(leave(o2)).toBe(leave(o1));
   });
 
-  it('passes a slow signal through untouched', () => {
-    const { o1 } = run({ r1: 0.001, f1: 0.001, r2: 0.001, f2: 0.001, link: 0 });
+  it('passes a slow signal through untouched', async () => {
+    const { o1 } = await run({ r1: 0.001, f1: 0.001, r2: 0.001, f2: 0.001, link: 0 });
     expect(o1[2000]!).toBeCloseTo(5, 5);
     expect(o1[4999]!).toBeCloseTo(0, 5);
   });

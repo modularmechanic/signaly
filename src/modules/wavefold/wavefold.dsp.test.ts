@@ -1,26 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./wavefold.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` in `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -37,9 +16,8 @@ function mag(buf: Float32Array, f: number): number {
 }
 
 /** Run a 500 Hz, 5 V sine through the folder at `fold`. */
-function fold(f: number): Float32Array {
-  const w = new Ctor();
-  Object.assign(w.p, { fold: f, sym: 0, level: 0.8, mix: 1 });
+async function fold(f: number): Promise<Float32Array> {
+  const w = await loadProcessor('wavefold', { fold: f, sym: 0, level: 0.8, mix: 1 });
   const n = 4800;
   const inp = new Float32Array(n);
   for (let i = 0; i < n; i++) inp[i] = 5 * Math.sin((2 * Math.PI * 500 * i) / SR);
@@ -60,9 +38,8 @@ function harmonics(b: Float32Array): number {
 }
 
 describe('wavefold.dsp', () => {
-  it('passes the dry signal through untouched at MIX 0', () => {
-    const w = new Ctor();
-    Object.assign(w.p, { fold: 9, sym: 0.7, level: 1.2, mix: 0 });
+  it('passes the dry signal through untouched at MIX 0', async () => {
+    const w = await loadProcessor('wavefold', { fold: 9, sym: 0.7, level: 1.2, mix: 0 });
     const n = 256;
     const inp = new Float32Array(n);
     for (let i = 0; i < n; i++) inp[i] = 5 * Math.sin(i * 0.11);
@@ -73,10 +50,10 @@ describe('wavefold.dsp', () => {
     expect(worst).toBe(0);
   });
 
-  it('gains harmonics as FOLD rises while the peak stays bounded', () => {
-    const low = fold(1);
-    const mid = fold(3);
-    const high = fold(8);
+  it('gains harmonics as FOLD rises while the peak stays bounded', async () => {
+    const low = await fold(1);
+    const mid = await fold(3);
+    const high = await fold(8);
     expect(harmonics(low)).toBeLessThan(harmonics(mid));
     expect(harmonics(mid)).toBeLessThan(harmonics(high));
     expect(harmonics(low)).toBeLessThan(0.01);
@@ -87,9 +64,8 @@ describe('wavefold.dsp', () => {
     expect(peak(high)).toBeLessThan(peak(low) * 1.05);
   });
 
-  it('folds rather than clips: a rising ramp turns back on itself', () => {
-    const w = new Ctor();
-    Object.assign(w.p, { fold: 6, sym: 0, level: 1, mix: 1 });
+  it('folds rather than clips: a rising ramp turns back on itself', async () => {
+    const w = await loadProcessor('wavefold', { fold: 6, sym: 0, level: 1, mix: 1 });
     const n = 2048;
     const inp = new Float32Array(n);
     for (let i = 0; i < n; i++) inp[i] = (i / (n - 1)) * 5;

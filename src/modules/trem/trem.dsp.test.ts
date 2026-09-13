@@ -1,29 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Trem: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./trem.dsp');
-  Trem = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Fraction of samples pinned near a gain extreme (0 or full) for a given SHAPE index. */
-function extremeFraction(shapeIdx: number): number {
-  const t = new Trem();
+async function extremeFraction(shapeIdx: number): Promise<number> {
+  const t = await loadProcessor('trem');
   t.p.depth = 1;
   t.p.rate = 4;
   t.p.shape = shapeIdx;
@@ -41,8 +21,8 @@ function extremeFraction(shapeIdx: number): number {
 }
 
 describe('trem.dsp', () => {
-  it('passes fully dry input through unchanged at depth 0', () => {
-    const t = new Trem();
+  it('passes fully dry input through unchanged at depth 0', async () => {
+    const t = await loadProcessor('trem');
     t.p.depth = 0;
     const n = 512;
     const inp = new Float32Array(n);
@@ -53,8 +33,8 @@ describe('trem.dsp', () => {
     expect(Array.from(O[1]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('auto-pans complementary gains and switches LFO shape', () => {
-    const t = new Trem();
+  it('auto-pans complementary gains and switches LFO shape', async () => {
+    const t = await loadProcessor('trem');
     t.p.depth = 1;
     t.p.rate = 4;
     t.p.shape = 0;
@@ -68,8 +48,8 @@ describe('trem.dsp', () => {
 
     // a square LFO spends nearly all its time at the gain extremes; a sine spends much of it
     // in between -- so the extreme-time fraction discriminates the SHAPE switch.
-    const sq = extremeFraction(2);
-    const sine = extremeFraction(0);
+    const sq = await extremeFraction(2);
+    const sine = await extremeFraction(0);
     expect(sq).toBeGreaterThan(sine + 0.3);
   });
 });

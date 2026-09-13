@@ -1,29 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Lofi: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./lofi.dsp');
-  Lofi = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** RMS of the second half of an 8 kHz tone at the given BANDWIDTH. */
-function hfEnergy(bw: number): number {
-  const m = new Lofi();
+async function hfEnergy(bw: number): Promise<number> {
+  const m = await loadProcessor('lofi');
   m.p.bw = bw;
   m.p.wow = 0;
   m.p.hiss = 0;
@@ -41,8 +21,8 @@ function hfEnergy(bw: number): number {
 }
 
 /** RMS of the whole output for silent input at the given HISS. */
-function noiseFloor(hiss: number): number {
-  const m = new Lofi();
+async function noiseFloor(hiss: number): Promise<number> {
+  const m = await loadProcessor('lofi');
   m.p.hiss = hiss;
   m.p.wow = 0;
   m.p.crackle = 0;
@@ -59,8 +39,8 @@ function noiseFloor(hiss: number): number {
 }
 
 describe('lofi.dsp', () => {
-  it('passes fully dry input through unchanged at mix 0', () => {
-    const m = new Lofi();
+  it('passes fully dry input through unchanged at mix 0', async () => {
+    const m = await loadProcessor('lofi');
     m.p.mix = 0;
     m.p.hiss = 1;
     m.p.wow = 1;
@@ -72,8 +52,8 @@ describe('lofi.dsp', () => {
     expect(Array.from(O[0]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('narrows bandwidth and adds a hiss noise floor', () => {
-    expect(hfEnergy(18000)).toBeGreaterThan(hfEnergy(400) * 2);
-    expect(noiseFloor(0.8)).toBeGreaterThan(noiseFloor(0) + 0.1);
+  it('narrows bandwidth and adds a hiss noise floor', async () => {
+    expect(await hfEnergy(18000)).toBeGreaterThan((await hfEnergy(400)) * 2);
+    expect(await noiseFloor(0.8)).toBeGreaterThan((await noiseFloor(0)) + 0.1);
   });
 });

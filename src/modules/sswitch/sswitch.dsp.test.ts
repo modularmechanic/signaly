@@ -1,25 +1,8 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-type Ctor = new (o?: { processorOptions?: { p?: Record<string, number> } }) => Proc;
-
-let SSwitch: Ctor;
 const N = 64;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./sswitch.dsp');
-  SSwitch = reg.mock.calls[0]![1] as Ctor;
-});
 
 const buf = (v = 0): Float32Array => new Float32Array(N).fill(v);
 
@@ -31,8 +14,8 @@ function tick(s: Proc, clk: Float32Array, rst: Float32Array, ins: Float32Array[]
 }
 
 describe('sswitch.dsp', () => {
-  it('walks IN 1 across the outputs and resets to the first', () => {
-    const s = new SSwitch({ processorOptions: { p: { steps: 4, dir: 0 } } });
+  it('walks IN 1 across the outputs and resets to the first', async () => {
+    const s = await loadProcessor('sswitch', { steps: 4, dir: 0 });
     const hi = buf(5);
     const lo = buf();
     const sig = buf(3);
@@ -54,8 +37,8 @@ describe('sswitch.dsp', () => {
     expect(tick(s, lo, hi, ins)).toEqual([3, 0, 0, 0]);
   });
 
-  it('honours STEPS, wrapping early at 2', () => {
-    const s = new SSwitch({ processorOptions: { p: { steps: 2, dir: 0 } } });
+  it('honours STEPS, wrapping early at 2', async () => {
+    const s = await loadProcessor('sswitch', { steps: 2, dir: 0 });
     const hi = buf(5);
     const lo = buf();
     const ins = [buf(4), buf(), buf(), buf()];
@@ -71,8 +54,8 @@ describe('sswitch.dsp', () => {
     ]);
   });
 
-  it('collects IN 1–4 into OUT 1 in the 4→1 direction', () => {
-    const s = new SSwitch({ processorOptions: { p: { steps: 4, dir: 1 } } });
+  it('collects IN 1–4 into OUT 1 in the 4→1 direction', async () => {
+    const s = await loadProcessor('sswitch', { steps: 4, dir: 1 });
     const hi = buf(5);
     const lo = buf();
     const ins = [buf(1), buf(2), buf(3), buf(4)];

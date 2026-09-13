@@ -1,30 +1,11 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Grain: new () => Proc;
-
-const SR = 48000;
 const N = SR * 3;
 
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./grain.dsp');
-  Grain = reg.mock.calls[0]![1] as new () => Proc;
-});
-
 /** Gaps between grain onsets, in samples, once the capture buffer has filled. */
-function onsetGaps(spray: number): number[] {
-  const g = new Grain();
+async function onsetGaps(spray: number): Promise<number[]> {
+  const g = await loadProcessor('grain');
   g.p.size = 0.02;
   g.p.dens = 5;
   g.p.spray = spray;
@@ -48,9 +29,9 @@ function onsetGaps(spray: number): number[] {
 const spread = (g: number[]): number => Math.max(...g) - Math.min(...g);
 
 describe('grain.dsp', () => {
-  it('schedules periodic onsets at spray 0 and scatters them as spray opens', () => {
-    const tight = onsetGaps(0);
-    const loose = onsetGaps(0.9);
+  it('schedules periodic onsets at spray 0 and scatters them as spray opens', async () => {
+    const tight = await onsetGaps(0);
+    const loose = await onsetGaps(0.9);
     expect(tight.length).toBeGreaterThan(8);
     expect(loose.length).toBeGreaterThan(5);
     // 5 Hz -> one grain every 9600 samples, to the sample, until spray jitters it
@@ -58,8 +39,8 @@ describe('grain.dsp', () => {
     expect(spread(loose)).toBeGreaterThan(1000);
   });
 
-  it('windows each grain and stays inside +-5 V', () => {
-    const g = new Grain();
+  it('windows each grain and stays inside +-5 V', async () => {
+    const g = await loadProcessor('grain');
     g.p.size = 0.02;
     g.p.dens = 5;
     g.p.mix = 1;
