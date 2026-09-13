@@ -66,7 +66,7 @@
   `features/user-modules/dsp-verify.ts` at test time, so shipped modules and AI-generated User
   Modules clear the same number rather than two that drift. A module that legitimately needs a
   different bound is a discussion, not a threshold to lower, and the sweep carries no skip list.
-  A `.dsp.test.ts` is for what a module *means* — tuning, timing, pattern — never for "it isn't
+  A `.dsp.test.ts` is for what a module _means_ — tuning, timing, pattern — never for "it isn't
   NaN"; the sweep already covers that for all of them.
 - Engine tests that need an `AudioContext` fake it with `vi.mock('../engine/audio-context', …)`
   rather than touching a real Web Audio API in jsdom.

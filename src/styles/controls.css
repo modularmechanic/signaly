@@ -6,8 +6,9 @@
    from this list is reaching inside another file rather than using a published input.
 
    Rack geometry — src/main.tsx publishes these on :root at boot from modules/panel-layout.ts:
-     --u          the rack unit: --hp / 26. Every hardware dimension below is a multiple of it,
-                  so setting --hp alone rescales the whole rack with its ratios intact.
+     --u          the rack unit: --hp / 26. Every hardware dimension below is a multiple of it.
+                  --hp is fixed at boot, so --u is a unit, not a zoom: the rack zooms with CSS
+                  `zoom` on .rack (ADR-0005). Do not rescale by changing --hp.
      --hp         one HP.                   --panel-h    faceplate height (658u).
      --jack-d     socket diameter (37u), the width panel-layout packs jack columns to.
      --fader-w    fader slot width (20u).   --fader-pad  its padding either side (7u).

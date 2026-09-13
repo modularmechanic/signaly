@@ -29,7 +29,7 @@ than one.
 _Avoid_: select, focus (a Jack can be focused without being armed, and usually is)
 
 **Jack Interaction**:
-Everything the user does *to* Jacks and Cables — arming, dragging, unpatching — as distinct from
+Everything the user does _to_ Jacks and Cables — arming, dragging, unpatching — as distinct from
 **Patch**, which is the saved arrangement they end up with. The distinction is load-bearing: the two
 words sound alike and mean unrelated things.
 

@@ -82,10 +82,11 @@ closed in an agent session. Each item says what to do and who has to do it.
       Settings and list models if a key is available, import a user-module JSON, confirm DIST is in the
       browser list. On the second visit check the Network tab: the `react-*.js` chunk must come from
       cache. Do not debug a 404 in the first five minutes — Pages takes a while to propagate.
-- [ ] **Tag `v0.2.0` and publish the release (phase 06 step 8).** *User.* `package.json` is already at `0.2.0`. The changelog entry is already
-      written as `## [0.2.0] — 2026-09-03`. Publishing the GitHub release for that tag is what triggers
-      `release.yml` and puts the site live, so the live smoke test above happens after this step, not
-      before it.
+- [x] **Tag and publish the first release (phase 06 step 8).** *Superseded — re-checked 2026-09-13.*
+      The `v0.2.0` plan was not what shipped: versioning restarted at `0.0.x`, and releases
+      `v0.0.1` through `v0.0.8` have been tagged and published, with `package.json` at `0.0.8`.
+      Publishing a GitHub release is still what triggers `release.yml` and puts the site live, so the
+      live smoke test above follows a release, not the other way round.
 - [x] **CI status badge in the README.** *Done 2026-09-03.* Badge and the live URL are under the
       README title now that the remote is real.
 - [ ] **License and provenance (H2).** *User decision.* MIT shipped as the plan's default

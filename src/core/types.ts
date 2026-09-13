@@ -20,17 +20,7 @@ export type Cat =
   | 'CUSTOM';
 
 export type FmtName =
-  | 'fHz'
-  | 'fMs'
-  | 'fMsec'
-  | 'fPc'
-  | 'f1'
-  | 'fSemi'
-  | 'fInt'
-  | 'fKey'
-  | 'fChord'
-  | 'fShape'
-  | 'fRate';
+  'fHz' | 'fMs' | 'fMsec' | 'fPc' | 'f1' | 'fSemi' | 'fInt' | 'fKey' | 'fChord' | 'fShape' | 'fRate';
 
 export type Display = 'scope' | 'meter' | 'steps' | 'env' | 'piano' | 'text';
 
@@ -136,7 +126,8 @@ export interface ModuleDef {
   screen?: boolean;
   /** ids lit by a `{ t: 'led', id, v }` worklet feed; laid out as `led:<id>` panel nodes */
   leds?: string[];
-  /** optional authored geometry (user modules); built-ins use the computed layout */
+  /** authored geometry, an exception to the computed layout (ADR-0001): user modules, and the
+      rare built-in whose controls the layout cannot place, currently MIX 8 and TUBE */
   panel?: PanelLayout;
   /** visual identity; falls back to CAT_KIT[cat]. See src/core/look.ts. */
   look?: Kit;

@@ -1,37 +1,39 @@
-# The rack scales by `--hp`, but type and pointer targets do not
+# The rack zooms with CSS zoom, and `--u` is a unit rather than a zoom
 
-Panel geometry was already normalised — `layoutPanel` emits 0..1 fractions and `--hp` / `--panel-h`
-are published on `:root` from TypeScript at boot. The hardware art was not: around 211 literal pixel
-values across the stylesheets drew a 37px jack, a 46px knob, an 11px screw and a 19px fader cap at
-one fixed size, so the rack was half-scalable and looked it. The art now derives from
-`--u: calc(var(--hp) / HP_PX)`, which makes `--hp` the single number the whole instrument scales by:
-setting it is the entire zoom feature, and the layout memo does not even need dropping, because
-`layoutPanel` computes against base units and caches fractions that are the same at any scale.
+The hardware art used to be drawn at fixed pixel sizes — a 37px jack, a 46px knob, an 11px screw, a
+19px fader cap — scattered across the stylesheets as literals. It now derives from
+`--u: calc(var(--hp) / HP_PX)`, published once from `main.tsx`, so every piece of hardware scales
+from one number and no stylesheet restates a size that TypeScript also knows.
 
-Three things deliberately stay in pixels. The `>=44px` invisible pointer targets are an accessibility
-floor rather than art — they must not shrink when someone zooms out, and when the rack grows the
-control's own box has already overtaken them. One-pixel hairlines and the jack's 2px/4px ring widths
-carry Signal Kind as line-style, which is the redundancy channel that makes the palette work for
-colour-blind users; a scaled hairline stops reading as a line. And type stays fixed, which is why the
-pixel corrections inside container-query expressions stay pixels too: they offset a gap that is also
-fixed, and half-converting the pair would be worse than converting neither.
+That unit was first designed as the zoom itself: set `--hp` and the whole instrument would resize.
+It is not the zoom, because the rack already had one. `.rack` zooms with CSS `zoom: var(--rack-zoom)`
+over a range of 0.2 to 1000, driven by pinch, ctrl+wheel, the zoom dock and a remembered level, and
+the zoom-aware cable geometry and the rect correction under CSS zoom are both built on it. CSS zoom
+also has a property `--hp` scaling could never have: container queries still measure unzoomed widths,
+so the panel breakpoints — two screws on a narrow panel, the type steps — keep meaning what they say
+at every zoom level. Scaling by `--hp` would have re-targeted all four of them the moment the user
+zoomed.
 
-`PANEL_H` is untouched, so the 5.08 : 128.5 Eurorack ratio survives and panel height follows `--hp`
-rather than pinning the rack half-scaled. Making panel height track the viewport instead was rejected:
-`PanelNode` fractions assume a fixed aspect, so it would distort every panel rather than resize it.
+So there is exactly one scaling mechanism. `--hp` is set at boot and never changes at runtime, which
+makes `--u` always one pixel. It stays as a unit anyway, because the base size of the hardware is
+still a real design parameter and the unit is what lets it change in one place.
+
+Three things are deliberately not expressed in `--u`. The `>=44px` invisible pointer targets are an
+accessibility floor rather than art. One-pixel hairlines and the jack's 2px/4px ring widths carry
+Signal Kind as line style, the redundancy channel that makes the palette work for colour-blind users,
+and a scaled hairline stops reading as a line. And type stays fixed, which is why the pixel
+corrections inside container-query expressions stay pixels too: they offset a gap that is also fixed.
 
 ## Consequences
 
-A `@container` condition cannot read a custom property, so the four panel-width breakpoints — the
-two-screw rule and the three type steps — are the one thing `--hp` does not carry. At a non-default
-`--hp` a 4 HP panel keeps four screws. The escape is a style query on the HP count, which would also
-make that rule say "4 HP" literally instead of arriving there by arithmetic; until zoom actually
-ships, the breakpoints are correct at the shipping scale and the divergence is invisible.
+Under CSS zoom, `getBoundingClientRect` reports zoomed rectangles while layout works in unzoomed
+ones. Anything that turns a pointer position or an element's rect into rack coordinates has to
+correct for that, and `cable-overlay.ts` is where that correction lives. New code that measures
+elements inside the rack should go through it rather than measuring again.
 
-Because type does not scale, a large `--hp` reads small-lettered, and the layout's legend-width
-estimates become conservative rather than wrong. Making the layout re-decide at the new scale is a
-different change — feeding live HP pixels into `layoutPanel` — and should not be mistaken for a
-follow-up to this one.
+CSS zoom scales everything inside the rack, including the pointer targets that are kept out of `--u`.
+Those targets therefore shrink when the user zooms out; what that means for touch is recorded in
+ADR-0006.
 
-Anyone adding hardware art should reach for `--u`. Anyone adding a touch target, a hairline, or text
-should not, and the contract block at the top of `controls.css` says which is which.
+If the base hardware size ever needs to change, change `HP_PX` and the art follows. Do not reach for
+`--hp` to implement zoom a second time.

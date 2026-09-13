@@ -7,7 +7,7 @@ carrying enough information to draw a placeholder for a module the reader does n
 rejected.
 
 The first reason is that it smuggles in a feature the project deliberately excludes. The README lists
-public module sharing under *Deliberately absent*, and the moment a Patch carries executable DSP,
+public module sharing under _Deliberately absent_, and the moment a Patch carries executable DSP,
 importing a Patch means running a stranger's code. The Patch importer would inherit the whole
 User Module threat model — transpile, forbidden-global scan, offline verification — for a file format
 whose entire present job is to name modules and remember where the Cables went.

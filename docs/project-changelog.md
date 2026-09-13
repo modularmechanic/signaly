@@ -6,7 +6,81 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
-Nothing yet.
+A structural refactor ported onto master, plus the defects its stricter checks found.
+
+### Fixed
+
+- **The Signal Kind palette did not meet its own colour-vision budget.** The budget — protan and
+  deutan ≥ 20, tritan ≥ 15, CIE76 under Viénot/Brettel simulation — had been re-checked only for the
+  pair that once failed, and two pairs shipped below it: deutan 18.9 between gate and CV, tritan 11.0
+  between audio and gate. Gate moves from `#ff5fa0` to `#ef2fbf`, which clears every pair with cable
+  shading included (protan 28.4, deutan 26.5, tritan 16.8) at a similar brightness.
+  `src/styles/cvd-palette.test.ts` now measures all six pairs and fails naming the closest one.
+- **The focus ring vanished in forced-colors mode**, on every knob, fader, jack, switch and button.
+  The global `:focus-visible` indicator is a `box-shadow`, which that mode strips, and the project had
+  no forced-colors rules at all. An `outline` in system colours replaces it, and the controls whose
+  whole appearance is a gradient get a `CanvasText` border so they no longer flatten into blank
+  blocks.
+- **Saved patches silently lost their user modules after a reload.** Nothing registered stored user
+  modules at startup, so the module browser listed none of them and a patch naming one loaded without
+  that module and without every cable touching it. Stored user modules are now restored at boot, and
+  a patch naming a module that is genuinely not installed says which ones were skipped, cables
+  included.
+- FREEZE SIZE, GLITCH LENGTH and PITCH WINDOW store milliseconds but were formatted as seconds, so a
+  250 ms knob read "250.00 s". They use the new `fMsec` format; the DSPs and saved values are
+  unchanged.
+- A negative FREQ SHIFT read "-1000.0 Hz" where a positive one reads "1.00 kHz". `fHz` now picks its
+  unit by magnitude.
+- The mini-piano's black keys sat 4 px off their white-key boundary: the key width and the offset that
+  centres it were two separate numbers that had drifted apart. `--bk-w` is now the one owner and the
+  offset is half of it.
+- Screens left dead faceplate below them. The scope, envelope and piano screens had fixed pixel
+  heights that disagreed with the display band the panel layout gives them; the band is now the only
+  owner, and the recess and the canvas inside it fill it.
+- Jack columns were mis-packed on touch devices. Under `pointer: coarse` the socket grew from 37 px
+  to 46 px and the fader from 20 px to 26 px while the panel layout kept packing columns to the
+  un-grown widths. The art growth is gone; the ≥ 44 px pointer targets, which were the real touch
+  affordance, are unchanged. See `docs/adr/0006-touch-devices-get-bigger-targets-not-bigger-hardware.md`.
+- FIXED BANK built a template string for each of its eight bands on every sample — 384,000 strings a
+  second at 48 kHz on the audio thread. Band levels are now read once per block.
+
+### Changed
+
+- **One well-formedness checker for every module.** `features/user-modules/check-def.ts` holds the
+  rules, and `tests/module-contract-sweep.test.ts` runs it over all the built-ins, so a built-in and a
+  user module are held to the same contract. `validate.ts` stays in front of it as the parser for
+  untrusted input. A one-option switch is a valid push button, so the floor is one option.
+- **Params are seeded from the definition.** `seedParams` in `engine/node-factory.ts` builds a
+  processor's params in the rack and in the offline verify render alike, and `defaults()` is gone from
+  every DSP. `KnobDef.fmt` is required, `FMT_RANGE` bounds each format's range, and every attenuverter
+  is declared with `att()`.
+- **The display contract is code.** `src/modules/display-contract.ts` replaces the prose table in
+  `docs/system-architecture.md`; a def that declares a screen it can never fill is rejected, and a
+  screen whose feed is missing at runtime shows `NO <DISPLAY>` and the reason instead of drawing
+  nothing. The nine modules whose parts component draws the screen declare `screen: true`.
+- The user-module lifecycle is one module, `features/user-modules/lifecycle.ts`, loaded lazily at boot
+  and only when there are stored modules, so the DSP transpiler stays out of the main chunk.
+- Patching is `hooks/jack-registry.ts` and `hooks/jack-interaction.ts`; the screen-reader announcer
+  subscribes to what an interaction reports instead of diffing the rack.
+- Cable geometry, hit-testing, the rect correction under CSS zoom and the rule that a knob drag ending
+  over a cable does not remove it live in `ui/molecules/cable-overlay.ts`; the canvas only paints.
+- Canvas colours are read from the design tokens through `hooks/canvas-tokens.ts`, and every dialog
+  shares one `ui/molecules/modal-dialog.tsx` for Escape, focus trap and focus restore.
+- `modules/panel-layout.ts` owns the panel's pixel constants, and `main.tsx` publishes them as custom
+  properties with a `--u` unit that every hardware dimension is drawn from. Rack zoom stays CSS
+  `zoom`; `--u` is a unit, not a second zoom
+  (`docs/adr/0005-the-rack-zooms-with-css-zoom-and-u-is-a-unit.md`).
+- The four panel screws are one `.screws` element per panel instead of four.
+- `tests/module-catalog.test.ts` no longer holds a list of 101 ids: a module is registered by existing.
+- `tests/dsp-harness.ts` loads any DSP seeded exactly as the rack seeds it, and
+  `tests/dsp-smoke-sweep.test.ts` runs every DSP against the same NaN and range floor a user module
+  must clear.
+
+### Docs
+
+- `docs/adr/` 0003 restoring a stored user module does not re-verify its DSP, 0004 a patch references
+  its user modules and never carries them, 0005 the rack zooms with CSS zoom and `--u` is a unit, 0006
+  touch devices get bigger targets, not bigger hardware.
 
 ## [0.0.8] — 2026-09-04
 
