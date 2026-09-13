@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'euklid',
@@ -15,8 +15,8 @@ export const def: ModuleDef = {
     { id: 'rot', label: 'ROTATE', min: 0, max: 15, initial: 0, fmt: 'fInt' },
     { id: 'prob', label: 'PROB', min: 0, max: 1, initial: 1, fmt: 'fPc', cvIn: 'prob' },
     { id: 'chaos', label: 'CHAOS', min: 0, max: 1, initial: 0, fmt: 'fPc' },
-    { id: 'fillA', label: 'FILL CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fill' },
-    { id: 'probA', label: 'PROB CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'prob' },
+    att('fill', 'FILL CV'),
+    att('prob', 'PROB CV'),
   ],
   ins: [
     { id: 'clk', label: 'CLOCK', kind: 'g' },

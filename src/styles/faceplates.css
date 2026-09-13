@@ -111,13 +111,11 @@
   --bevel-lo: rgba(0, 0, 0, 0.22);
 }
 
-.module-panel[data-plate='alu'] .screw,
-.module-panel[data-plate='cream'] .screw,
-.module-panel[data-plate='white'] .screw {
-  background: radial-gradient(circle at 35% 30%, var(--metal-hi) 0, var(--metal) 46%, var(--edge) 100%);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+/* panel.css paints every screw as a layer of one `.screws` element; --head is its published input. */
+.module-panel[data-plate='alu'] .screws,
+.module-panel[data-plate='cream'] .screws,
+.module-panel[data-plate='white'] .screws {
+  --head: radial-gradient(circle at 35% 30%, var(--metal-hi) 0, var(--metal) 46%, var(--edge) 100%);
 }
 
 /* ---------- the ten materials ---------- */

@@ -14,6 +14,7 @@ import {
 import { clearImages } from '../../storage/image-store';
 import { Button } from '../atoms/button';
 import { Select } from '../atoms/select';
+import { ModalDialog } from '../molecules/modal-dialog';
 
 const mb = (n = 0): string => `${(n / 1_000_000).toFixed(1)} MB`;
 
@@ -98,99 +99,97 @@ export function SettingsDialog({ onClose }: { onClose: () => void }): ReactNode 
   const withKeys = PROVIDERS.filter((p) => getKeys()[p] !== undefined);
 
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal settings" role="dialog" aria-modal="true" aria-label="Settings">
-        <header className="modal-head">
-          <h2>Settings</h2>
-          <button type="button" className="modal-x" aria-label="Close settings" onClick={onClose}>
-            ×
-          </button>
-        </header>
+    <ModalDialog label="Settings" onClose={onClose}>
+      <header className="modal-head">
+        <h2>Settings</h2>
+        <button type="button" className="modal-x" aria-label="Close settings" onClick={onClose}>
+          ×
+        </button>
+      </header>
 
-        <section className="settings-block">
-          <h3>API keys</h3>
-          <p className="settings-hint">
-            Keys stay in this browser and are sent only to their provider. They are kept for this tab session
-            unless you choose to remember them.
-          </p>
-          <label className="settings-field">
-            <span>Remember keys in this browser</span>
-            <input
-              type="checkbox"
-              checked={rememberKeys}
-              onChange={(e) => {
-                setRememberKeys(e.target.checked);
-                onChanged();
+      <section className="settings-block">
+        <h3>API keys</h3>
+        <p className="settings-hint">
+          Keys stay in this browser and are sent only to their provider. They are kept for this tab session
+          unless you choose to remember them.
+        </p>
+        <label className="settings-field">
+          <span>Remember keys in this browser</span>
+          <input
+            type="checkbox"
+            checked={rememberKeys}
+            onChange={(e) => {
+              setRememberKeys(e.target.checked);
+              onChanged();
+            }}
+          />
+        </label>
+        {PROVIDERS.map((p) => (
+          <ProviderRow key={p} p={p} onChanged={onChanged} />
+        ))}
+        {withKeys.length > 0 && (
+          <Select
+            label="Active provider"
+            value={activeProvider() ?? withKeys[0] ?? ''}
+            options={withKeys}
+            onChange={(id) => {
+              setActiveProvider(id as Provider);
+              onChanged();
+            }}
+          />
+        )}
+      </section>
+
+      <section className="settings-block">
+        <h3>Rack</h3>
+        <label className="settings-field">
+          <span>Row width (HP)</span>
+          <input
+            type="number"
+            min={MIN_ROW_HP}
+            max={MAX_ROW_HP}
+            step={2}
+            value={rowWidthHp}
+            onChange={(e) => useSettingsStore.getState().setRowWidthHp(e.target.valueAsNumber)}
+          />
+        </label>
+        <label className="settings-field">
+          <span>Reduce motion</span>
+          <input
+            type="checkbox"
+            checked={reducedMotion}
+            onChange={(e) => useSettingsStore.getState().setReducedMotion(e.target.checked)}
+          />
+        </label>
+      </section>
+
+      <section className="settings-block">
+        <h3>Data</h3>
+        <p className="settings-hint">Storage used: {storage || 'unknown'}</p>
+        {confirming ? (
+          <>
+            <Button
+              onClick={() => {
+                clearKeys();
+                try {
+                  localStorage.clear();
+                } catch {
+                  /* storage disabled */
+                }
+                // Faceplate blobs live in IndexedDB; without this they outlive "permanently".
+                void clearImages()
+                  .catch(() => undefined)
+                  .finally(() => window.location.reload());
               }}
-            />
-          </label>
-          {PROVIDERS.map((p) => (
-            <ProviderRow key={p} p={p} onChanged={onChanged} />
-          ))}
-          {withKeys.length > 0 && (
-            <Select
-              label="Active provider"
-              value={activeProvider() ?? withKeys[0] ?? ''}
-              options={withKeys}
-              onChange={(id) => {
-                setActiveProvider(id as Provider);
-                onChanged();
-              }}
-            />
-          )}
-        </section>
-
-        <section className="settings-block">
-          <h3>Rack</h3>
-          <label className="settings-field">
-            <span>Row width (HP)</span>
-            <input
-              type="number"
-              min={MIN_ROW_HP}
-              max={MAX_ROW_HP}
-              step={2}
-              value={rowWidthHp}
-              onChange={(e) => useSettingsStore.getState().setRowWidthHp(e.target.valueAsNumber)}
-            />
-          </label>
-          <label className="settings-field">
-            <span>Reduce motion</span>
-            <input
-              type="checkbox"
-              checked={reducedMotion}
-              onChange={(e) => useSettingsStore.getState().setReducedMotion(e.target.checked)}
-            />
-          </label>
-        </section>
-
-        <section className="settings-block">
-          <h3>Data</h3>
-          <p className="settings-hint">Storage used: {storage || 'unknown'}</p>
-          {confirming ? (
-            <>
-              <Button
-                onClick={() => {
-                  clearKeys();
-                  try {
-                    localStorage.clear();
-                  } catch {
-                    /* storage disabled */
-                  }
-                  // Faceplate blobs live in IndexedDB; without this they outlive "permanently".
-                  void clearImages()
-                    .catch(() => undefined)
-                    .finally(() => window.location.reload());
-                }}
-              >
-                Delete everything, permanently
-              </Button>
-              <Button onClick={() => setConfirming(false)}>Cancel</Button>
-            </>
-          ) : (
-            <Button onClick={() => setConfirming(true)}>Clear all data…</Button>
-          )}
-        </section>
-      </div>
-    </div>
+            >
+              Delete everything, permanently
+            </Button>
+            <Button onClick={() => setConfirming(false)}>Cancel</Button>
+          </>
+        ) : (
+          <Button onClick={() => setConfirming(true)}>Clear all data…</Button>
+        )}
+      </section>
+    </ModalDialog>
   );
 }

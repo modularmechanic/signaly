@@ -1,4 +1,4 @@
-import { Base, ch, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 // One slope generator: envelope when free, slew limiter when SIGNAL is patched.
 class Func extends Base {
@@ -6,10 +6,6 @@ class Func extends Base {
   dir = 0;
   lt = 0;
   eoc = 0;
-
-  defaults(): Params {
-    return { rise: 0.05, fall: 0.4, cycle: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const tr = ch(I, 0),

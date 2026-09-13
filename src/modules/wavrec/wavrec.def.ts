@@ -8,7 +8,8 @@ export const def: ModuleDef = {
   cat: 'UTILITY',
   look: 'tape',
   worklet: 'wavrec',
-  display: 'text',
+  // wavrec.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
   knobs: [{ id: 'gain', label: 'REC LEVEL', min: 0, max: 2, initial: 1, fmt: 'fPc' }],
   sws: [{ id: 'rec', label: 'REC', options: ['REC'], initial: 0 }],
   // Straight through, so the recorder drops in ahead of MAIN OUT without changing the patch.

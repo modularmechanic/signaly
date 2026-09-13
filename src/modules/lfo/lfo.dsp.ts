@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 class LFO extends Base {
   ph = 0;
@@ -6,10 +6,6 @@ class LFO extends Base {
   lr = 0;
   lc = 0;
   led = 0;
-
-  defaults(): Params {
-    return { rate: 2 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const rc = ch(I, 0),

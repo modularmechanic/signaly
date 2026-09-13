@@ -1,4 +1,4 @@
-import { Base, TP, ch, clamp, flush, type Params } from '../../engine/dsp-prelude';
+import { Base, TP, ch, clamp, flush } from '../../engine/dsp-prelude';
 
 const METAL_RATIOS = [1, 1.342, 1.671, 1.907, 2.371, 2.689] as const;
 
@@ -17,10 +17,6 @@ class Drum2 extends Base {
   private sampleCaptured = 0;
   private samplePosition = 0;
   private sampleRemaining = 0;
-
-  defaults(): Params {
-    return { tone: 0.55, snap: 0.4, click: 0.35, length: 0.35, pitch: 0, resonance: 0.5, adsr: 0.4, mode: 0 };
-  }
 
   private noise(): number {
     let value = this.noiseState | 0;

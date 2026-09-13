@@ -1,14 +1,10 @@
-import { Base, ch, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 // stages: 0 attack · 1 decay/sustain · 3 release
 class ADSR extends Base {
   e = 0;
   st = 3;
   g = false;
-
-  defaults(): Params {
-    return { a: 0.01, d: 0.25, s: 0.6, r: 0.4 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const gt = ch(I, 0);

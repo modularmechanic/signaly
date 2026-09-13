@@ -19,12 +19,15 @@ vi.mock('../../engine/audio-context', () => ({
   resume: () => undefined,
 }));
 
-vi.mock('../../features/user-modules/runtime-registry', () => ({
-  registerUserModule: () =>
+vi.mock('../../features/user-modules/lifecycle', () => ({
+  activate: () =>
     new Promise((res: (r: { ok: true; id: string }) => void) => {
       h.finish.push(res);
     }),
-  unregisterUserModule: () => undefined,
+  install: () =>
+    new Promise((res: (r: { ok: true; id: string }) => void) => {
+      h.finish.push(res);
+    }),
 }));
 
 vi.mock('../organisms/dsp-code-panel', () => ({ DspCodePanel: () => null }));

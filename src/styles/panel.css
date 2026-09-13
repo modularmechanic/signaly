@@ -2,7 +2,7 @@
    nodes, silkscreen and the display primitives. Category is a thin accent only —
    `--cat` (a CAT_COLOR hex) and `--hp-count` are set on `.module-panel`. */
 
-/* Rails: two 17px brushed strips top and bottom of every row. Sized to its own content
+/* Rails: two 17u brushed strips top and bottom of every row. Sized to its own content
    (not the viewport) so the rail background still spans every module once the row's
    scroll wrapper (.rack-row-scroll, rack.css) lets it grow past the visible width; the
    min-width floor keeps a short row filling the available width, same as before. */
@@ -12,17 +12,17 @@
   width: max-content;
   min-width: 100%;
   gap: 2px;
-  padding: 17px 0;
+  padding: calc(17 * var(--u)) 0;
   background-image:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--rail) 55%, var(--metal-hi)) 0,
-      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) 16px,
-      var(--edge) 16px 17px,
-      transparent 17px calc(100% - 17px),
-      var(--edge) calc(100% - 17px) calc(100% - 16px),
-      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) calc(100% - 16px),
+      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) calc(16 * var(--u)),
+      var(--edge) calc(16 * var(--u)) calc(17 * var(--u)),
+      transparent calc(17 * var(--u)) calc(100% - 17 * var(--u)),
+      var(--edge) calc(100% - 17 * var(--u)) calc(100% - 16 * var(--u)),
+      color-mix(in srgb, var(--rail) 75%, var(--metal-hi)) calc(100% - 16 * var(--u)),
       color-mix(in srgb, var(--rail) 55%, var(--metal-hi)) 100%
     );
   background-repeat: repeat-x, no-repeat;
@@ -30,7 +30,7 @@
     0 0,
     0 0;
   background-size:
-    auto 16px,
+    auto calc(16 * var(--u)),
     100% 100%;
   content-visibility: auto;
   contain-intrinsic-size: auto var(--panel-h);
@@ -47,25 +47,55 @@
   border-radius: var(--r-sm);
   color: var(--text);
   background-color: var(--panel);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%);
   box-shadow:
+    var(--seam),
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     inset 0 0 0 1px rgba(255, 255, 255, 0.02),
-    0 6px 14px rgba(0, 0, 0, 0.6);
+    0 4px 10px rgba(0, 0, 0, 0.55);
   contain: layout paint;
   container-type: inline-size;
   --label-fs: clamp(10px, calc(var(--hp-count, 8) * 2px), 13px);
+  /* how the panel catches the room light; varied per position below */
+  --sheen: 0.04;
+  --sheen-a: 180deg;
+  /* bolted to a rail, not floating: a hard seam down the left edge and the shadow the
+     neighbouring panel casts onto it */
+  --seam:
+    inset 1px 0 0 var(--edge),
+    inset 7px 0 7px -7px rgba(0, 0, 0, 0.7);
 }
 
-/* matte grain speckle, tiled — kept off `background` so the inline faceplate
-   backgroundSize from useFaceplateImage cannot stretch it */
+/* Every paint layer the panel owns lives here, so `background-image` on .module-panel belongs
+   to the Faceplate alone: the inline url() from useFaceplateImage has nothing left to clobber.
+   Top-lit sheen over the matte grain speckle. */
 .module-panel::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: var(--grain);
-  background-size: 120px 120px;
+  background-image:
+    var(--grain),
+    linear-gradient(var(--sheen-a), rgb(255 255 255 / var(--sheen)), transparent 30%);
+  background-size:
+    120px 120px,
+    auto;
   pointer-events: none;
+}
+
+/* A rack is lit from one place, so panels across a row do not all catch it the same way.
+   A four-panel cycle, each step under a just-noticeable difference on black. */
+.rack-row > .module-panel:nth-child(4n + 2) {
+  --sheen: 0.055;
+  --sheen-a: 172deg;
+}
+
+.rack-row > .module-panel:nth-child(4n + 3) {
+  --sheen: 0.03;
+  --sheen-a: 188deg;
+}
+
+.rack-row > .module-panel:nth-child(4n) {
+  --sheen: 0.047;
+  --sheen-a: 194deg;
 }
 
 /* the one category-coloured thing in the header band: a hairline at y = 0.09 */
@@ -87,9 +117,10 @@
 .module-panel.selected {
   border-color: var(--cat, var(--cat-utility));
   box-shadow:
+    var(--seam),
     0 0 0 1px color-mix(in srgb, var(--cat, var(--cat-utility)) 40%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 6px 14px rgba(0, 0, 0, 0.6);
+    0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 .module-panel:focus-visible {
@@ -208,60 +239,51 @@
   max-height: 100%;
 }
 
-.knob-group {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
-  gap: 6px 3px;
-  justify-items: center;
-  padding: 3px;
-}
-
 /* ---------- screws + silkscreen ---------- */
-.screw {
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: radial-gradient(
+/* One element, four background positions: --socket paints over --head at each corner, so the
+   screw count is a background-image list and not a JSX decision. --screw-inset owns the
+   corner offset; --screw-d the head, half of which is the socket's radius. */
+.screws {
+  --screw-d: calc(11 * var(--u));
+  --screw-inset: calc(6 * var(--u));
+  --head: radial-gradient(
     circle at 35% 30%,
     color-mix(in srgb, var(--metal-hi) 92%, var(--pointer)) 0,
     color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 45%,
-    var(--panel) 100%
+    var(--edge) 100%
   );
-  box-shadow:
-    0 0 0 1px var(--edge),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --socket: var(--screw-socket);
+  position: absolute;
+  inset: 0;
+  background-image: var(--socket), var(--head), var(--socket), var(--head), var(--socket),
+    var(--head), var(--socket), var(--head);
+  background-repeat: no-repeat;
+  background-size: var(--screw-d) var(--screw-d);
+  background-position:
+    var(--screw-inset) var(--screw-inset),
+    var(--screw-inset) var(--screw-inset),
+    calc(100% - var(--screw-inset)) var(--screw-inset),
+    calc(100% - var(--screw-inset)) var(--screw-inset),
+    var(--screw-inset) calc(100% - var(--screw-inset)),
+    var(--screw-inset) calc(100% - var(--screw-inset)),
+    calc(100% - var(--screw-inset)) calc(100% - var(--screw-inset)),
+    calc(100% - var(--screw-inset)) calc(100% - var(--screw-inset));
   pointer-events: none;
 }
 
-/* hex socket, not a slot */
-.screw::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  background: var(--edge);
-  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
-}
-
-.screw.tl {
-  top: 6px;
-  left: 6px;
-}
-.screw.tr {
-  top: 6px;
-  right: 6px;
-}
-.screw.bl {
-  bottom: 6px;
-  left: 6px;
-}
-.screw.br {
-  bottom: 6px;
-  right: 6px;
+/* <= 4 HP (104px at --hp 26px): two screws on a diagonal, as the real hardware carries.
+   Four 11u heads at a 6u inset leave 18u of clear rail on a 2 HP (52u) faceplate. The
+   breakpoint is the one panel dimension that cannot follow --u: a @container condition is
+   evaluated outside the cascade and may not read a custom property. */
+@container (max-width: 111px) {
+  .screws {
+    background-image: var(--socket), var(--head), var(--socket), var(--head);
+    background-position:
+      var(--screw-inset) var(--screw-inset),
+      var(--screw-inset) var(--screw-inset),
+      calc(100% - var(--screw-inset)) calc(100% - var(--screw-inset)),
+      calc(100% - var(--screw-inset)) calc(100% - var(--screw-inset));
+  }
 }
 
 .panel-label {
@@ -281,13 +303,6 @@
   color: var(--text-dim);
   font-size: 10px;
   letter-spacing: 0.2em;
-}
-
-.panel-label.unit {
-  color: var(--amber);
-  font: 500 11.5px/1.1 var(--font-mono);
-  letter-spacing: 0.04em;
-  text-transform: none;
 }
 
 /* ---------- display recess: one recipe for every screen ---------- */
@@ -312,14 +327,17 @@
   padding: 4px;
 }
 
+/* Screen height is owned by the display band alone: .panel-node sets the band, the recess
+   fills it, the canvas fills the recess. No fixed pixel height anywhere on the way down. */
 .scope-screen canvas {
   width: 100%;
-  height: 75px;
+  height: 100%;
 }
 
 .env-screen canvas {
   width: 100%;
-  height: 63px;
+  flex: 1;
+  min-height: 0;
 }
 
 .env-vals {
@@ -357,8 +375,8 @@
 }
 
 .led {
-  width: 10px;
-  height: 10px;
+  width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
   border-radius: 50%;
   background: radial-gradient(
     circle at 40% 35%,
@@ -381,10 +399,13 @@
 }
 
 /* ---------- step grid ---------- */
+/* Height comes from the display band like every other screen — auto rows stretch to fill it,
+   so the grid neither under-fills nor pins itself to a px the band disagrees with. */
 .step-grid {
   display: grid;
   gap: 4px;
   width: 100%;
+  height: 100%;
   padding: 4px;
 }
 
@@ -397,7 +418,7 @@
   position: relative;
   display: flex;
   align-items: flex-end;
-  width: 14px;
+  width: calc(14 * var(--u));
   height: 100%;
   min-height: 58px;
   overflow: hidden;
@@ -415,7 +436,7 @@
   display: flex;
   gap: 3px;
   width: 100%;
-  height: 81px;
+  height: 100%;
   overflow: hidden;
   padding-bottom: 3px;
 }
@@ -439,11 +460,15 @@
   );
 }
 
+/* --bk-w is the one owner of the key width: the offset centres the key on the white-key
+   boundary --bk (in sevenths) that mini-piano.tsx names, so the two cannot be rescaled apart. */
 .mpk.b {
+  --bk-w: calc(26 * var(--u));
   position: absolute;
   top: 0;
+  left: calc(var(--bk, 0) / 7 * 100% - var(--bk-w) / 2);
   z-index: 2;
-  width: 26px;
+  width: var(--bk-w);
   height: 62%;
   border: 1px solid var(--edge);
   border-top: 0;
@@ -477,11 +502,4 @@
 
 .mpk:focus-visible {
   box-shadow: var(--focus-ring);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .led,
-  .mpk {
-    transition: none;
-  }
 }

@@ -22,5 +22,6 @@ export const def: ModuleDef = {
     { id: 'voct', label: 'V/OCT', kind: 'p' },
   ],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
-  display: 'text',
+  // sampler.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

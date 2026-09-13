@@ -58,12 +58,11 @@ describe('dsp-prelude', () => {
     const seen = new Set<number>();
     const low = new Set<number>();
     let repeat = -1;
-    let min = Infinity;
-    let max = -Infinity;
+    // Range is checked by flag, not by expect(): 200k assertions cost ~5s and tripped the timeout.
+    let outOfRange = -1;
     for (let i = 0; i < 200000; i++) {
       const v = rng.next();
-      if (v < min) min = v;
-      if (v > max) max = v;
+      if (outOfRange < 0 && !(v >= -1 && v <= 1)) outOfRange = i;
       if (seen.has(rng.s)) {
         repeat = i;
         break;
@@ -71,10 +70,7 @@ describe('dsp-prelude', () => {
       seen.add(rng.s);
       low.add(rng.s & 15);
     }
-    // Range is asserted once over the extremes, not twice per draw: 400 000 expect() calls cost
-    // seconds and timed this test out on CI while passing locally.
-    expect(min).toBeGreaterThanOrEqual(-1);
-    expect(max).toBeLessThanOrEqual(1);
+    expect(outOfRange, 'Lcg produced a value outside -1..1').toBe(-1);
     expect(repeat).toBe(-1);
     expect(low.size).toBeGreaterThan(1);
   });

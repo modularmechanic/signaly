@@ -58,6 +58,13 @@
   --fp-white-dim: #4d545c;
   --fp-white-amber: #6b4a10;
 
+  /* The screw's hex socket, as a shape. A data URI cannot read a var(), so --edge is restated
+     inside it — the same trade --grain above already makes, and tokens.css is the one file a
+     literal may live in. panel.css sizes it with background-size, so it scales with --u like
+     the head it is painted over. The polygon is a hexagon of circumradius 1/4 of the box,
+     which is the radius the round socket it replaces had. */
+  --screw-socket: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,25 28.4,37.5 28.4,62.5 50,75 71.6,62.5 71.6,37.5' fill='%23050506'/></svg>");
+
   /* derived machined shades — the only other literals in the stylesheet set, so every
      other file can stay on var()/color-mix()/rgba() alone. */
   --edge: #050506;
@@ -86,24 +93,14 @@
   --led: #ffd166;
   --danger: #ff5d5d;
 
-  /* category accent hues — thin things only (header rule, knob ring, fader fill, LED,
-     lit switch). Must match CAT_COLOR in src/core/types.ts */
-  --cat-sources: #ff6a3d;
-  --cat-filters: #ffc247;
-  --cat-env-func: #4ade80;
-  --cat-amp-mix: #c8b48a;
-  --cat-fx: #a78bfa;
-  --cat-voices: #ff5c8a;
-  --cat-seq-ctrl: #5aa9ff;
-  --cat-drums: #ff9a3d;
-  --cat-meters: #2dd4bf;
-  --cat-output: #e5e7eb;
+  /* category accent fallbacks — the live tint arrives per module as an inline --cat from
+     CAT_COLOR; only these two are named by a stylesheet. */
   --cat-utility: #b0b6c0;
   --cat-custom: #e879f9;
 
-  /* geometry — must match HP_PX / PANEL_H in src/core/types.ts (5.08 : 128.5) */
-  --hp: 26px;
-  --panel-h: 658px;
+  /* Geometry is set on :root at boot from src/modules/panel-layout.ts — see src/main.tsx:
+     --u (the rack unit, --hp / 26), --hp, --panel-h, --jack-d, --fader-w, --fader-pad.
+     controls.css carries the full contract of what a control's CSS may read. */
 
   /* radii — sharper, machined */
   --r-sm: 2px;

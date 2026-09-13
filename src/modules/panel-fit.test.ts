@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PANEL_H, type PanelNode } from '../core/types';
-import { layoutPanel } from './panel-layout';
+import type { PanelNode } from '../core/types';
+import { layoutPanel, PANEL_H } from './panel-layout';
 import { allSpecs } from './registry';
 
 /**

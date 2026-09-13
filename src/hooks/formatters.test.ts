@@ -10,6 +10,19 @@ describe('formatters', () => {
     expect(FMT.fMs(0.25)).toBe('250 ms');
   });
 
+  it('reads fMsec as milliseconds, which fMs does not', () => {
+    // freeze/glitch/pitch store ms; under fMs their 250 ms default displayed as "250.00 s".
+    expect(FMT.fMsec(250)).toBe('250 ms');
+    expect(FMT.fMsec(1500)).toBe('1.50 s');
+    expect(FMT.fMs(250)).toBe('250.00 s');
+  });
+
+  it('formats a negative frequency by magnitude, symmetric with a positive one', () => {
+    expect(FMT.fHz(-1000)).toBe('-1.00 kHz');
+    expect(FMT.fHz(-440)).toBe('-440 Hz');
+    expect(FMT.fHz(-4.5)).toBe('-4.5 Hz');
+  });
+
   it('clamps and wraps table lookups instead of returning undefined', () => {
     expect(FMT.fKey(-1)).toBe('B');
     expect(FMT.fKey(12)).toBe('C');

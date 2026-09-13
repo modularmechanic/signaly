@@ -1,11 +1,7 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 class Dist extends Base {
   lp = 0;
-
-  defaults(): Params {
-    return { drive: 3, tone: 5000, mode: 0, level: 0.8 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

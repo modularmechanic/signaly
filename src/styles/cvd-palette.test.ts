@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { SHADE_MIN } from '../ui/molecules/cable-overlay';
 
 // The four Signal Kind colours must stay apart for dichromatic viewers, not just for trichromats.
-// The budget was recorded in plans/open-questions.md and then drifted below it unnoticed: the
-// Blackline rework re-checked only the pair that had failed and recorded the whole palette as
-// passing, while gate sat at deutan 18.9 and tritan 11.0 against thresholds of 20 and 15.
+// This budget was recorded in plans/open-questions.md and then drifted below it unnoticed, because
+// nothing measured it — gate reached deutan 18.9 and tritan 11.0 against thresholds of 20 and 15.
 // Viénot/Brettel dichromacy simulation, CIE76 distance, matching the recorded derivation.
 const BUDGET = { protan: 20, deutan: 20, tritan: 15 } as const;
 
@@ -51,11 +51,11 @@ const SIM: Record<keyof typeof BUDGET, Mat> = {
   ],
 };
 
-const toLinear = (c: number): number =>
-  c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-
-const hexToRgb = (hex: string): Vec =>
-  [0, 2, 4].map((i) => parseInt(hex.replace('#', '').slice(i, i + 2), 16)) as Vec;
+const toLinear = (c: number): number => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+const hexToRgb = (hex: string): Vec => {
+  const h = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as Vec;
+};
 
 function toLab(rgb: Vec): Vec {
   const lin = rgb.map((c) => toLinear(c / 255)) as Vec;
@@ -77,13 +77,15 @@ function toLab(rgb: Vec): Vec {
 
 function simulate(rgb: Vec, kind: keyof typeof BUDGET): Vec {
   const lin = rgb.map((c) => toLinear(c / 255)) as Vec;
-  return mul(LMS2RGB, mul(SIM[kind], mul(RGB2LMS, lin))).map((c) => {
+  const out = mul(LMS2RGB, mul(SIM[kind], mul(RGB2LMS, lin)));
+  return out.map((c) => {
     const k = Math.min(1, Math.max(0, c));
     return (k <= 0.0031308 ? k * 12.92 : 1.055 * Math.pow(k, 1 / 2.4) - 0.055) * 255;
   }) as Vec;
 }
 
-const deltaE = (a: Vec, b: Vec): number => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const deltaE = (a: Vec, b: Vec): number =>
+  Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
 function token(name: string): string {
   const hit = new RegExp(`^\\s*${name}:\\s*(#[0-9a-fA-F]{6});`, 'm').exec(css)?.[1];
@@ -95,18 +97,34 @@ describe('the Signal Kind palette clears its colour-vision budget', () => {
   const kinds = ['--kind-a', '--kind-p', '--kind-g', '--kind-c'] as const;
 
   it('reads four distinct kind colours from tokens.css', () => {
-    expect(new Set(kinds.map(token)).size, 'two Signal Kinds share a colour').toBe(4);
+    const values = kinds.map(token);
+    expect(new Set(values).size, 'two Signal Kinds share a colour').toBe(4);
   });
 
+  // Guards the measurement itself: a non-numeric SHADE_MIN makes every shaded distance NaN, and
+  // `d < worst` is false for NaN, so the shaded cases would be skipped and the suite pass hollow.
+  it('has a usable shade floor to measure against', () => {
+    expect(SHADE_MIN).toBeGreaterThan(0.5);
+    expect(SHADE_MIN).toBeLessThanOrEqual(1);
+  });
+
+  // Cable ropes are shaded per cable, so every kind is a small range rather than one point.
+  // The worst case is one kind at full brightness against another at its darkest.
   for (const kind of ['protan', 'deutan', 'tritan'] as const) {
-    it(`keeps every pair apart under ${kind} simulation`, () => {
+    it(`keeps every pair apart under ${kind} simulation, cable shading included`, () => {
       let worst = { d: Infinity, pair: '' };
       for (let i = 0; i < kinds.length; i++) {
         for (let j = i + 1; j < kinds.length; j++) {
           const a = hexToRgb(token(kinds[i] ?? ''));
           const b = hexToRgb(token(kinds[j] ?? ''));
-          const d = deltaE(toLab(simulate(a, kind)), toLab(simulate(b, kind)));
-          if (d < worst.d) worst = { d, pair: `${kinds[i]} vs ${kinds[j]}` };
+          for (const fa of [1, SHADE_MIN]) {
+            for (const fb of [1, SHADE_MIN]) {
+              const sa = a.map((c) => c * fa) as Vec;
+              const sb = b.map((c) => c * fb) as Vec;
+              const d = deltaE(toLab(simulate(sa, kind)), toLab(simulate(sb, kind)));
+              if (d < worst.d) worst = { d, pair: `${kinds[i]}@${fa} vs ${kinds[j]}@${fb}` };
+            }
+          }
         }
       }
       expect(worst.d, `closest pair under ${kind} is ${worst.pair}`).toBeGreaterThanOrEqual(

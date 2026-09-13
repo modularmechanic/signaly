@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { addModule, addRow, removeModule, removeRow } from '../../engine/rack';
 import type { ModuleInstance } from '../../engine/types';
-import { registerUserModule } from '../../features/user-modules/runtime-registry';
+import { activate, install, type Result } from '../../features/user-modules/lifecycle';
 import type { UserModule } from '../../features/user-modules/schema';
 import { useRackStore } from '../../state/rack-store';
 import { useUiStore } from '../../state/ui-store';
@@ -43,12 +43,12 @@ export function BuilderWorkspace(): ReactNode {
     };
   }, [preview]);
 
-  // The single registration path: transpile + verify + load live, then preview.
-  const register = useCallback(async (um: UserModule): Promise<string | null> => {
+  // The single path onto the preview row; `bring` is the lifecycle call that owns the module.
+  const run = useCallback(async (um: UserModule, bring: (u: UserModule) => Promise<Result>) => {
     // Two registrations can overlap (the library loads without waiting): only the latest one wins.
     const mine = ++gen.current;
     setDraft(um);
-    const r = await registerUserModule(um);
+    const r = await bring(um);
     if (!alive.current || mine !== gen.current) return null;
     if (!r.ok) {
       setPreview(null);
@@ -75,6 +75,10 @@ export function BuilderWorkspace(): ReactNode {
     return null;
   }, []);
 
+  // A draft is only previewed; Save is the one path that reaches storage.
+  const register = useCallback((um: UserModule) => run(um, activate), [run]);
+  const save = useCallback((um: UserModule) => run(um, install), [run]);
+
   return (
     <div className="builder">
       <div className="builder-bar">
@@ -87,7 +91,7 @@ export function BuilderWorkspace(): ReactNode {
       </div>
       <div className="builder-col">
         {draft ? (
-          <DspCodePanel key={draft.slug} um={draft} onRegister={register} />
+          <DspCodePanel key={draft.slug} um={draft} onSave={save} />
         ) : (
           <section className="builder-card">
             <h2>DSP source</h2>

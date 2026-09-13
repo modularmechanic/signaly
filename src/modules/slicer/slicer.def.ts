@@ -14,5 +14,6 @@ export const def: ModuleDef = {
     { id: 'trig', label: 'STEP', kind: 'g' },
   ],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
-  display: 'text',
+  // slicer.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

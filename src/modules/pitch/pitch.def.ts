@@ -21,7 +21,7 @@ export const def: ModuleDef = {
     },
     { id: 'shift2', label: 'SHIFT 2', min: -24, max: 24, initial: 7, fmt: 'fSemi' },
     { id: 'scvA', label: 'SHIFT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'scv' },
-    { id: 'window', label: 'WINDOW', min: 20, max: 200, initial: 60, fmt: 'fMs', curve: 'log' },
+    { id: 'window', label: 'WINDOW', min: 20, max: 200, initial: 60, fmt: 'fMsec', curve: 'log' },
     { id: 'fb', label: 'FEEDBACK', min: -0.9, max: 0.9, initial: 0, fmt: 'f1' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.5, fmt: 'fPc' },
   ],

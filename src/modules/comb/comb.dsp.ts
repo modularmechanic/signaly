@@ -1,12 +1,8 @@
-import { Base, ch, clamp, DL, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 class Comb extends Base {
   dl = new DL(sampleRate / 8);
   lp = 0;
-
-  defaults(): Params {
-    return { freq: 220, fb: 0.7, damp: 6000, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

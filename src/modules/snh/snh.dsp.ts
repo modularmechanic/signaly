@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 class SnH extends Base {
   h1 = 0;
@@ -10,10 +10,6 @@ class SnH extends Base {
   ph = 0;
   rng = new Lcg(135797);
   clkGate = 0;
-
-  defaults(): Params {
-    return { rate: 8, prob: 1, slew1: 0.001, slew2: 0.001 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const in1 = ch(I, 0),

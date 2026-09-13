@@ -2,10 +2,8 @@
 // VU meters, cables). Started lazily on the first subscriber; stopped when the
 // last one leaves, so an idle rack burns no frames.
 type DrawFn = () => void;
-type CpuFn = (pct: number) => void;
 
 const draws = new Set<DrawFn>();
-const cpuListeners = new Set<CpuFn>();
 let frame = 0;
 
 function pump(): void {
@@ -33,16 +31,4 @@ export function addDraw(fn: DrawFn): () => void {
 
 export function runDraws(): void {
   for (const fn of draws) fn();
-}
-
-/** Subscribe to the render-load meter (0..100). Returns an unsubscribe. */
-export function onCpu(fn: CpuFn): () => void {
-  cpuListeners.add(fn);
-  return () => {
-    cpuListeners.delete(fn);
-  };
-}
-
-export function emitCpu(pct: number): void {
-  for (const fn of cpuListeners) fn(pct);
 }

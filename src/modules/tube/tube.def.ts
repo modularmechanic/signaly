@@ -12,7 +12,7 @@ const box = (id: string, kind: PanelNode['kind'], x: number, y: number, w: numbe
   h,
 });
 const nodes: PanelNode[] = [
-  box('display:text', 'display', 0.02, 0.115, 0.56, 0.5),
+  box('display:screen', 'display', 0.02, 0.115, 0.56, 0.5),
   box('knob:drive', 'knob', 0.6, 0.115, 0.38, 0.175),
   box('knob:bias', 'knob', 0.6, 0.3, 0.38, 0.085),
   box('knob:sag', 'knob', 0.6, 0.395, 0.38, 0.085),
@@ -34,7 +34,8 @@ export const def: ModuleDef = {
   look: 'stage',
   worklet: 'tube',
   dark: true,
-  display: 'text',
+  // tube.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
   knobs: [
     {
       id: 'drive',

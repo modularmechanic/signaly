@@ -34,5 +34,6 @@ export const def: ModuleDef = {
     { id: 'l', label: 'L', kind: 'a' },
     { id: 'r', label: 'R', kind: 'a' },
   ],
-  display: 'text',
+  // cloud.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

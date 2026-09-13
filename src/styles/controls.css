@@ -1,5 +1,42 @@
 /* Machined black hardware: knurled knobs, slotted faders, recessed switch troughs.
-   Colours come from tokens.css only. `--cat` is set on the module panel. */
+   Colours come from tokens.css only.
+
+   ---------- the custom-property contract ----------
+   Every property an atom's CSS may read, and its one owner. A rule that reads anything absent
+   from this list is reaching inside another file rather than using a published input.
+
+   Rack geometry — src/main.tsx publishes these on :root at boot from modules/panel-layout.ts:
+     --u          the rack unit: --hp / 26. Every hardware dimension below is a multiple of it,
+                  so setting --hp alone rescales the whole rack with its ratios intact.
+     --hp         one HP.                   --panel-h    faceplate height (658u).
+     --jack-d     socket diameter (37u), the width panel-layout packs jack columns to.
+     --fader-w    fader slot width (20u).   --fader-pad  its padding either side (7u).
+
+   Per module — ui/organisms/module-panel.tsx sets these inline on `.module-panel`:
+     --cat        category tint (CAT_COLOR); every accent falls back to --amber.
+     --hp-count   the module's width in HP.
+   and panel.css's `.module-panel` rule derives from them:
+     --label-fs   knob and silkscreen label size.   --sheen/--sheen-a/--seam  panel lighting.
+
+   Per control — the atom sets these inline; a number in 0..1 unless noted:
+     --pct    knob.tsx, fader.tsx: the value.      --cv     knob.tsx: where CV pushes the knob.
+     --led-c  led.tsx (colour).                    --env-c  env-display.tsx (colour).
+     --mp-c   mini-piano.tsx (colour).             --bk     mini-piano.tsx (sevenths).
+     --fill   rack-row.tsx.
+     --jc     not inline: cables.css maps the jack's kind class onto the cell with :has().
+
+   Owned by the control's own rule, and settable by an author to resize the control:
+     --d      knob diameter (input; --d-fit, the panel node's clamp, always wins over it).
+     --sweep  knob travel.   --cap  fader cap height.   --bk-w  piano black key (panel.css).
+     --screw-d / --screw-inset  screw head and corner offset (panel.css).
+
+   A control gets cqw/cqh and @container only from a `.panel-node` ancestor — the element
+   panel-layout positions. `.module-panel` is the inline-size container above that.
+
+   Deliberately not in --u: the >=44px pointer targets (an accessibility floor, not art), 1px
+   hairlines, the jack's ring widths (line-style is a colour-blind channel and stops reading
+   when scaled), type, and cell gaps — so a px correction that offsets a gap inside a cq
+   expression stays px too. */
 
 .knob-cell,
 .fader-cell {
@@ -37,11 +74,18 @@
 
 /* ---------- knob ---------- */
 .knob {
-  --d: min(46px, calc(52cqh - 1.5px), 68cqw);
+  /* --d is the knob's published size input: set it anywhere that out-specifies `.knob`
+     (`[data-def-id]` on the faceplate gives any module that reach). --d-fit is the panel node's clamp, is not an author's to set, and always wins — so
+     an override can shrink a knob but can never overflow the row it sits in. */
+  --d: calc(46 * var(--u));
+  --d-fit: min(calc(52cqh - 1.5px), 68cqw);
+  /* The one owner of the knob's angular travel. Zero sits half a sweep back from up, so the
+     value ring, the pointer and the CV marker all read `--sweep` and nothing restates 270/135. */
+  --sweep: 270deg;
   position: relative;
   flex: 0 0 auto;
-  width: var(--d);
-  height: var(--d);
+  width: min(var(--d), var(--d-fit));
+  aspect-ratio: 1;
   border-radius: 50%;
   background:
     radial-gradient(
@@ -65,23 +109,24 @@
 }
 
 .knob-cell.big .knob {
-  --d: min(64px, calc(52cqh - 1.5px), 68cqw);
+  --d: calc(64 * var(--u));
 }
 
 .knob:hover {
   filter: brightness(1.08);
 }
 
-/* value ring: a thin accent arc floating just outside the knurl */
+/* value ring: a thin accent arc floating just outside the knurl. The knob is square, so the
+   percentage is the resolved diameter — the clamped one, which `--d` alone is not. */
 .knob::before {
   content: '';
   position: absolute;
-  inset: calc(var(--d) * -0.19);
+  inset: -19%;
   border-radius: 50%;
   background: conic-gradient(
-    from 225deg,
-    var(--cat, var(--amber)) calc(var(--pct, 0) * 270deg),
-    rgba(255, 255, 255, 0.1) 0 270deg,
+    from calc(var(--sweep) / -2),
+    var(--cat, var(--amber)) calc(var(--pct, 0) * var(--sweep)),
+    rgba(255, 255, 255, 0.1) 0 var(--sweep),
     transparent 0
   );
   mask: radial-gradient(closest-side, transparent 0 86%, currentColor 88%);
@@ -98,19 +143,25 @@
   transform: translate(-50%, -50%);
 }
 
-/* Pointer: bottom edge pinned to the knob centre so rotate(0deg) points up —
-   same zero and 270deg sweep as the ::before ring and .knob-cv. */
-.knob-cap {
+/* One bar, pinned by its bottom edge to the knob centre so rotate(0deg) points up. Both the
+   pointer and the CV marker are this shape, so they cannot drift apart. */
+.knob-cap,
+.knob-cv {
   position: absolute;
   bottom: 50%;
   left: 50%;
-  width: 3px;
+  width: calc(3 * var(--u));
+  margin-left: calc(-1.5 * var(--u));
+  border-radius: calc(1.5 * var(--u));
+  transform-origin: 50% 100%;
+}
+
+/* Pointer: current value. */
+.knob-cap {
   height: 36%;
-  margin-left: -1.5px;
-  border-radius: 1.5px;
   background: var(--pointer);
   box-shadow: 0 0 4px color-mix(in srgb, var(--cat, var(--amber)) 60%, transparent);
-  transform-origin: 50% 100%;
+  transform: rotate(calc(var(--pct, 0) * var(--sweep) - var(--sweep) / 2));
   transition: transform 0.06s linear;
 }
 
@@ -118,17 +169,11 @@
    ~30 Hz off the render bus while the jack is patched, so the ease has to bridge one 33 ms
    gap; unpatched it rests at the attenuverter's reach and the ease costs nothing. */
 .knob-cv {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 3px;
   height: 52%;
-  border-radius: 1.5px;
   background: var(--kind-c);
   box-shadow: 0 0 6px var(--kind-c);
   opacity: 0.85;
-  transform: translate(-50%, -100%) rotate(calc(var(--cv, 0) * 270deg - 135deg));
-  transform-origin: 50% 100%;
+  transform: rotate(calc(var(--cv, 0) * var(--sweep) - var(--sweep) / 2));
   transition: transform 0.05s linear;
 }
 
@@ -156,11 +201,7 @@
   }
 
   .knob {
-    --d: min(46px, calc(70cqh - 9px), 68cqw);
-  }
-
-  .knob-cell.big .knob {
-    --d: min(64px, calc(70cqh - 9px), 68cqw);
+    --d-fit: min(calc(70cqh - 9px), 68cqw);
   }
 }
 
@@ -170,37 +211,41 @@
     display: none;
   }
 
-  .knob,
+  .knob {
+    --d-fit: min(72cqh, 68cqw);
+  }
+
   .knob-cell.big .knob {
-    --d: min(46px, 72cqh, 68cqw);
+    --d: calc(46 * var(--u));
   }
 }
 
 /* ---------- fader ---------- */
 .fader {
+  /* The one owner of the cap height. The cap's indicator line sits at its middle, so the travel
+     is (100% - --cap) and the fill must stop at that same line — not at pct * full height — or
+     the two disagree everywhere except the midpoint. */
+  --cap: calc(19 * var(--u));
   position: relative;
   flex: 1 1 auto;
-  width: 20px;
-  min-height: 81px;
+  width: var(--fader-w);
   height: 100%;
-  padding: 0 7px;
+  padding: 0 var(--fader-pad);
   background-image:
-    /* The cap's indicator line travels over (100% - 19px) and sits 9.5px inside the 19px cap,
-       so the fill must stop at that same line — not at pct * full height — or the two disagree
-       everywhere except the midpoint. Same shared-zero contract as .knob-cap and the value ring. */
     linear-gradient(
       to top,
-      var(--cat, var(--amber)) 0 calc(9.5px + var(--pct, 0) * (100% - 19px)),
+      var(--cat, var(--amber)) 0 calc(var(--cap) / 2 + var(--pct, 0) * (100% - var(--cap))),
       transparent 0
     ),
+    /* the slot: a 6u trough between a 1u dark edge and a 1u highlight */
     linear-gradient(
-      90deg,
-      transparent 6px,
-      var(--edge) 6px 7px,
-      var(--metal-2) 7px 13px,
-      rgba(255, 255, 255, 0.08) 13px 14px,
-      transparent 14px
-    );
+        90deg,
+        transparent calc(6 * var(--u)),
+        var(--edge) calc(6 * var(--u)) calc(7 * var(--u)),
+        var(--metal-2) calc(7 * var(--u)) calc(13 * var(--u)),
+        rgba(255, 255, 255, 0.08) calc(13 * var(--u)) calc(14 * var(--u)),
+        transparent calc(14 * var(--u))
+      );
   background-clip: content-box, border-box;
   background-repeat: no-repeat;
   cursor: ns-resize;
@@ -221,14 +266,18 @@
   position: absolute;
   /* `top` on purpose: a percentage inside translateY() is the cap's own 19px height, not the
      track's, so a transform left the cap pinned at the top of every fader. */
-  top: calc((1 - var(--pct, 0)) * (100% - 19px));
-  left: -7px;
-  width: 35px;
-  height: 19px;
+  top: calc((1 - var(--pct, 0)) * (100% - var(--cap)));
+  left: calc(-1 * var(--fader-pad));
+  width: calc(35 * var(--u));
+  height: var(--cap);
   border: 1px solid var(--edge);
-  border-radius: 3px;
+  border-radius: calc(3 * var(--u));
   background-image:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1.5px, transparent 1.5px 4px),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.06) 0 calc(1.5 * var(--u)),
+      transparent calc(1.5 * var(--u)) calc(4 * var(--u))
+    ),
     linear-gradient(var(--metal-hi), var(--metal) 40%, var(--metal-lo));
   box-shadow:
     0 3px 6px rgba(0, 0, 0, 0.7),
@@ -236,13 +285,14 @@
   pointer-events: none;
 }
 
+/* The indicator line the fill above aims at: centred in the cap, so it derives from --cap too. */
 .fader-cap::after {
   content: '';
   position: absolute;
-  top: 8px;
-  right: 3px;
-  left: 3px;
-  height: 3px;
+  top: calc((var(--cap) - 3 * var(--u)) / 2);
+  right: calc(3 * var(--u));
+  left: calc(3 * var(--u));
+  height: calc(3 * var(--u));
   background: var(--pointer);
   box-shadow: 0 0 4px var(--cat, var(--amber));
 }
@@ -386,30 +436,22 @@
   box-shadow: var(--focus-ring);
 }
 
-/* Coarse pointers: grow the art itself, the pseudo-target is already >=44px. */
+/* Coarse pointers: grow the art itself, the pseudo-target is already >=44px. The jack and the
+   fader are deliberately absent: panel-layout packs columns to --jack-d and --fader-w, so
+   growing either here alone packs the art narrower than it draws. Scale --hp for those. */
 @media (pointer: coarse) {
   .knob {
-    --d: min(55px, calc(52cqh - 1.5px), 68cqw);
+    --d: calc(55 * var(--u));
   }
 
   .knob-cell.big .knob {
-    --d: min(72px, calc(52cqh - 1.5px), 68cqw);
-  }
-
-  .fader {
-    width: 26px;
+    --d: calc(72 * var(--u));
   }
 
   .switch-opt,
   .btn {
     min-height: 40px;
     padding: 8px 6px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .knob-cap {
-    transition: none;
   }
 }
 

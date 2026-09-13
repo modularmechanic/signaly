@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { isWorkletReady, loadWorklet } from '../../engine/audio-context';
 import { addModule } from '../../engine/rack';
+import { listUserModules } from '../../storage/user-module-store';
 import { useRackStore } from '../../state/rack-store';
 import { useUiStore } from '../../state/ui-store';
 import { RackWorkspace } from '../templates/rack-workspace';
@@ -16,6 +17,21 @@ export function RackPage(): ReactNode {
       .then(() => {
         if (!live) return;
         setPending(false);
+        // Stored user modules belong back in the registry before anything can name one. Nothing
+        // loads a patch at boot, so the rack is free to render while this is still in flight.
+        // Loaded lazily and only when there is something to restore: the lifecycle module pulls in
+        // the DSP transpiler, which otherwise doubles the size of the chunk every visitor downloads.
+        if (listUserModules().length > 0) {
+          void import('../../features/user-modules/lifecycle')
+            .then(({ restoreAll }) => restoreAll())
+            .then((failed) => {
+              if (!live || failed.length === 0) return;
+              useUiStore.getState().setNotice(`These modules failed to restore: ${failed.join(', ')}`);
+            })
+            .catch(() => {
+              if (live) useUiStore.getState().setNotice('Your saved modules could not be restored.');
+            });
+        }
         // A blank rack has nothing to look at or hear: seed a voice and the output.
         if (Object.keys(useRackStore.getState().modules).length > 0) return;
         addModule('vco', 0);

@@ -1,9 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { HP_PX, PANEL_H } from '../../core/types';
 import { cropToFaceplate } from '../../features/faceplate/image-crop';
 import { generateFaceplate, imageProvider } from '../../features/llm/client';
 import { userModuleId, type UserModule } from '../../features/user-modules/schema';
-import { layoutPanel } from '../../modules/panel-layout';
+import { HP_PX, layoutPanel, PANEL_H } from '../../modules/panel-layout';
 import { getImage, newImageId, saveImage } from '../../storage/image-store';
 import { Button } from '../atoms/button';
 import { Select } from '../atoms/select';
@@ -13,12 +12,7 @@ const MODES: readonly CropMode[] = ['fit', 'stretch', 'crop'];
 const MAX_SRC_PX = 8192;
 const NO_RECT: CropRect = { sx: 0, sy: 0, sw: 1, sh: 1 };
 
-interface Source {
-  blob: Blob;
-  url: string;
-  w: number;
-  h: number;
-}
+type Source = { blob: Blob; url: string; w: number; h: number };
 
 /** Decode through the browser so a malformed file fails before any canvas is allocated. */
 async function openImage(blob: Blob): Promise<Source | { error: string }> {

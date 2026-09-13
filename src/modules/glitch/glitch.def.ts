@@ -9,7 +9,7 @@ export const def: ModuleDef = {
   look: 'noir',
   worklet: 'glitch',
   knobs: [
-    { id: 'length', label: 'LENGTH', min: 5, max: 500, initial: 80, fmt: 'fMs', curve: 'log', big: true },
+    { id: 'length', label: 'LENGTH', min: 5, max: 500, initial: 80, fmt: 'fMsec', curve: 'log', big: true },
     { id: 'repeats', label: 'REPEATS', min: 1, max: 16, initial: 4, fmt: 'fInt' },
     { id: 'prob', label: 'PROBABILITY', min: 0, max: 1, initial: 0.5, fmt: 'fPc' },
     { id: 'pitch', label: 'PITCH', min: 0, max: 6, initial: 3, fmt: 'fRate' },

@@ -22,6 +22,17 @@ One connection from an output jack to an input jack. An input holds at most one;
 **Jack**:
 A single connection point on a module, either an input or an output, carrying one Signal Kind.
 
+**Arm**:
+To hold a Jack as the pending end of a connection the user is making from the keyboard. Arming a
+second Jack completes the Cable; Escape cancels. A Jack is armed or it is not — there is never more
+than one.
+_Avoid_: select, focus (a Jack can be focused without being armed, and usually is)
+
+**Jack Interaction**:
+Everything the user does *to* Jacks and Cables — arming, dragging, unpatching — as distinct from
+**Patch**, which is the saved arrangement they end up with. The distinction is load-bearing: the two
+words sound alike and mean unrelated things.
+
 **Row**:
 A horizontal strip of the rack holding modules side by side, with a width measured in HP.
 
@@ -65,8 +76,20 @@ The visible face of a module. Its geometry is computed from the Definition by de
 An image placed behind a User Module's panel.
 _Avoid_: artwork, panel image
 
+**Screen**:
+The recessed area a Panel reserves for something to be drawn in. A module either names a Display to
+fill it or reserves it for its own custom UI — never both.
+
 **Display**:
-The screen area on a panel — a scope, meter, step grid, envelope, keyboard or text readout.
+One of the six kinds of readout the app knows how to draw in a Screen — scope, meter, step grid,
+envelope, keyboard or text. Naming a Display is a promise to feed it; a module that names one and
+feeds it nothing shows a placeholder saying so, rather than an empty Screen.
+_Avoid_: Screen (the area is not the readout), widget
+
+**Draft**:
+A module the user is building but has not saved — generated in the builder, or opened from the
+library to edit. A Draft is live in the rack for preview, but it is not a User Module yet and does
+not appear among the user's saved modules until they save it.
 
 **Attenuverter**:
 A knob that scales and can invert the voltage arriving at a CV input, rather than setting a value of its own.

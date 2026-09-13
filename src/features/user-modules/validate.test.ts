@@ -9,7 +9,7 @@ const good = (): Record<string, unknown> => ({
   cat: 'FX',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.1, max: 20, initial: 2, fmt: 'fHz', curve: 'log' },
-    { id: 'amt', label: 'AMOUNT', min: -1, max: 1, initial: 0, cvIn: 'cv', attenuates: 'cv' },
+    { id: 'amt', label: 'AMOUNT', min: -1, max: 1, initial: 0, fmt: 'f1', cvIn: 'cv', attenuates: 'cv' },
   ],
   sws: [{ id: 'wave', label: 'WAVE', options: ['SIN', 'TRI', 'SAW'], initial: 1 }],
   ins: [
@@ -17,7 +17,7 @@ const good = (): Record<string, unknown> => ({
     { id: 'cv', label: 'CV', kind: 'c' },
   ],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
-  display: 'scope',
+  display: 'text',
   panel: {
     nodes: [
       { id: 'knob:rate', kind: 'knob', x: 0.1, y: 0.1, w: 0.5, h: 0.1, label: 'RATE' },
@@ -53,7 +53,7 @@ describe('validateUserDef', () => {
     expect(r.def.knobs[1]?.attenuates).toBe('cv');
     expect(r.def.sws?.[0]?.initial).toBe(1);
     expect(r.def.panel?.nodes).toHaveLength(4);
-    expect(r.def.display).toBe('scope');
+    expect(r.def.display).toBe('text');
   });
 
   it('treats null as absent for optional fields', () => {
@@ -78,23 +78,23 @@ describe('validateUserDef', () => {
       min: 0,
       max: 1,
       initial: 0,
+      fmt: 'f1',
     }));
     expect(errorOf(withDef({ knobs }))).toMatch(/at most 16/);
   });
 
   it('rejects a knob default outside [min,max]', () => {
-    expect(errorOf(withDef({ knobs: [{ id: 'a', label: 'A', min: 0, max: 1, initial: 2 }] }))).toMatch(
-      /within/,
-    );
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 2, fmt: 'f1' }];
+    expect(errorOf(withDef({ knobs }))).toMatch(/within/);
   });
 
   it('rejects attenuates naming a non-CV input', () => {
-    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, attenuates: 'in' }];
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }];
     expect(errorOf(withDef({ knobs }))).toMatch(/must name a 'c' input/);
   });
 
   it('rejects cvIn naming no input', () => {
-    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, cvIn: 'nope' }];
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 1, initial: 0, fmt: 'f1', cvIn: 'nope' }];
     expect(errorOf(withDef({ knobs }))).toMatch(/names no input jack/);
   });
 
@@ -109,6 +109,14 @@ describe('validateUserDef', () => {
   it('rejects more than 8 inputs', () => {
     const ins = Array.from({ length: 9 }, (_, i) => ({ id: `i${i}`, label: 'I', kind: 'a' }));
     expect(errorOf(withDef({ ins, knobs: [] }))).toMatch(/at most 8/);
+  });
+
+  it('rejects a display a user module can never feed', () => {
+    // scope draws m.ext.analyser, which only a native audio graph creates; user modules are worklets.
+    expect(errorOf(withDef({ display: 'scope' }))).toMatch(/m\.ext\.analyser/);
+    expect(errorOf(withDef({ display: 'piano' }))).toMatch(/native/);
+    // env promises four named knobs and this def has none of them.
+    expect(errorOf(withDef({ display: 'env' }))).toMatch(/knob "a" is missing/);
   });
 
   it('rejects an unknown display and an unknown fmt', () => {
@@ -149,10 +157,21 @@ describe('validateUserDef', () => {
 
   it('rejects two knobs attenuating the same input jack', () => {
     const knobs = [
-      { id: 'a', label: 'A', min: -1, max: 1, initial: 0, attenuates: 'cv' },
-      { id: 'b', label: 'B', min: -1, max: 1, initial: 0, attenuates: 'cv' },
+      { id: 'a', label: 'A', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+      { id: 'b', label: 'B', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
     ];
     expect(errorOf(withDef({ knobs, panel: null }))).toMatch(/already attenuated/);
+  });
+
+  it('rejects a knob and a switch sharing an id', () => {
+    const knobs = [{ id: 'mode', label: 'MODE', min: 0, max: 1, initial: 0, fmt: 'f1' }];
+    const sws = [{ id: 'mode', label: 'MODE', options: ['A', 'B'] }];
+    expect(errorOf(withDef({ knobs, sws, panel: null }))).toMatch(/one param namespace/);
+  });
+
+  it('rejects a knob whose range does not suit its fmt', () => {
+    const knobs = [{ id: 'a', label: 'A', min: 0, max: 3, initial: 0, fmt: 'fPc' }];
+    expect(errorOf(withDef({ knobs, panel: null }))).toMatch(/must stay within/);
   });
 
   it('rejects duplicate panel node ids', () => {
@@ -162,12 +181,17 @@ describe('validateUserDef', () => {
     );
   });
 
-  it('rejects a jack count that cannot fit the declared hp', () => {
+  it('rejects a def the computed layout cannot fit and names the narrowest hp that can', () => {
     const many = (p: string): unknown[] =>
       Array.from({ length: 8 }, (_, i) => ({ id: `${p}${i}`, label: 'J', kind: 'a' }));
     const dense = { knobs: [], ins: many('i'), outs: many('o'), panel: null };
-    expect(errorOf(withDef({ ...dense, hp: 1 }))).toMatch(/too narrow for 8 in and 8 out jacks/);
-    expect(errorOf(withDef({ ...dense, hp: 1 }))).toMatch(/use at least 4 HP/);
-    expect(validateUserDef(withDef({ ...dense, hp: 4 })).ok).toBe(true);
+    const err = errorOf(withDef({ ...dense, hp: 1 }));
+    expect(err).toMatch(/too narrow to lay this module out/);
+    // The hp the message names is panel-layout's answer, not a constant restated here — so the
+    // test asserts it is genuinely the narrowest rather than hard-coding the number.
+    const need = Number(/use at least (\d+) HP/.exec(err)?.[1]);
+    expect(need).toBeGreaterThan(1);
+    expect(validateUserDef(withDef({ ...dense, hp: need })).ok).toBe(true);
+    expect(validateUserDef(withDef({ ...dense, hp: need - 1 })).ok).toBe(false);
   });
 });

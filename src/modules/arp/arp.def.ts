@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'arp',
@@ -14,9 +14,9 @@ export const def: ModuleDef = {
     { id: 'octs', label: 'OCTAVES', min: 1, max: 4, initial: 1, fmt: 'fInt', cvIn: 'oct' },
     { id: 'shape', label: 'SHAPE', min: 0, max: 3, initial: 0, fmt: 'fShape', big: true, cvIn: 'shape' },
     { id: 'glen', label: 'GATE LEN', min: 0.05, max: 1, initial: 0.6, fmt: 'fPc' },
-    { id: 'shapeA', label: 'SHAPE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'shape' },
-    { id: 'chordA', label: 'CHORD CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'chord' },
-    { id: 'octA', label: 'OCT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'oct' },
+    att('shape', 'SHAPE CV'),
+    att('chord', 'CHORD CV'),
+    att('oct', 'OCT CV'),
   ],
   ins: [
     { id: 'clk', label: 'CLOCK', kind: 'g' },

@@ -21,7 +21,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.ts'],
-    // tokens.css is read as text by the colour-vision guard; without this vitest stubs it to ''.
-    css: { include: [/tokens\.css|base\.css/] },
+    // These sheets are read as text by drift guards (tokens, control geometry, colour vision,
+    // forced colours); without this vitest stubs a CSS import to '' and those guards pass empty.
+    css: { include: [/tokens\.css|controls\.css|panel\.css|base\.css|cables\.css/] },
   },
 });

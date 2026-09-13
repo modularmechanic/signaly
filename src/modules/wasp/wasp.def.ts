@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'wasp',
@@ -23,7 +23,7 @@ export const def: ModuleDef = {
     },
     { id: 'res', label: 'RES', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
     { id: 'dirt', label: 'DIRT', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
-    { id: 'cv', label: 'CV AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+    att('cv', 'CV AMT', 'cv'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

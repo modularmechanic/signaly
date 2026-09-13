@@ -1,5 +1,5 @@
 import type { CSSProperties, DragEvent, ReactNode } from 'react';
-import { getLastRowRejection, moveModule, removeRow, rowUsedHp } from '../../engine/rack';
+import { moveModule, removeRow, rowUsedHp } from '../../engine/rack';
 import type { RackRow as Row } from '../../engine/types';
 import { useRackStore } from '../../state/rack-store';
 import { useSettingsStore } from '../../state/settings-store';
@@ -8,11 +8,8 @@ import { Button } from '../atoms/button';
 import { ModulePanel } from './module-panel';
 
 /** Explain a refused drop instead of silently relocating it. */
-function rowFullNotice(): void {
-  const r = getLastRowRejection();
-  useUiStore
-    .getState()
-    .setNotice(r ? `Row full — ${r.needed} HP needed, ${r.free} free` : 'That module does not fit.');
+function rowFullNotice(r: { needed: number; free: number }): void {
+  useUiStore.getState().setNotice(`Row full — ${r.needed} HP needed, ${r.free} free`);
 }
 
 export interface RackRowProps {
@@ -36,7 +33,8 @@ export function RackRow({ row, index, onAddHere }: RackRowProps): ReactNode {
       const r = el.getBoundingClientRect();
       return e.clientX < r.left + r.width / 2;
     });
-    if (!moveModule(uid, index, before < 0 ? panels.length : before)) rowFullNotice();
+    const result = moveModule(uid, index, before < 0 ? panels.length : before);
+    if (result !== true) rowFullNotice(result);
   };
 
   return (

@@ -17,5 +17,6 @@ export const def: ModuleDef = {
     { id: 'rst', label: 'RESET', kind: 'g' },
   ],
   outs: [{ id: 'out', label: 'CV OUT', kind: 'c' }],
-  display: 'text',
+  // cvrec.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

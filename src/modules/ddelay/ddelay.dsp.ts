@@ -8,7 +8,6 @@ import {
   OnePole,
   SYNC_DIV,
   lpCoeff,
-  type Params,
 } from '../../engine/dsp-prelude';
 
 class DDelay extends Base {
@@ -18,10 +17,6 @@ class DDelay extends Base {
   t = new OnePole(20.8229, 0.375 * sampleRate);
   cs = new ClockSync();
   led = 0;
-
-  defaults(): Params {
-    return { time: 0.375, fb: 0.35, mix: 0.35, tone: 4000, sync: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, ClockSync, DL, OnePole, SYNC_DIV, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, ClockSync, DL, OnePole, SYNC_DIV, TP } from '../../engine/dsp-prelude';
 
 class Tape extends Base {
   d = new DL(sampleRate * 3);
@@ -11,10 +11,6 @@ class Tape extends Base {
   led = 0;
   ph = 0;
   ph2 = 0;
-
-  defaults(): Params {
-    return { time: 0.42, fb: 0.45, mix: 0.4, wow: 0.4, sat: 1.6, sync: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

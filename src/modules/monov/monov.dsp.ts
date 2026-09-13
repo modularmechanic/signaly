@@ -1,4 +1,4 @@
-import { Base, blep, ch, clamp, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, blep, ch, clamp, lpCoeff } from '../../engine/dsp-prelude';
 
 class MonoV extends Base {
   ph = 0;
@@ -11,10 +11,6 @@ class MonoV extends Base {
   s2 = 0;
   s3 = 0;
   s4 = 0;
-
-  defaults(): Params {
-    return { wave: 0, glide: 0.02, cut: 1400, res: 0.3, env: 0.6, fcv: 0, a: 0.005, d: 0.25, s: 0.5, r: 0.3 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 class NoiseLab extends Base {
   rng = new Lcg(55555);
@@ -13,10 +13,6 @@ class NoiseLab extends Base {
   b0 = 0;
   b1 = 0;
   b2 = 0;
-
-  defaults(): Params {
-    return { color: 0, cut: 8000, dec: 0.15, dens: 20 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const gt = ch(I, 0),

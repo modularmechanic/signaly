@@ -30,7 +30,7 @@ const SRC: ModuleDef = {
   hp: 4,
   cat: 'SOURCES',
   worklet: 'ssrc',
-  knobs: [{ id: 'freq', label: 'FREQ', min: 0, max: 100, initial: 10 }],
+  knobs: [{ id: 'freq', label: 'FREQ', min: 0, max: 100, initial: 10, fmt: 'fHz' }],
   ins: [],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
 };
@@ -153,13 +153,14 @@ describe('snapshot', () => {
     expect(s.rows.indexOf(bottomRows[0]!)).toBeGreaterThan(firstTop);
   });
 
-  it('skips unknown module types instead of throwing', () => {
+  it('reports unknown module types instead of throwing or dropping them silently', () => {
     const snap = valid();
-    snap.modules[0] = { mtype: 'nope', uid: 1, vals: {}, sws: {} };
-    applySnapshot(snap);
+    snap.modules[0] = { mtype: 'user:nope', uid: 1, vals: {}, sws: {} };
+    expect(applySnapshot(snap)).toEqual(['user:nope']);
     const modules = Object.values(useRackStore.getState().modules);
     expect(modules).toHaveLength(1);
     expect(useRackStore.getState().cables).toHaveLength(0);
+    expect(applySnapshot(valid())).toEqual([]);
   });
 
   it('only hands ext to load when the serializer validates it', () => {

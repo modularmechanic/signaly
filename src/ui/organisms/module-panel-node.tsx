@@ -1,14 +1,14 @@
 import { useState, type ComponentType, type ReactNode } from 'react';
-import { CAT_COLOR, type KnobDef, type PanelNode } from '../../core/types';
+import type { KnobDef, PanelNode } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { fmtValue } from '../../hooks/formatters';
 import { useParam, useWorkletFeed } from '../../hooks/module-api';
+import { whyNotReady } from '../../modules/display-contract';
 import { jackSlot } from '../../state/rack-store';
 import { EnvDisplay } from '../atoms/env-display';
 import { Fader } from '../atoms/fader';
 import { Jack } from '../atoms/jack';
 import { Knob } from '../atoms/knob';
-import { Label } from '../atoms/label';
 import { Led } from '../atoms/led';
 import { Switch } from '../atoms/switch';
 import { MeterDisplay } from '../molecules/meter-display';
@@ -64,21 +64,30 @@ function EnvPanel({ m }: { m: ModuleInstance }): ReactNode {
     text: fmtValue(m.def.knobs.find((k) => k.id === id)?.fmt, v),
   });
   return (
-    <EnvDisplay
-      points={points}
-      values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]}
-      color={CAT_COLOR[m.def.cat]}
-    />
+    <EnvDisplay points={points} values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]} />
+  );
+}
+
+/** A screen whose feed is missing used to draw nothing at all, which is how MAIN OUT shipped
+    with switches wired to an analyser no renderer read. Now the panel says so out loud. */
+function MissingScreen({ label, why }: { label: string; why: string }): ReactNode {
+  return (
+    <div className="text-screen screen-missing" title={why} aria-label={`no ${label} display: ${why}`}>
+      NO {label.toUpperCase()}
+    </div>
   );
 }
 
 function DisplayNode({ m, parts: Parts }: { m: ModuleInstance; parts?: Parts }): ReactNode {
   if (Parts) return <Parts m={m} />;
-  switch (m.def.display) {
+  const d = m.def.display;
+  if (d === undefined)
+    return <MissingScreen label="screen" why="this panel reserves a screen that no parts component fills" />;
+  const why = whyNotReady(m.def, m);
+  if (why !== null) return <MissingScreen label={d} why={why} />;
+  switch (d) {
     case 'scope':
-      return (
-        <ScopeDisplay analyser={m.ext.analyser as AnalyserNode | undefined} color={CAT_COLOR[m.def.cat]} />
-      );
+      return <ScopeDisplay analyser={m.ext.analyser as AnalyserNode | undefined} />;
     case 'meter':
       return <MeterDisplay m={m} />;
     case 'steps':
@@ -89,8 +98,6 @@ function DisplayNode({ m, parts: Parts }: { m: ModuleInstance; parts?: Parts }):
       return <EnvPanel m={m} />;
     case 'text':
       return <TextDisplay m={m} />;
-    default:
-      return null;
   }
 }
 
@@ -117,7 +124,10 @@ export function PanelNodeView({ node, m, connected, parts }: PanelNodeViewProps)
     case 'led':
       return <LedNode m={m} id={id} label={node.label} />;
     case 'label':
-      return node.label ? <Label text={node.label} kind={id === 'sub' ? 'sub' : 'title'} /> : null;
+      // silkscreen text: always a text node — def labels can be user-authored
+      return node.label ? (
+        <span className={`panel-label${id === 'sub' ? ' sub' : ''}`}>{node.label}</span>
+      ) : null;
     case 'display':
       return <DisplayNode m={m} parts={parts} />;
   }

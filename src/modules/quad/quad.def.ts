@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'quad',
@@ -21,7 +21,7 @@ export const def: ModuleDef = {
       big: true,
       cvIn: 'det',
     },
-    { id: 'detA', label: 'SPREAD CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'det' },
+    att('det', 'SPREAD CV'),
   ],
   sws: [{ id: 'wave', label: 'WAVE', options: ['SIN', 'TRI', 'SAW', 'SQR'] }],
   ins: [

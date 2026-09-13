@@ -1,8 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { unregisterUserModule } from '../../features/user-modules/runtime-registry';
+import { list, remove } from '../../features/user-modules/lifecycle';
 import { fromRecord, type UserModule } from '../../features/user-modules/schema';
-import { removeImage } from '../../storage/image-store';
-import { listUserModules, removeUserModule, type UserModuleRecord } from '../../storage/user-module-store';
 import { Button } from '../atoms/button';
 
 const MAX_IMPORT_BYTES = 1024 * 1024;
@@ -51,7 +49,7 @@ async function readImport(file: File): Promise<UserModule | { error: string }> {
 export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode {
   const [, bump] = useState(0);
   const [msg, setMsg] = useState('');
-  const rows = listUserModules().map((rec) => {
+  const rows = list().map((rec) => {
     const parsed = fromRecord(rec);
     return {
       rec,
@@ -60,10 +58,8 @@ export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode
     };
   });
 
-  const remove = (rec: UserModuleRecord): void => {
-    removeUserModule(rec.slug);
-    unregisterUserModule(rec.slug);
-    if (rec.faceplateImageId) void removeImage(rec.faceplateImageId);
+  const onDelete = (slug: string): void => {
+    remove(slug);
     bump((n) => n + 1);
   };
 
@@ -102,7 +98,7 @@ export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode
             >
               Export
             </Button>
-            <Button onClick={() => remove(rec)}>Delete</Button>
+            <Button onClick={() => onDelete(rec.slug)}>Delete</Button>
           </li>
         ))}
       </ul>

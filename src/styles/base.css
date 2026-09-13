@@ -50,28 +50,6 @@ svg {
   border-radius: var(--r-sm);
 }
 
-/* Forced colours strip box-shadow, and the ring above is nothing but a box-shadow, so without this
-   every knob, fader, jack, switch and button loses its focus indicator outright. System colours are
-   mandatory in here: a var() would be substituted away with everything else. The controls below are
-   empty elements whose entire appearance is a gradient, so they need a border to keep a silhouette
-   rather than flattening into blank blocks. */
-@media (forced-colors: active) {
-  :focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: 2px;
-  }
-
-  .knob,
-  .knob-cap,
-  .fader,
-  .fader-cap,
-  .led,
-  .mpk,
-  .screw {
-    border: 1px solid CanvasText;
-  }
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -84,10 +62,48 @@ svg {
   border: 0;
 }
 
+/* Forced colours keep colour and border-style but drop box-shadow and background-image
+   entirely. The focus indicator above is a box-shadow, so it disappears app-wide; the
+   art-only elements are background-image plus box-shadow and nothing else, so they flatten
+   to blank blocks. System colours only in here — a token would defeat the mode. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* panel.css draws the faceplate's ring as an inset box-shadow and sets `outline: 0` at a
+     higher specificity than the rule above, so the panel needs its own outline back. */
+  :root .module-panel:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  /* Silhouettes for elements whose whole appearance is paint. The last two are live-data
+     bars rather than controls — a forced background colour leaves them invisible, and a
+     readout you cannot read is as broken as a control you cannot find. The screws are
+     absent on purpose: they are one panel-sized element of background layers, so a border
+     would outline the whole faceplate, and they are decoration, not a control. */
+  .knob,
+  .knob-cap,
+  .fader,
+  .fader-cap,
+  .led,
+  .mpk,
+  .channel-vu-fill,
+  .row-bar > i {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* The only reduced-motion rules in the set: `!important` to beat the inline transitions, and
+   an iteration count so an infinite keyframe animation stops instead of racing (0.01ms alone
+   leaves `jack-pulse` cycling). Per-file blocks under this are redundant — do not add one. */
 body.reduced-motion *,
 body.reduced-motion *::before,
 body.reduced-motion *::after {
   animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
@@ -97,6 +113,7 @@ body.reduced-motion *::after {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

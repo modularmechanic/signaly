@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { verifyDsp } from './dsp-verify';
 
+// One out, one knob: the knob proves the seed reaches processorOptions.
+const DEF = {
+  knobs: [{ id: 'freq', label: 'FREQ', min: 20, max: 8000, initial: 220, fmt: 'fHz' as const }],
+  outs: [{ id: 'out', label: 'OUT', kind: 'a' as const }],
+};
+
 const buffer = (samples: number[]): AudioBuffer =>
   ({ numberOfChannels: 1, getChannelData: () => Float32Array.from(samples) }) as unknown as AudioBuffer;
 
@@ -27,24 +33,24 @@ afterEach(() => {
 describe('verifyDsp', () => {
   it('passes a finite in-range render and revokes the blob url', async () => {
     stubAudio(() => Promise.resolve(buffer([0, 0.5, -0.5, 4.9])));
-    expect(await verifyDsp('code', 'user:a@1', 1)).toBeNull();
+    expect(await verifyDsp('code', 'user:a@1', DEF)).toBeNull();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
   });
 
   it('rejects NaN output', async () => {
     stubAudio(() => Promise.resolve(buffer([0, NaN])));
-    expect(await verifyDsp('code', 'user:a@1', 1)).toMatch(/NaN/);
+    expect(await verifyDsp('code', 'user:a@1', DEF)).toMatch(/NaN/);
   });
 
   it('rejects samples outside the sane range', async () => {
     stubAudio(() => Promise.resolve(buffer([0, 250])));
-    expect(await verifyDsp('code', 'user:a@1', 1)).toMatch(/out-of-range/);
+    expect(await verifyDsp('code', 'user:a@1', DEF)).toMatch(/out-of-range/);
   });
 
   it('gives up on a render that never returns', async () => {
     stubAudio(() => new Promise<AudioBuffer>(() => undefined));
     vi.useFakeTimers();
-    const pending = verifyDsp('code', 'user:a@1', 1);
+    const pending = verifyDsp('code', 'user:a@1', DEF);
     await vi.advanceTimersByTimeAsync(3100);
     expect(await pending).toMatch(/did not render/);
   });
@@ -57,11 +63,11 @@ describe('verifyDsp', () => {
       startRendering = (): Promise<AudioBuffer> => Promise.resolve(buffer([0]));
     }
     vi.stubGlobal('OfflineAudioContext', Broken);
-    expect(await verifyDsp('code', 'user:a@1', 1)).toBe('bad syntax');
+    expect(await verifyDsp('code', 'user:a@1', DEF)).toBe('bad syntax');
   });
 
   it('says so when offline rendering is unavailable', async () => {
     URL.createObjectURL = vi.fn(() => 'blob:test');
-    expect(await verifyDsp('code', 'user:a@1', 1)).toMatch(/unavailable/);
+    expect(await verifyDsp('code', 'user:a@1', DEF)).toMatch(/unavailable/);
   });
 });
