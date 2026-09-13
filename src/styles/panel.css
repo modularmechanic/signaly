@@ -60,9 +60,7 @@
   --sheen-a: 180deg;
   /* bolted to a rail, not floating: a hard seam down the left edge and the shadow the
      neighbouring panel casts onto it */
-  --seam:
-    inset 1px 0 0 var(--edge),
-    inset 7px 0 7px -7px rgba(0, 0, 0, 0.7);
+  --seam: inset 1px 0 0 var(--edge), inset 7px 0 7px -7px rgba(0, 0, 0, 0.7);
 }
 
 /* Every paint layer the panel owns lives here, so `background-image` on .module-panel belongs
@@ -73,8 +71,7 @@
   position: absolute;
   inset: 0;
   background-image:
-    var(--grain),
-    linear-gradient(var(--sheen-a), rgb(255 255 255 / var(--sheen)), transparent 30%);
+    var(--grain), linear-gradient(var(--sheen-a), rgb(255 255 255 / var(--sheen)), transparent 30%);
   background-size:
     120px 120px,
     auto;
@@ -255,8 +252,9 @@
   --socket: var(--screw-socket);
   position: absolute;
   inset: 0;
-  background-image: var(--socket), var(--head), var(--socket), var(--head), var(--socket),
-    var(--head), var(--socket), var(--head);
+  background-image:
+    var(--socket), var(--head), var(--socket), var(--head), var(--socket), var(--head), var(--socket),
+    var(--head);
   background-repeat: no-repeat;
   background-size: var(--screw-d) var(--screw-d);
   background-position:

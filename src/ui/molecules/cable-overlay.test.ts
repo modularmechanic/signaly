@@ -94,7 +94,9 @@ describe('overlayView', () => {
   it('hit-tests again as soon as something moved', () => {
     const mid = onRope(0.5);
     const blockedAt = vi.fn(() => false);
-    expect(view({ pointer: { ...mid, inside: true }, blockedAt, moved: true, prevHover: null }).hover).toBe(7);
+    expect(view({ pointer: { ...mid, inside: true }, blockedAt, moved: true, prevHover: null }).hover).toBe(
+      7,
+    );
     expect(blockedAt).toHaveBeenCalledWith(mid.x, mid.y);
     // omitting the flag is the safe default: recompute
     expect(view({ pointer: { ...mid, inside: true } }).hover).toBe(7);

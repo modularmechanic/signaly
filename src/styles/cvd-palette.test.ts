@@ -84,8 +84,7 @@ function simulate(rgb: Vec, kind: keyof typeof BUDGET): Vec {
   }) as Vec;
 }
 
-const deltaE = (a: Vec, b: Vec): number =>
-  Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const deltaE = (a: Vec, b: Vec): number => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
 function token(name: string): string {
   const hit = new RegExp(`^\\s*${name}:\\s*(#[0-9a-fA-F]{6});`, 'm').exec(css)?.[1];
@@ -127,9 +126,7 @@ describe('the Signal Kind palette clears its colour-vision budget', () => {
           }
         }
       }
-      expect(worst.d, `closest pair under ${kind} is ${worst.pair}`).toBeGreaterThanOrEqual(
-        BUDGET[kind],
-      );
+      expect(worst.d, `closest pair under ${kind} is ${worst.pair}`).toBeGreaterThanOrEqual(BUDGET[kind]);
     });
   }
 });

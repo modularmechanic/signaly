@@ -166,8 +166,7 @@ export function overlayView(i: OverlayInput): OverlayView {
   // dragged over a cable — highlighting it as "click to remove" advertises what must not happen.
   // Hit-testing samples every rope, so it runs only when something moved: an idle rack reuses
   // the last answer instead of re-deriving it sixty times a second.
-  const hover =
-    i.drag || i.controlHeld ? null : (i.moved ?? true) ? hitTest(segs, i) : (i.prevHover ?? null);
+  const hover = i.drag || i.controlHeld ? null : (i.moved ?? true) ? hitTest(segs, i) : (i.prevHover ?? null);
   return { segs, hover, sig: `${sig}|h${hover ?? ''}` };
 }
 

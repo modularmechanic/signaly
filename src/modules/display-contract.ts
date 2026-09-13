@@ -18,8 +18,12 @@ export interface DisplayRow {
 /** `EnvPanel` reads these four knob ids by name; the `env` row is what keeps a def honest. */
 export const ENV_KNOBS: readonly string[] = ['a', 'd', 's', 'r'];
 
-const nativeOnly = (what: string) => (def: ContractDef): string | null =>
-  def.native === undefined ? `${what} can only be created by a native audio graph, so this def needs \`native\`` : null;
+const nativeOnly =
+  (what: string) =>
+  (def: ContractDef): string | null =>
+    def.native === undefined
+      ? `${what} can only be created by a native audio graph, so this def needs \`native\``
+      : null;
 
 function meterFromLive(m: ModuleInstance): string | null {
   if (m.ext.analysis !== undefined && !('spectrum' in m.sws && 'phase' in m.sws))

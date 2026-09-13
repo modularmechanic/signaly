@@ -35,13 +35,17 @@ describe('whyNotReady', () => {
     const noR = adsr.knobs.filter((k) => k.id !== 'r');
     expect(whyNotReady({ ...adsr, knobs: noR }, null)).toMatch(/"r" is missing/);
     // fmt is required by the type now; the runtime guard still has to hold for defs from elsewhere.
-    const noFmt = adsr.knobs.map((k) => (k.id === 's' ? ({ ...k, fmt: undefined } as unknown as KnobDef) : k));
+    const noFmt = adsr.knobs.map((k) =>
+      k.id === 's' ? ({ ...k, fmt: undefined } as unknown as KnobDef) : k,
+    );
     expect(whyNotReady({ ...adsr, knobs: noFmt }, null)).toMatch(/fmt, which is not set/);
   });
 
   it('rejects a display neither implementation route can feed', () => {
     // A native has no port to post a step feed on; a worklet cannot build an AnalyserNode.
-    expect(whyNotReady({ ...seq, screen: undefined, display: 'steps', native: 'seq' }, null)).toMatch(/no port/);
+    expect(whyNotReady({ ...seq, screen: undefined, display: 'steps', native: 'seq' }, null)).toMatch(
+      /no port/,
+    );
     expect(whyNotReady({ ...seq, screen: undefined, display: 'scope' }, null)).toMatch(/m\.ext\.analyser/);
   });
 

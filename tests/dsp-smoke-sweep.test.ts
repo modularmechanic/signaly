@@ -29,7 +29,9 @@ function feed(kind: Kind, block: number): Float32Array {
       kind === 'a'
         ? 5 * Math.sin(TP * 220 * t) // audio ±5 V
         : kind === 'g'
-          ? ((t * 4) % 1 < 0.5 ? 5 : 0) // 4 Hz gate, 0/5 V
+          ? (t * 4) % 1 < 0.5
+            ? 5
+            : 0 // 4 Hz gate, 0/5 V
           : kind === 'p'
             ? 1 // 1 V/oct, one octave above C4
             : 5 * Math.sin(TP * 2 * t); // CV: a slow bipolar sweep

@@ -66,4 +66,3 @@ export function readTokens(el?: Element): Tokens {
   cache.set(host, t);
   return t;
 }
-

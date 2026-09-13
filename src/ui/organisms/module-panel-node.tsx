@@ -63,9 +63,7 @@ function EnvPanel({ m }: { m: ModuleInstance }): ReactNode {
     label: id.toUpperCase(),
     text: fmtValue(m.def.knobs.find((k) => k.id === id)?.fmt, v),
   });
-  return (
-    <EnvDisplay points={points} values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]} />
-  );
+  return <EnvDisplay points={points} values={[chip('a', a), chip('d', d), chip('s', s), chip('r', r)]} />;
 }
 
 /** A screen whose feed is missing used to draw nothing at all, which is how MAIN OUT shipped

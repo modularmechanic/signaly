@@ -1,14 +1,4 @@
-import {
-  Base,
-  ch,
-  clamp,
-  flush,
-  ClockSync,
-  DL,
-  OnePole,
-  SYNC_DIV,
-  lpCoeff,
-} from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, ClockSync, DL, OnePole, SYNC_DIV, lpCoeff } from '../../engine/dsp-prelude';
 
 const GLIDE_MS = 20.8229;
 
