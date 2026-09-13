@@ -79,6 +79,8 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
   /** The press in progress: where it started, whether it started on a control, still down. */
   const press = useRef({ x: 0, y: 0, onControl: false, down: false });
   const hover = useRef<number | null>(null);
+  /** Anything that could change what lies under the pointer since the last frame. */
+  const moved = useRef(true);
   const last = useRef('');
 
   const ref = useCanvas(
@@ -99,11 +101,14 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
         pointer: ptr.current,
         blockedAt,
         controlHeld: press.current.down && press.current.onControl,
+        moved: moved.current,
+        prevHover: hover.current,
         zoom,
         w,
         h,
       });
       hover.current = view.hover;
+      moved.current = false;
       if (view.sig === last.current) return;
       last.current = view.sig;
       document.body.classList.toggle('cable-hover', view.hover !== null);
@@ -121,9 +126,11 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
       ptr.current.x = e.clientX;
       ptr.current.y = e.clientY;
       ptr.current.inside = true;
+      moved.current = true;
     };
     const onLeave = (): void => {
       ptr.current.inside = false;
+      moved.current = true;
     };
     const onDown = (e: PointerEvent): void => {
       // A press that was cancelled, or that never produced a click, must not arm this one.
@@ -134,6 +141,7 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
         down: true,
         onControl: e.target instanceof Element && e.target.closest(INTERACTIVE) !== null,
       };
+      moved.current = true;
     };
     const onUp = (e: PointerEvent): void => {
       const p = press.current;
@@ -142,11 +150,13 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
         onControl: p.onControl,
         travel: Math.hypot(e.clientX - p.x, e.clientY - p.y),
       });
+      moved.current = true;
     };
     // A cancelled press produces no click, so it must leave nothing armed behind it.
     const onCancel = (): void => {
       press.current.down = false;
       armed = false;
+      moved.current = true;
     };
     const onClick = (): void => {
       const remove = armed;
@@ -160,15 +170,21 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
     };
     // Cached jack centres go stale on scroll, on resize, on a zoom, and on any rack mutation —
     // removing or reordering a module reflows the row without firing either event.
-    const unsubRack = useRackStore.subscribe(invalidateJackRects);
+    // Each of these can slide a cable under a pointer that has not moved, so each must re-arm the
+    // hit test as well as drop the cached rects — or a click removes whatever used to be there.
+    const stale = (): void => {
+      invalidateJackRects();
+      moved.current = true;
+    };
+    const unsubRack = useRackStore.subscribe(stale);
     const unsubZoom = useSettingsStore.subscribe((s, prev) => {
-      if (s.zoom !== prev.zoom) invalidateJackRects();
+      if (s.zoom !== prev.zoom) stale();
     });
-    window.addEventListener('resize', invalidateJackRects);
-    window.addEventListener('scroll', invalidateJackRects, true);
+    window.addEventListener('resize', stale);
+    window.addEventListener('scroll', stale, true);
     // Pinching the page itself moves painted content under a fixed canvas.
-    window.visualViewport?.addEventListener('resize', invalidateJackRects);
-    window.visualViewport?.addEventListener('scroll', invalidateJackRects);
+    window.visualViewport?.addEventListener('resize', stale);
+    window.visualViewport?.addEventListener('scroll', stale);
     // Capture phase: a control's own handler calls stopPropagation, and pointer capture
     // retargets the event to it, so the bubble phase never reliably reaches the window.
     window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
@@ -180,10 +196,10 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
     return () => {
       unsubRack();
       unsubZoom();
-      window.removeEventListener('resize', invalidateJackRects);
-      window.removeEventListener('scroll', invalidateJackRects, true);
-      window.visualViewport?.removeEventListener('resize', invalidateJackRects);
-      window.visualViewport?.removeEventListener('scroll', invalidateJackRects);
+      window.removeEventListener('resize', stale);
+      window.removeEventListener('scroll', stale, true);
+      window.visualViewport?.removeEventListener('resize', stale);
+      window.visualViewport?.removeEventListener('scroll', stale);
       window.removeEventListener('pointerdown', onDown, { capture: true });
       window.removeEventListener('pointerup', onUp, { capture: true });
       window.removeEventListener('pointercancel', onCancel, { capture: true });

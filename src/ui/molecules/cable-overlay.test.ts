@@ -80,6 +80,26 @@ describe('overlayView', () => {
     expect(blockedAt).not.toHaveBeenCalled();
   });
 
+  it('skips the hit test on a frame where nothing moved, and reuses the last hover', () => {
+    // An idle rack must not re-sample every rope each frame; the answer cannot have changed.
+    const mid = onRope(0.5);
+    const blockedAt = vi.fn(() => false);
+    const idle = view({ pointer: { ...mid, inside: true }, blockedAt, moved: false, prevHover: 7 });
+    expect(idle.hover).toBe(7);
+    expect(blockedAt).not.toHaveBeenCalled();
+    // ...and stays empty rather than inventing one when there was none
+    expect(view({ pointer: { ...mid, inside: true }, moved: false, prevHover: null }).hover).toBeNull();
+  });
+
+  it('hit-tests again as soon as something moved', () => {
+    const mid = onRope(0.5);
+    const blockedAt = vi.fn(() => false);
+    expect(view({ pointer: { ...mid, inside: true }, blockedAt, moved: true, prevHover: null }).hover).toBe(7);
+    expect(blockedAt).toHaveBeenCalledWith(mid.x, mid.y);
+    // omitting the flag is the safe default: recompute
+    expect(view({ pointer: { ...mid, inside: true } }).hover).toBe(7);
+  });
+
   it('draws the drag rope from the fixed jack to the pointer, and hovers nothing meanwhile', () => {
     const drag = {
       fixed: { uid: 1, dir: 'out' as const, def: { id: 'o', kind: 'c' as const } },

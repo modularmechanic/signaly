@@ -39,6 +39,10 @@ export interface OverlayInput {
   blockedAt: (x: number, y: number) => boolean;
   /** a press that began on a control is still down: the pointer is only passing over cables */
   controlHeld: boolean;
+  /** the pointer, or the jacks under it, moved since the last frame. Omitted means yes. */
+  moved?: boolean;
+  /** the previous frame's hover, reused as-is while nothing has moved */
+  prevHover?: number | null;
   /** live rack zoom; every px metric below is quoted at 1 and scaled by it */
   zoom: number;
   /** surface size, so a resize invalidates the repaint signature */
@@ -160,7 +164,10 @@ export function overlayView(i: OverlayInput): OverlayView {
   }
   // A drag owns the pointer: nothing is hoverable until it ends. Nor while a control is being
   // dragged over a cable — highlighting it as "click to remove" advertises what must not happen.
-  const hover = i.drag || i.controlHeld ? null : hitTest(segs, i);
+  // Hit-testing samples every rope, so it runs only when something moved: an idle rack reuses
+  // the last answer instead of re-deriving it sixty times a second.
+  const hover =
+    i.drag || i.controlHeld ? null : (i.moved ?? true) ? hitTest(segs, i) : (i.prevHover ?? null);
   return { segs, hover, sig: `${sig}|h${hover ?? ''}` };
 }
 
