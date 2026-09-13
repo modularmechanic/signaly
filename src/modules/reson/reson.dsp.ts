@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, TP } from '../../engine/dsp-prelude';
 
 /** e^-6.9078 = 0.001, so `r^(dec * sr)` is exactly -60 dB: DECAY is a real T60. */
 const T60 = 6.907755;
@@ -11,10 +11,6 @@ class Reson extends Base {
   y2 = [0, 0, 0];
   lg = 0;
   imp = 0;
-
-  defaults(): Params {
-    return { freq: 220, spread: 7, dec: 0.8, cvA: 0, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

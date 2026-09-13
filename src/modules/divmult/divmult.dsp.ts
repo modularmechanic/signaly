@@ -1,4 +1,4 @@
-import { Base, ch, ClockSync, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, ClockSync } from '../../engine/dsp-prelude';
 
 const OUTS = 6; // d8 d4 d2 m2 m3 m4
 
@@ -17,10 +17,6 @@ class DivMult extends Base {
   next = [1, 1, 1]; // next pulse index (of N) still owed for m2/m3/m4 this period
   hi = new Array(OUTS).fill(0) as number[];
   pw = 0;
-
-  defaults(): Params {
-    return {};
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const outs = [O[0]?.[0], O[1]?.[0], O[2]?.[0], O[3]?.[0], O[4]?.[0], O[5]?.[0]];

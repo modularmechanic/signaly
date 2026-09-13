@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** Fixed per-type character, indexed by the TYPE switch: overall gain, baseline
     even-harmonic asymmetry, and how hard the supply sags under level.
@@ -16,10 +16,6 @@ class Tube extends Base {
   env = 0;
   envA = lpCoeff(8);
   lp = 0;
-
-  defaults(): Params {
-    return { drive: 3, bias: 0, sag: 0.3, tone: 6000, level: 0.8, type: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

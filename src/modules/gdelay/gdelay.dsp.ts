@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, Lcg, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, Lcg, TP } from '../../engine/dsp-prelude';
 
 const VOICES = 6;
 
@@ -16,10 +16,6 @@ class GDelay extends Base {
   sch = 0;
   next = 1;
   fbOut = 0;
-
-  defaults(): Params {
-    return { size: 0.12, dens: 6, pitch: 0, spray: 0.2, fb: 0.3, mix: 0.5 };
-  }
 
   spawn(len: number, rate: number): void {
     let v = this.age.findIndex((a) => a < 0);

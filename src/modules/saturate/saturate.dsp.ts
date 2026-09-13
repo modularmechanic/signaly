@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** TAPE: narrower bandwidth, warmer. CONSOLE: harder knee, wider bandwidth, brighter. */
 const MODE = [
@@ -13,10 +13,6 @@ class Saturate extends Base {
   tiltLp = 0;
   tiltA = lpCoeff(1000);
   hfLp = 0;
-
-  defaults(): Params {
-    return { drive: 1, bias: 0, tilt: 0, level: 0.8, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

@@ -1,14 +1,10 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** Mid-side width. Only the SIDE band is scaled, so L+R is the untouched mid at any
     width — that identity is what mono compatibility means. BASS MONO strips the low
     end out of the side band so the bottom octaves always sit dead centre. */
 class Spread extends Base {
   lo = 0;
-
-  defaults(): Params {
-    return { width: 1, bass: 120, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inL = ch(I, 0),

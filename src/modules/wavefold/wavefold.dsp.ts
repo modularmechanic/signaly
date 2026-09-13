@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** Triangle fold, period 4, identity on -1..1 and bounded to -1..1 for any input.
     This is the whole difference from DIST: past unity the transfer turns back on
@@ -11,10 +11,6 @@ const tri = (u: number): number => {
 class Wavefold extends Base {
   dc = 0;
   dcA = lpCoeff(5);
-
-  defaults(): Params {
-    return { fold: 1, sym: 0, level: 0.8, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

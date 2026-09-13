@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 const STEPS_PER_BAR = 96; // 24 ppq * 4 beats
 const CAP = STEPS_PER_BAR * 16;
@@ -11,10 +11,6 @@ class CvRec extends Base {
   pos = 0;
   lc = 0;
   lr = 0;
-
-  defaults(): Params {
-    return { bars: 4, rec: 0 };
-  }
 
   override msg(m: InMsg): void {
     if (m.t === 'load' && Array.isArray(m.buf)) {

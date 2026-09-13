@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const LED_IDS = ['s1', 's2', 's3', 's4'];
 
@@ -9,10 +9,6 @@ class SSwitch extends Base {
   lastClk = 0;
   lastRst = 0;
   led = -1;
-
-  defaults(): Params {
-    return { steps: 4, dir: 0 };
-  }
 
   private lamp(index: number, v: number): void {
     const id = LED_IDS[index];

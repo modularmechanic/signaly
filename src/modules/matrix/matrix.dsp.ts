@@ -1,6 +1,6 @@
 // 4 x 4 matrix mixer: every input has its own level into every bus, sixteen cells in all.
 // Levels are read once per block into a flat 16-slot table (input-major, the panel order).
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const ROWS = ['a', 'b', 'c', 'd'] as const;
 const N = 4;
@@ -10,12 +10,6 @@ const CELLS: string[] = ROWS.flatMap((r) => [1, 2, 3, 4].map((n) => `${r}${n}`))
 
 class Matrix extends Base {
   g = new Float32Array(N * N);
-
-  defaults(): Params {
-    const p: Params = {};
-    for (const id of CELLS) p[id] = 0;
-    return p;
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = [O[0]?.[0], O[1]?.[0], O[2]?.[0], O[3]?.[0]];

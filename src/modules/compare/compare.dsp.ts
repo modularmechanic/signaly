@@ -1,16 +1,12 @@
 // Window comparator. GATE is high while IN sits inside CENTRE +/- WIDTH/2; ABOVE and
 // BELOW cover the two sides, so exactly one of the three outputs is high at any sample.
 // CENTRE CV arrives already scaled by its attenuverter (a GainNode on the jack).
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const HI = 5;
 
 class Compare extends Base {
   led = -1;
-
-  defaults(): Params {
-    return { centre: 0, width: 2, ccvamt: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const x = ch(I, 0),

@@ -1,7 +1,7 @@
 // Attack/decay envelope. No sustain: a trigger runs ATTACK then DECAY and stops,
 // or restarts immediately in LOOP, which turns it into a shape-controllable LFO.
 // CURVE bends both stages from linear (0) to exponential (1) through one exponent.
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const EOC_S = 0.005; // end-of-cycle pulse width, seconds
 const MAX_CURVE = 3; // exponent added on top of linear at CURVE = 1
@@ -15,10 +15,6 @@ class AD extends Base {
   lt = 0;
   eoc = 0;
   led = -1;
-
-  defaults(): Params {
-    return { a: 0.01, d: 0.3, curve: 0.5, loop: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const tr = ch(I, 0),

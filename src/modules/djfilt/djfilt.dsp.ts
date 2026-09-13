@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** The two extremes SWEEP interpolates between: near-transparent, and a hard 1-pole roll-off. */
 const LO_HZ = 30;
@@ -10,10 +10,6 @@ const HI_HZ = 18000;
 // dedicates a switch or a jack to picking the mode.
 class DjFilt extends Base {
   lp = 0;
-
-  defaults(): Params {
-    return { sweep: 0, cvA: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

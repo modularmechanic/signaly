@@ -1,14 +1,10 @@
-import { Base, ch, clamp, flush, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush } from '../../engine/dsp-prelude';
 
 // Same TPT topology as SVF, but the three taps are crossfaded rather than jacked
 // separately: one knob (and one CV) sweeps LP -> BP -> HP without a click.
 class Morph extends Base {
   ic1 = 0;
   ic2 = 0;
-
-  defaults(): Params {
-    return { cut: 1000, res: 0.25, shape: 0, shapeA: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

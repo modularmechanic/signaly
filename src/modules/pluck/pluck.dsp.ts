@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, Lcg, OnePole, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, Lcg, OnePole, lpCoeff } from '../../engine/dsp-prelude';
 
 /** e^-6.9078 = 0.001: -60 dB, so `DECAY` is a real T60 independent of the DAMP filter's own tilt. */
 const T60 = 6.907755;
@@ -14,10 +14,6 @@ class Pluck extends Base {
   lastTrig = 0;
   loopLen = 200;
   r = 0.999;
-
-  defaults(): Params {
-    return { tune: 220, damp: 3500, bright: 0.6, dec: 1.2, tcvA: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const voct = ch(I, 0),

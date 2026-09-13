@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const SIGMA = 10;
 const BETA = 8 / 3;
@@ -17,10 +17,6 @@ class Chaos extends Base {
   ly = 0.5;
   lz = 0.5;
   acc = 0;
-
-  defaults(): Params {
-    return { rate: 2, strange: 0.25, level: 0.8, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const rcv = ch(I, 0);

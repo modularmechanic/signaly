@@ -1,8 +1,11 @@
-import { Base, ch, clamp, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, TP } from '../../engine/dsp-prelude';
 
 const CENTERS = [100, 200, 400, 800, 1600, 3200, 6400, 12800];
 const Q = 5;
 const N = CENTERS.length;
+// Band param ids, built once: a template literal inside process() allocated a string per band on
+// every sample, and garbage on the audio thread is how a DSP causes dropouts.
+const GAIN_IDS = CENTERS.map((_, b) => `b${b + 1}`);
 
 interface Coeff {
   b0: number;
@@ -25,17 +28,14 @@ class FixedBank extends Base {
   x2 = new Float64Array(N);
   y1 = new Float64Array(N);
   y2 = new Float64Array(N);
-
-  defaults(): Params {
-    const p: Params = {};
-    for (let i = 0; i < N; i++) p[`b${i + 1}`] = 0.7;
-    return p;
-  }
+  gain = new Float64Array(N);
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0);
     const out = O[0]?.[0];
     if (!out) return true;
+    // Params only change between blocks, so read the eight band levels once per block.
+    for (let b = 0; b < N; b++) this.gain[b] = this.p[GAIN_IDS[b] ?? ''] ?? 0.7;
     for (let i = 0; i < out.length; i++) {
       const x = inp?.[i] ?? 0;
       let sum = 0;
@@ -51,7 +51,7 @@ class FixedBank extends Base {
         this.x1[b] = x;
         this.y2[b] = py1;
         this.y1[b] = flush(y);
-        sum += y * (this.p[`b${b + 1}`] ?? 0);
+        sum += y * (this.gain[b] ?? 0);
       }
       out[i] = clamp(sum * 0.6, -5, 5);
     }

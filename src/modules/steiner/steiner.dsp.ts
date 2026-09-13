@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, TP } from '../../engine/dsp-prelude';
 
 // RBJ cookbook biquad coefficients, recomputed at block rate: a closed-form coefficient set
 // per mode rather than the analog-modelled integrator core the rest of the filter bank shares
@@ -10,10 +10,6 @@ class Steiner extends Base {
   x2 = 0;
   y1 = 0;
   y2 = 0;
-
-  defaults(): Params {
-    return { cut: 800, res: 0.3, cvA: 0, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

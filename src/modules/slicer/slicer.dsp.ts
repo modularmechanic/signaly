@@ -1,4 +1,4 @@
-import { readLinear, Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { readLinear, Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 const MAX_SLICES = 16;
 
@@ -11,10 +11,6 @@ class Slicer extends Base {
   phase = 0;
   lastIdx = -1;
   lastTrig = 0;
-
-  defaults(): Params {
-    return { slices: 8 };
-  }
 
   override msg(m: InMsg): void {
     const v = m.v as unknown;

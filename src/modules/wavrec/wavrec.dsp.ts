@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 /** Interleaved samples per message. 4096 frames is ~85 ms at 48 kHz: often enough that the
     readout moves, rarely enough that the port is not the bottleneck. */
@@ -15,10 +15,6 @@ class WavRec extends Base {
   frames = 0;
   wasRec = false;
   sentLine = '';
-
-  defaults(): Params {
-    return { rec: 0, gain: 1 };
-  }
 
   /** Erase is a two-sided reset: clearing the main thread's copy alone would leave this counter
       running toward the cap, so a wiped recorder would still read STOP 3:20 and could never

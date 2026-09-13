@@ -2,16 +2,12 @@
 // Both laws are constant power (sin/cos quadrant), so gA^2 + gB^2 = 1 all the way
 // across: a sweep holds its loudness instead of dipping like a linear fade does.
 // 5 V of CV covers the whole sweep; the attenuverters live on the jacks, not here.
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const Q = Math.PI / 2; // quarter turn: the whole fade sits in one quadrant
 const MAX_V = 5;
 
 class Xfade extends Base {
-  defaults(): Params {
-    return { fade: 0.5, fcvamt: 0, pan: 0, pcvamt: 0 };
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const a = ch(I, 0),
       b = ch(I, 1),

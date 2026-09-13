@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 /** The knob is continuous; the operator only ever runs on a musical ratio. */
 const RATIOS = [0.25, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8];
@@ -16,10 +16,6 @@ class FmOp extends Base {
   mph = 0;
   mz = 0;
   ls = 0;
-
-  defaults(): Params {
-    return { tune: 0, ratio: 1, index: 0, idxA: 0, fb: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

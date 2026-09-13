@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 /** RANDOM WALK — a Brownian CV: on every clock it drifts by a random amount up to STEP,
     clamped to ±RANGE so it wanders forever without ever leaving its bounds. */
@@ -7,10 +7,6 @@ class RndWalk extends Base {
   lc = 0;
   lr = 0;
   rng = new Lcg(42017);
-
-  defaults(): Params {
-    return { step: 0.5, range: 5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0];

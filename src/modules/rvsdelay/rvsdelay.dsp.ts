@@ -1,4 +1,4 @@
-import { Base, ch, clamp, ClockSync, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, ClockSync } from '../../engine/dsp-prelude';
 
 const MAX_S = 1; // seconds, chunk-length ceiling
 
@@ -15,10 +15,6 @@ class Rvsdelay extends Base {
   xf = Math.round(sampleRate * 0.024);
   rp = this.chunk - 1;
   cs = new ClockSync();
-
-  defaults(): Params {
-    return { time: 0.3, mix: 0.7 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

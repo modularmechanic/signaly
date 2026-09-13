@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush } from '../../engine/dsp-prelude';
 
 const SWEEP_OCT = 4; // full SENS range sweeps the cutoff +/-4 octaves
 
@@ -9,10 +9,6 @@ class EnvFilt extends Base {
   env = 0;
   ic1 = 0;
   ic2 = 0;
-
-  defaults(): Params {
-    return { sens: 0.6, freq: 400, res: 0.3, atk: 0.01, rel: 0.15, mix: 1, dir: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0);

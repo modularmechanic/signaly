@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** HALF passes only the positive half; FULL folds both halves up, which cancels the
     fundamental and leaves the octave above dominant — the classic full-wave "ring"
@@ -6,10 +6,6 @@ import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-p
 class Rectify extends Base {
   dc = 0;
   dcA = lpCoeff(6);
-
-  defaults(): Params {
-    return { drive: 1, level: 0.8, mix: 1, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

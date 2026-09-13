@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** Diodes conduct one way: the positive half saturates hard, the negative half stays soft.
     That asymmetry is what puts even harmonics in the drive path, unlike the transistor
@@ -11,10 +11,6 @@ class Diode extends Base {
   s3 = 0;
   s4 = 0;
   bass = 0;
-
-  defaults(): Params {
-    return { cut: 1000, res: 0.3, cvA: 0, drive: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),
