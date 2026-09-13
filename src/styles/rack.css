@@ -232,6 +232,13 @@
   text-align: center;
 }
 
+/* A declared display with no feed behind it — loud, not blank. */
+.text-screen.screen-missing {
+  color: var(--danger);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
 .steps-display {
   display: flex;
   flex-wrap: wrap;

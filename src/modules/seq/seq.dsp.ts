@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 const N = 8;
 
@@ -13,10 +13,6 @@ class Seq extends Base {
   lr = 0;
   cv = 0;
   sent = -1;
-
-  defaults(): Params {
-    return { len: N, glide: 0.01 };
-  }
 
   override msg(m: InMsg): void {
     if (m.t === 'step') {

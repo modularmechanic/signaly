@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 /** Semitone offsets above the root for each of 4 voices. Index matches the TYPE knob's
     `fChord` labels: MAJ MIN MAJ7 MIN7 DOM7 SUS4 DIM7 AUG 5TH, then the first 4 degrees
@@ -21,10 +21,6 @@ const CHORDS: readonly (readonly number[])[] = [
 /** CHORD — a passive voicing expander: ROOT in 1V/oct, four voices out at once. No clock,
     no state; every sample is the chord table read straight through. */
 class Chords extends Base {
-  defaults(): Params {
-    return { type: 0, inv: 0 };
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const outs = [O[0]?.[0], O[1]?.[0], O[2]?.[0], O[3]?.[0]];
     if (outs.some((o) => !o)) return true;

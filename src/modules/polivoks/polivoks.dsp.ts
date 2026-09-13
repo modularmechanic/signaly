@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 // Two stages, and unlike LADDER (one tanh at the input feeding four clean linear stages) or
 // DIODE (an asymmetric per-stage shaper), every op-amp integrator here saturates its own
@@ -7,10 +7,6 @@ import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-p
 class Polivoks extends Base {
   s1 = 0;
   s2 = 0;
-
-  defaults(): Params {
-    return { cut: 1000, res: 0.3, drive: 1, cvA: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

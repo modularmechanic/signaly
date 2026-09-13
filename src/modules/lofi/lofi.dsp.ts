@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, Lcg, OnePole, lpCoeff, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, Lcg, OnePole, lpCoeff, TP } from '../../engine/dsp-prelude';
 
 /** Four independent lo-fi flaws, each on one knob: WOW wobbles pitch through a short modulated
     delay tap, BANDWIDTH rolls off the top end with a one-pole low-pass, HISS adds white noise,
@@ -8,10 +8,6 @@ class Lofi extends Base {
   ph = 0;
   bwF = new OnePole(0, 0);
   rng = new Lcg(20260903);
-
-  defaults(): Params {
-    return { bw: 8000, wow: 0.3, hiss: 0.05, crackle: 0.1, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0);

@@ -1,29 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let EnvFilt: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./envfilt.dsp');
-  EnvFilt = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** RMS of the second half of a 3 kHz tone at the given amplitude and DIRECTION. */
-function hfEnergy(amp: number, dir: number): number {
-  const f = new EnvFilt();
+async function hfEnergy(amp: number, dir: number): Promise<number> {
+  const f = await loadProcessor('envfilt');
   f.p.dir = dir;
   f.p.sens = 1;
   f.p.freq = 300;
@@ -42,8 +22,8 @@ function hfEnergy(amp: number, dir: number): number {
 }
 
 describe('envfilt.dsp', () => {
-  it('passes fully dry input through unchanged at mix 0', () => {
-    const f = new EnvFilt();
+  it('passes fully dry input through unchanged at mix 0', async () => {
+    const f = await loadProcessor('envfilt');
     f.p.mix = 0;
     const n = 512;
     const inp = new Float32Array(n);
@@ -53,13 +33,13 @@ describe('envfilt.dsp', () => {
     expect(Array.from(O[0]![0]!)).toEqual(Array.from(inp));
   });
 
-  it('opens the filter upward on loud input and closes it downward when DIRECTION flips', () => {
-    const loudUp = hfEnergy(4, 0);
-    const quietUp = hfEnergy(0.3, 0);
+  it('opens the filter upward on loud input and closes it downward when DIRECTION flips', async () => {
+    const loudUp = await hfEnergy(4, 0);
+    const quietUp = await hfEnergy(0.3, 0);
     expect(loudUp).toBeGreaterThan(quietUp);
 
-    const loudDown = hfEnergy(4, 1);
-    const quietDown = hfEnergy(0.3, 1);
+    const loudDown = await hfEnergy(4, 1);
+    const quietDown = await hfEnergy(0.3, 1);
     expect(loudDown).toBeLessThan(quietDown);
   });
 });

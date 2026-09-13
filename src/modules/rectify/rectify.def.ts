@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'rectify',
@@ -23,7 +23,7 @@ export const def: ModuleDef = {
     },
     { id: 'level', label: 'LEVEL', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 1, fmt: 'fPc' },
-    { id: 'dcvA', label: 'DRIVE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'dcv' },
+    att('dcv', 'DRIVE CV'),
   ],
   sws: [{ id: 'mode', label: 'MODE', options: ['HALF', 'FULL'] }],
   ins: [

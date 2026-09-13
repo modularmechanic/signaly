@@ -118,7 +118,7 @@ export function Knob({ m, def, cv }: KnobProps): ReactNode {
         onPointerCancel={onPointerUp}
         onDoubleClick={() => commit(def.initial)}
       >
-        <div className="knob-cap" style={{ transform: `rotate(${(-135 + n * 270).toFixed(2)}deg)` }} />
+        <div className="knob-cap" />
         {marker && <i className="knob-cv" aria-hidden="true" />}
       </div>
       <div className="knob-label">{def.label}</div>

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 /** Weighted coin flip latched on each GATE rising edge and held for the whole gate (so a
     wide pulse cannot re-flip mid-gate). BIAS is the chance of routing to B: 0 always A,
@@ -7,10 +7,6 @@ class Bern extends Base {
   lg = 0;
   toB = false;
   rng = new Lcg(731);
-
-  defaults(): Params {
-    return { bias: 0.5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const a = O[0]?.[0];

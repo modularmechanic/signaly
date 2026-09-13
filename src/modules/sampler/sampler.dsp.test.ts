@@ -1,29 +1,8 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null; postMessage: () => void } = {
-    onmessage: null,
-    postMessage: () => {},
-  };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-  msg(m: { t: string; v?: unknown }): void;
-}
-let Sampler: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./sampler.dsp');
-  Sampler = reg.mock.calls[0]![1] as new () => Proc;
-});
+type Sampler = Proc & { msg(m: { t: string; v?: unknown }): void };
 
 const RAMP_LEN = 1000;
 
@@ -35,8 +14,8 @@ function ramp(): Float32Array {
 }
 
 /** Samples elapsed before playback falls silent (one-shot, no loop). */
-function samplesToFinish(pitchSemis: number): number {
-  const s = new Sampler();
+async function samplesToFinish(pitchSemis: number): Promise<number> {
+  const s = (await loadProcessor('sampler')) as Sampler;
   s.msg({ t: 'sample', v: ramp() });
   s.p.pitch = pitchSemis;
   s.p.start = 0;
@@ -53,17 +32,17 @@ function samplesToFinish(pitchSemis: number): number {
 }
 
 describe('sampler.dsp', () => {
-  it('tracks 1V/oct — +12 semitones plays the buffer twice as fast', () => {
-    const base = samplesToFinish(0);
-    const up = samplesToFinish(12);
+  it('tracks 1V/oct — +12 semitones plays the buffer twice as fast', async () => {
+    const base = await samplesToFinish(0);
+    const up = await samplesToFinish(12);
     expect(base).toBeGreaterThan(RAMP_LEN * 0.8);
     const ratio = base / up;
     expect(ratio).toBeGreaterThan(1.9);
     expect(ratio).toBeLessThan(2.1);
   });
 
-  it('confines playback to START..END and REVERSE starts from the far edge', () => {
-    const s = new Sampler();
+  it('confines playback to START..END and REVERSE starts from the far edge', async () => {
+    const s = (await loadProcessor('sampler')) as Sampler;
     s.msg({ t: 'sample', v: ramp() });
     s.p.start = 0.5;
     s.p.end = 1;
@@ -77,8 +56,8 @@ describe('sampler.dsp', () => {
     expect(O[0]![0]![0]!).toBeGreaterThan(4.5);
   });
 
-  it('keeps looping past the natural end when LOOP is on', () => {
-    const s = new Sampler();
+  it('keeps looping past the natural end when LOOP is on', async () => {
+    const s = (await loadProcessor('sampler')) as Sampler;
     s.msg({ t: 'sample', v: ramp() });
     s.p.loop = 1;
     const total = RAMP_LEN * 3;

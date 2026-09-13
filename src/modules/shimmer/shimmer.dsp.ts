@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, OnePole, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, OnePole, lpCoeff } from '../../engine/dsp-prelude';
 
 const SHIFT_SEMIS = 12; // fixed octave-up: the "shimmer" character, not a knob
 
@@ -10,10 +10,6 @@ class Shimmer extends Base {
   buf = new DL(Math.ceil(sampleRate * 0.25));
   ph = 0;
   damp = new OnePole(0, 0);
-
-  defaults(): Params {
-    return { fb: 0.55, window: 0.08, damp: 5000, mix: 0.35 };
-  }
 
   /** Two reads a half-window apart, constant-power blended: click-free wrap. */
   tap(ph: number, w: number): number {

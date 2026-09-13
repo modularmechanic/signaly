@@ -1,22 +1,37 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { KIND_NAME } from '../../core/types';
 import { getAudioContext, resume } from '../../engine/audio-context';
 import { addModule, addRow } from '../../engine/rack';
-import { cancelArm, getArmed, subscribeArm } from '../../hooks/patch-state';
+import { subscribe, type JackRef, type Outcome } from '../../hooks/jack-interaction';
 import { useRackStore, type RackState } from '../../state/rack-store';
 import { useUiStore } from '../../state/ui-store';
 import { hasAnyKey } from '../../storage/api-key-store';
 import { Button } from '../atoms/button';
 import { CableCanvas } from '../molecules/cable-canvas';
+import { ZoomControls } from '../molecules/zoom-controls';
 import { ModuleBrowser } from '../organisms/module-browser';
 import { PatchMenu } from '../organisms/patch-menu';
 import { RackRow } from '../organisms/rack-row';
 import { SettingsDialog } from '../organisms/settings-dialog';
-import { ZoomControls } from '../molecules/zoom-controls';
 
 const say = (text: string): void => useUiStore.getState().setNotice(text);
 
-const jackLabel = (s: RackState, j: { uid: number; jack: string }): string =>
-  `${s.modules[j.uid]?.def.name ?? 'module'} ${j.jack}`;
+// A jack as a person hears it: module, printed label, signal kind — never the internal id.
+const jackLabel = (j: JackRef): string =>
+  `${useRackStore.getState().modules[j.uid]?.def.name ?? 'module'} ${j.def.label}`;
+
+/** Announce what a patching interaction reported it did. */
+function sayOutcome(o: Outcome): void {
+  if (o.type === 'armed')
+    say(
+      `Armed ${jackLabel(o.jack)} ${o.jack.dir === 'in' ? 'input' : 'output'}, ` +
+        `${KIND_NAME[o.jack.def.kind]} — pick a destination`,
+    );
+  else if (o.type === 'cancelled') say('Patch cancelled');
+  else if (o.type === 'connected')
+    say(`Patched ${jackLabel(o.from)} to ${jackLabel(o.to)}, ${KIND_NAME[o.from.def.kind]}`);
+  else if (o.type === 'disconnected') say(o.count === 1 ? 'Cable removed' : `${o.count} cables removed`);
+}
 
 /** Announce every structural rack change once, from a single store subscription. */
 function announce(s: RackState, prev: RackState): void {
@@ -31,25 +46,20 @@ function announce(s: RackState, prev: RackState): void {
     return say(at < 0 ? `Added ${name}` : `Added ${name} to row ${at + 1}`);
   }
   if (removed !== undefined) return say(`Removed ${prev.modules[Number(removed)]?.def.name ?? 'module'}`);
-  if (s.rows.length > prev.rows.length) return say(`Row ${s.rows.length} added`);
-  const last = s.cables[s.cables.length - 1];
-  if (s.cables.length > prev.cables.length && last)
-    say(`Patched ${jackLabel(s, last.from)} to ${jackLabel(s, last.to)}`);
-  else if (s.cables.length < prev.cables.length) say('Cable removed');
+  if (s.rows.length > prev.rows.length) say(`Row ${s.rows.length} added`);
+  // Cables are not diffed here: jack-interaction reports its own outcomes.
 }
 
 export function RackWorkspace(): ReactNode {
   const rows = useRackStore((s) => s.rows);
   const browserOpen = useUiStore((s) => s.browserOpen);
   const settingsOpen = useUiStore((s) => s.settingsOpen);
+  const patchesOpen = useUiStore((s) => s.patchesOpen);
   const notice = useUiStore((s) => s.notice);
-  const [patchesOpen, setPatchesOpen] = useState(false);
   const [targetRow, setTargetRow] = useState(0);
-  const opener = useRef<HTMLElement | null>(null);
   const rack = useRef<HTMLElement | null>(null);
 
   const ui = useUiStore.getState();
-  const anyModal = browserOpen || settingsOpen || patchesOpen;
   const hasKey = hasAnyKey();
 
   // Browsers start the context suspended; the first gesture in the page resumes it.
@@ -67,39 +77,15 @@ export function RackWorkspace(): ReactNode {
   }, []);
 
   useEffect(() => {
-    const offArm = subscribeArm((a) => {
-      if (a) return say(`Armed ${a.jackId} ${a.dir === 'in' ? 'input' : 'output'} — pick a destination`);
-      // armJack clears the arm *before* connecting: only a still-unchanged cable list is a cancel.
-      const n = useRackStore.getState().cables.length;
-      queueMicrotask(() => {
-        if (useRackStore.getState().cables.length === n) say('Patch cancelled');
-      });
-    });
+    const offPatch = subscribe(sayOutcome);
     const offRack = useRackStore.subscribe(announce);
     return () => {
-      offArm();
+      offPatch();
       offRack();
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key !== 'Escape') return;
-      if (getArmed()) return cancelArm();
-      useUiStore.getState().setBrowserOpen(false);
-      useUiStore.getState().setSettingsOpen(false);
-      setPatchesOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  useEffect(() => {
-    if (!anyModal) opener.current?.focus();
-  }, [anyModal]);
-
   const openBrowser = (index: number): void => {
-    opener.current = document.activeElement as HTMLElement | null;
     setTargetRow(index);
     ui.setBrowserOpen(true);
   };
@@ -135,22 +121,8 @@ export function RackWorkspace(): ReactNode {
           <span className="topbar-gap" />
           <Button onClick={() => openBrowser(rows.length - 1)}>+ Module</Button>
           <Button onClick={() => addRow()}>+ Row</Button>
-          <Button
-            onClick={(e) => {
-              opener.current = e.currentTarget;
-              setPatchesOpen(true);
-            }}
-          >
-            Patches
-          </Button>
-          <Button
-            onClick={(e) => {
-              opener.current = e.currentTarget;
-              ui.setSettingsOpen(true);
-            }}
-          >
-            Settings
-          </Button>
+          <Button onClick={() => ui.setPatchesOpen(true)}>Patches</Button>
+          <Button onClick={() => ui.setSettingsOpen(true)}>Settings</Button>
         </nav>
 
         <p className="live-region" role="status" aria-live="polite">
@@ -171,7 +143,7 @@ export function RackWorkspace(): ReactNode {
       <ZoomControls rack={rack} />
 
       {browserOpen && <ModuleBrowser onPick={pick} onClose={() => ui.setBrowserOpen(false)} />}
-      {patchesOpen && <PatchMenu onClose={() => setPatchesOpen(false)} />}
+      {patchesOpen && <PatchMenu onClose={() => ui.setPatchesOpen(false)} />}
       {settingsOpen && <SettingsDialog onClose={() => ui.setSettingsOpen(false)} />}
     </div>
   );

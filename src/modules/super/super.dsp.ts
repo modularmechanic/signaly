@@ -1,4 +1,4 @@
-import { Base, blep, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, blep, ch, clamp } from '../../engine/dsp-prelude';
 
 /** Detune of each voice as a fraction of the maximum spread; index 3 is the centre. */
 const SPREAD = [-1, -0.62, -0.28, 0, 0.28, 0.62, 1];
@@ -9,10 +9,6 @@ const PAN_L = [1, 0.35, 1, 0.35, 1, 0.35];
 
 class Super extends Base {
   ph = [0, 0.13, 0.29, 0.41, 0.57, 0.71, 0.87];
-
-  defaults(): Params {
-    return { tune: 0, det: 0.3, mix: 0.5, detA: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

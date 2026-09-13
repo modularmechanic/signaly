@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 class ClockDiv extends Base {
   cnt = 0;
@@ -10,10 +10,6 @@ class ClockDiv extends Base {
   lpw = Math.max(1, (sampleRate * 0.05) | 0);
   ledHold = 0;
   led = 0;
-
-  defaults(): Params {
-    return { div: 4 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0];

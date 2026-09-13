@@ -21,7 +21,6 @@ import {
   lpCoeff,
   TP,
   type BaseOptions,
-  type Params,
 } from '../../engine/dsp-prelude';
 
 const SZ_TAU_MS = 34.7118;
@@ -77,23 +76,6 @@ class Reverb extends Base {
   combLp: Quad<number> = [0, 0, 0, 0];
   sap: [AP, AP];
   decorr: DL;
-
-  defaults(): Params {
-    return {
-      pre: 0.02,
-      decay: 0.8,
-      size: 1,
-      diff: 0.7,
-      inhp: 20,
-      inlp: 14000,
-      damp: 7000,
-      lowd: 40,
-      mrate: 0.6,
-      mdep: 0.4,
-      mix: 0.35,
-      algo: 0,
-    };
-  }
 
   constructor(o?: BaseOptions) {
     super(o);

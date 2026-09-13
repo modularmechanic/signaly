@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 /** OP-AMP CLIPPER + TONE: a cubic soft clip (the classic op-amp overdrive knee, bounded to
     ±2/3 rather than flattening hard) feeding a one-knob tone stack that crossfades between
@@ -7,10 +7,6 @@ import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-p
 class Overdrive extends Base {
   lp = 0;
   lpA = lpCoeff(700);
-
-  defaults(): Params {
-    return { drive: 2, tone: 0.5, level: 0.8 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

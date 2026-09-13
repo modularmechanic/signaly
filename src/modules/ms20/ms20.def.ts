@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'ms20',
@@ -22,7 +22,7 @@ export const def: ModuleDef = {
       cvIn: 'cv',
     },
     { id: 'res', label: 'PEAK', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
-    { id: 'cvA', label: 'CV AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+    att('cv', 'CV AMT'),
   ],
   sws: [{ id: 'mode', label: 'MODE', options: ['LP', 'HP'] }],
   ins: [

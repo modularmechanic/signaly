@@ -1,4 +1,4 @@
-import { readLinear, Base, ch, clamp, Lcg, TP, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { readLinear, Base, ch, clamp, Lcg, TP, type InMsg } from '../../engine/dsp-prelude';
 
 const VOICES = 8;
 /** One full sweep of the loaded sample every this many seconds while not frozen. */
@@ -20,10 +20,6 @@ class Cloud extends Base {
   sch = 0;
   next = 1;
   lg = 0;
-
-  defaults(): Params {
-    return { size: 0.06, dens: 8, pitch: 0, spray: 0, pos: 0.2, posA: 0, freeze: 0 };
-  }
 
   override msg(m: InMsg): void {
     const v = m.v as unknown;

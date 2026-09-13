@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 const LED_IDS = ['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'] as const;
 
@@ -9,10 +9,6 @@ class Turing extends Base {
   rng = new Lcg(0x5eed01);
   lastClk = 0;
   led = 0;
-
-  defaults(): Params {
-    return { prob: 1, len: 8, scale: 2, offset: 0 };
-  }
 
   /** Uniform 0..1 from the shared prelude RNG. */
   rnd(): number {

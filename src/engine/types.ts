@@ -25,9 +25,10 @@ export interface ModuleInstance {
 }
 
 export interface NativeSpec {
+  /** Build the graph and fill `m.jacks.in`/`m.jacks.out` for EVERY declared jack, by id, plus
+      push each node onto `m.natives`. makeNode throws on a jack this leaves unfilled. */
   audio(m: ModuleInstance): void;
-  /** worklet processors instantiated inside a native graph */
-  worklets?: readonly string[];
+  /** Live control change. Receives switch pushes too, by switch id, as the option index. */
   param?(m: ModuleInstance, id: string, v: number): void;
   onConnectionChange?(m: ModuleInstance, dir: 'in' | 'out', jack: string, connected: boolean): void;
   dispose?(m: ModuleInstance): void;
@@ -45,6 +46,10 @@ export interface ModuleSpec {
   native?: NativeSpec;
   serialize?: SerializeSpec;
   parts?: ComponentType<{ m: ModuleInstance }>;
+  /** image-store id of a faceplate image painted over the panel. User modules pass theirs at
+      registerSpec; a built-in may carry one the same way, so an image is a data question and
+      not a property of the def id. */
+  faceplate?: string;
 }
 
 export interface Cable {

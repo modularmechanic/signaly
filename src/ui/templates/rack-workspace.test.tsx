@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModuleDef } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
-import { armJack } from '../../hooks/patch-state';
+import { armJack, type JackRef } from '../../hooks/jack-interaction';
 import { registerSpec, unregisterSpec } from '../../modules/registry';
 import { useRackStore } from '../../state/rack-store';
 import { useSettingsStore } from '../../state/settings-store';
@@ -31,6 +31,9 @@ const DEF: ModuleDef = {
   ins: [{ id: 'i', label: 'IN', kind: 'a' }],
   outs: [{ id: 'o', label: 'OUT', kind: 'a' }],
 };
+
+const OUT_JACK = (uid: number): JackRef => ({ uid, dir: 'out', def: DEF.outs[0]! });
+const IN_JACK = (uid: number): JackRef => ({ uid, dir: 'in', def: DEF.ins[0]! });
 
 const instance = (uid: number): ModuleInstance => {
   const node = fakeNode();
@@ -103,10 +106,10 @@ describe('RackWorkspace live region', () => {
   });
 
   it('announces a completed keyboard patch', () => {
-    act(() => armJack(101, 'out', 'o'));
-    expect(live()).toBe('Armed o output — pick a destination');
-    act(() => armJack(102, 'in', 'i'));
-    expect(live()).toBe('Patched TEST o to TEST i');
+    act(() => void armJack(OUT_JACK(101)));
+    expect(live()).toBe('Armed TEST OUT output, audio — pick a destination');
+    act(() => void armJack(IN_JACK(102)));
+    expect(live()).toBe('Patched TEST OUT to TEST IN, audio');
   });
 
   it('adds the module picked in the browser to the target row', () => {
@@ -141,9 +144,9 @@ describe('RackWorkspace live region', () => {
     expect(live()).toBe('Row 2 added');
   });
 
-  it('announces a cancelled arm', async () => {
-    act(() => armJack(101, 'out', 'o'));
-    await act(async () => armJack(101, 'out', 'o'));
+  it('announces a cancelled arm', () => {
+    act(() => void armJack(OUT_JACK(101)));
+    act(() => void armJack(OUT_JACK(101)));
     expect(live()).toBe('Patch cancelled');
   });
 });

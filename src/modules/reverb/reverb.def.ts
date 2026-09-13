@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'reverb',
@@ -21,9 +21,9 @@ export const def: ModuleDef = {
     { id: 'mrate', label: 'MOD RATE', min: 0.05, max: 8, initial: 0.6, fmt: 'fHz', curve: 'log' },
     { id: 'mdep', label: 'MOD DEPTH', min: 0, max: 1, initial: 0.4, fmt: 'fPc' },
     { id: 'mix', label: 'DRY/WET', min: 0, max: 1, initial: 0.35, fmt: 'fPc', cvIn: 'mix' },
-    { id: 'sizeA', label: 'SIZE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'size' },
-    { id: 'decayA', label: 'DECAY CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'decay' },
-    { id: 'mixA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mix' },
+    att('size', 'SIZE CV'),
+    att('decay', 'DECAY CV'),
+    att('mix', 'MIX CV'),
   ],
   sws: [{ id: 'algo', label: 'ALGORITHM', options: ['HALL', 'PLATE', 'ROOM', 'CATHEDRAL'] }],
   ins: [

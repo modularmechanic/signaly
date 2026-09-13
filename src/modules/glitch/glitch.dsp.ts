@@ -1,4 +1,4 @@
-import { Base, ch, clamp, ClockSync, DL, Lcg, SYNC_DIV, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, ClockSync, DL, Lcg, SYNC_DIV } from '../../engine/dsp-prelude';
 
 /** Discrete playback-rate steps for the repeat, mirroring fRate's /8 /4 /2 x1 x2 x4 x8. */
 const RATE_MULT = [0.125, 0.25, 0.5, 1, 2, 4, 8];
@@ -16,10 +16,6 @@ class Glitch extends Base {
   loopLen = 0;
   cyclesLeft = 0;
   led = 0;
-
-  defaults(): Params {
-    return { length: 80, repeats: 4, prob: 0.5, pitch: 3, mix: 1, sync: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

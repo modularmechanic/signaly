@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'burst',
@@ -13,7 +13,7 @@ export const def: ModuleDef = {
     { id: 'count', label: 'COUNT', min: 1, max: 16, initial: 4, fmt: 'fInt', big: true, cvIn: 'ccv' },
     { id: 'space', label: 'SPACING', min: 0.005, max: 0.5, initial: 0.06, fmt: 'fMs', curve: 'log' },
     { id: 'curve', label: 'CURVE', min: -1, max: 1, initial: 0, fmt: 'f1' },
-    { id: 'ccvamt', label: 'COUNT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'ccv' },
+    att('ccv', 'COUNT CV', 'ccvamt'),
   ],
   ins: [
     { id: 'trig', label: 'TRIG', kind: 'g' },

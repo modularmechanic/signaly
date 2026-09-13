@@ -34,8 +34,8 @@ function fakeNode(name: string): AudioNode {
   return node as unknown as AudioNode;
 }
 
-const CUT: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, initial: 50, cvIn: 'cv' };
-const PLAIN: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, initial: 50 };
+const CUT: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, initial: 50, fmt: 'f1', cvIn: 'cv' };
+const PLAIN: KnobDef = { id: 'cut', label: 'CUTOFF', min: 0, max: 100, initial: 50, fmt: 'f1' };
 
 const def: ModuleDef = {
   id: 'test-cv',

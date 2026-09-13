@@ -1,7 +1,7 @@
 // Two independent slew limiters: the output chases its input at a fixed volts-per-second,
 // separately for rising and falling. RISE/FALL are the time to travel 5 V, matching FUNKTION.
 // LINK 1>2 makes channel 1's two times drive both channels (stereo or dual-mono portamento).
-import { Base, ch, clamp, flush, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush } from '../../engine/dsp-prelude';
 
 const SPAN = 5; // volts a full RISE/FALL time traverses
 const T_MIN = 0.001;
@@ -9,10 +9,6 @@ const T_MIN = 0.001;
 class Slew extends Base {
   y1 = 0;
   y2 = 0;
-
-  defaults(): Params {
-    return { r1: 0.05, f1: 0.05, r2: 0.2, f2: 0.2, link: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const a = ch(I, 0),

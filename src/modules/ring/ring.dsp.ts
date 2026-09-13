@@ -2,15 +2,11 @@
 // inverts X — the thing the VCA cannot do. OFFSET adds a DC bias to the carrier,
 // walking the sound from ring modulation (0) through AM (0.5) to untouched X (1).
 // DEPTH blends dry X against the modulated result; 5 V of CV covers the whole range.
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const MAX_V = 5;
 
 class Ring extends Base {
-  defaults(): Params {
-    return { depth: 1, offset: 0, dcvamt: 0 };
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const x = ch(I, 0),
       y = ch(I, 1),

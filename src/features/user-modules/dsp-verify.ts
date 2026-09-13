@@ -1,3 +1,6 @@
+import type { ModuleDef } from '../../core/types';
+import { seedParams } from '../../engine/node-factory';
+
 const RENDER_FRAMES = 8192;
 const RENDER_RATE = 44100;
 const TIMEOUT_MS = 3000;
@@ -15,13 +18,19 @@ function scan(buffer: AudioBuffer): string | null {
   return null;
 }
 
-/** Renders the processor standalone. Returns null when the output is sane, else a message. */
-export async function verifyDsp(code: string, processorName: string, outs: number): Promise<string | null> {
+/** Renders the processor standalone, seeded exactly as the live node would be. Returns null
+    when the output is sane, else a message. Without the seed a DSP that reads `this.p.freq`
+    instead of destructuring a default renders NaN here and is rejected for the wrong reason. */
+export async function verifyDsp(
+  code: string,
+  processorName: string,
+  def: Pick<ModuleDef, 'knobs' | 'sws' | 'outs'>,
+): Promise<string | null> {
   // Read at call time: jsdom has neither, and tests stub them.
   const Ctx = globalThis.OfflineAudioContext as typeof OfflineAudioContext | undefined;
   const Node = globalThis.AudioWorkletNode as typeof AudioWorkletNode | undefined;
   if (!Ctx || !Node) return 'audio verification is unavailable in this environment';
-  const count = Math.max(1, Math.min(8, Math.trunc(outs) || 1));
+  const count = Math.max(1, Math.min(8, def.outs.length || 1));
   const url = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
   let timer: ReturnType<typeof setTimeout> | undefined;
   let close: (() => Promise<void>) | undefined;
@@ -33,6 +42,7 @@ export async function verifyDsp(code: string, processorName: string, outs: numbe
       const node = new Node(ctx, processorName, {
         numberOfOutputs: count,
         outputChannelCount: Array.from({ length: count }, () => 1),
+        processorOptions: { p: seedParams(def) },
       });
       for (let i = 0; i < count; i++) node.connect(ctx.destination, i);
       return ctx.startRendering();

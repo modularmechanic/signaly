@@ -3,20 +3,15 @@ import type { NativeSpec } from '../../engine/types';
 
 const fmt = (v: number): string => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
 
-/** VOLTS — IN/THRU pass-through with an analyser tap. `m.ext.analyser` + `m.ext.buf`
-    feed a live meter; `m.ext.text` carries the attenuverter readout. */
+/** VOLTS — IN/THRU pass-through. `m.ext.text` carries the attenuverter readout, which is
+    the whole display: the `text` row of the display contract, nothing else. */
 export const native: NativeSpec = {
   audio(m) {
     const ac = getAudioContext();
     const g = ac.createGain();
-    const an = ac.createAnalyser();
-    an.fftSize = 1024;
-    g.connect(an);
-    (m.natives ??= []).push(g, an);
+    (m.natives ??= []).push(g);
     m.jacks.in.in = { node: g, idx: 0 };
     m.jacks.out.thru = { node: g, idx: 0 };
-    m.ext.analyser = an;
-    m.ext.buf = new Float32Array(an.fftSize);
     m.ext.text = fmt(m.vals.inA ?? 0);
   },
 

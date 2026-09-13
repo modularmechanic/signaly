@@ -1,30 +1,11 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let WT: new () => Proc;
-
-const SR = 48000;
 const F = 100;
 
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./wavetable.dsp');
-  WT = reg.mock.calls[0]![1] as new () => Proc;
-});
-
 /** Share of the output power that is NOT the 100 Hz fundamental — i.e. brightness. */
-function brightness(pos: number): number {
-  const w = new WT();
+async function brightness(pos: number): Promise<number> {
+  const w = await loadProcessor('wavetable');
   w.p.pos = pos;
   const n = 9600;
   const vo = new Float32Array(n).fill(Math.log2(F / 261.626));
@@ -47,17 +28,18 @@ function brightness(pos: number): number {
 }
 
 describe('wavetable.dsp', () => {
-  it('scans continuously: harmonic content rises monotonically across a table pair', () => {
+  it('scans continuously: harmonic content rises monotonically across a table pair', async () => {
     // pos 0..1/7 crossfades table 0 (sine, no harmonics) into table 1 (triangle).
-    const steps = [0, 0.25, 0.5, 0.75, 1].map((f) => brightness(f / 7));
+    const steps: number[] = [];
+    for (const f of [0, 0.25, 0.5, 0.75, 1]) steps.push(await brightness(f / 7));
     for (let i = 1; i < steps.length; i++) expect(steps[i]!).toBeGreaterThan(steps[i - 1]!);
     expect(steps[0]!).toBeLessThan(0.001);
     expect(steps[4]!).toBeGreaterThan(20 * steps[0]!);
   });
 
-  it('gets brighter still at the top of the bank and stays inside +-5 V', () => {
-    expect(brightness(1)).toBeGreaterThan(brightness(3 / 7));
-    const w = new WT();
+  it('gets brighter still at the top of the bank and stays inside +-5 V', async () => {
+    expect(await brightness(1)).toBeGreaterThan(await brightness(3 / 7));
+    const w = await loadProcessor('wavetable');
     w.p.pos = 1;
     const O = [[new Float32Array(2048)]];
     w.process([[new Float32Array(2048)]], O);

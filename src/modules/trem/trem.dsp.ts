@@ -1,4 +1,4 @@
-import { Base, ch, clamp, ClockSync, oscW, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, ClockSync, oscW } from '../../engine/dsp-prelude';
 
 const SHAPES = [0, 1, 3]; // oscW indices: sine, triangle, square
 
@@ -10,10 +10,6 @@ class Trem extends Base {
   ph = 0;
   cs = new ClockSync();
   gate = 0;
-
-  defaults(): Params {
-    return { rate: 4, depth: 0.7, shape: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

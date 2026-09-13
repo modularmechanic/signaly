@@ -1,31 +1,16 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-const SR = 48000;
 const N = 128;
 
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-type Ctor = new (o?: { processorOptions?: { p?: Record<string, number> } }) => Proc;
-
-let Hats: Ctor;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./hats.dsp');
-  Hats = reg.mock.calls[0]![1] as Ctor;
-});
-
 /** Render `secs`, pulsing OPEN and CLOSED at the given times in seconds. */
-function render(p: Record<string, number>, secs: number, openAt: number[], closedAt: number[]): Float32Array {
-  const h = new Hats({ processorOptions: { p } });
+async function render(
+  p: Record<string, number>,
+  secs: number,
+  openAt: number[],
+  closedAt: number[],
+): Promise<Float32Array> {
+  const h = await loadProcessor('hats', p);
   const blocks = Math.ceil((secs * SR) / N);
   const hi = new Float32Array(N).fill(5);
   const lo = new Float32Array(N);
@@ -52,13 +37,13 @@ const peak = (x: Float32Array): number => x.reduce((m, v) => Math.max(m, Math.ab
 const P = { tone: 5000, cdec: 0.02, odec: 1.5, metal: 0.8, level: 1 };
 
 describe('hats.dsp', () => {
-  it('is silent until triggered', () => {
-    expect(peak(render(P, 1, [], []))).toBe(0);
+  it('is silent until triggered', async () => {
+    expect(peak(await render(P, 1, [], []))).toBe(0);
   });
 
-  it('chokes a ringing open hat when a closed trigger arrives', () => {
-    const ringing = render(P, 0.8, [0], []);
-    const choked = render(P, 0.8, [0], [0.2]);
+  it('chokes a ringing open hat when a closed trigger arrives', async () => {
+    const ringing = await render(P, 0.8, [0], []);
+    const choked = await render(P, 0.8, [0], [0.2]);
     const win = [Math.round(0.4 * SR), Math.round(0.6 * SR)] as const;
     // Both hats sound: the open tail is loud well after its own trigger.
     expect(rms(ringing, win[0], win[1])).toBeGreaterThan(0.3);
@@ -67,15 +52,15 @@ describe('hats.dsp', () => {
     expect(rms(choked, Math.round(0.2 * SR), Math.round(0.21 * SR))).toBeGreaterThan(0.3);
   });
 
-  it('holds the open tail far longer than the closed one', () => {
-    const closedOnly = render(P, 0.8, [], [0]);
-    const openOnly = render(P, 0.8, [0], []);
+  it('holds the open tail far longer than the closed one', async () => {
+    const closedOnly = await render(P, 0.8, [], [0]);
+    const openOnly = await render(P, 0.8, [0], []);
     const late = [Math.round(0.3 * SR), Math.round(0.5 * SR)] as const;
     expect(rms(openOnly, late[0], late[1])).toBeGreaterThan(rms(closedOnly, late[0], late[1]) * 100);
   });
 
-  it('stays inside +/-5 V and keeps its bank inharmonic at METAL 1', () => {
-    const hot = render({ ...P, metal: 1, tone: 800 }, 0.3, [0], []);
+  it('stays inside +/-5 V and keeps its bank inharmonic at METAL 1', async () => {
+    const hot = await render({ ...P, metal: 1, tone: 800 }, 0.3, [0], []);
     expect(peak(hot)).toBeLessThanOrEqual(5);
     expect(hot.every(Number.isFinite)).toBe(true);
     // A harmonic bank repeats at the 317 Hz base period; an inharmonic one does not.

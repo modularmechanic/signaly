@@ -1,4 +1,4 @@
-import { Base, ch, clamp, OnePole, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, OnePole } from '../../engine/dsp-prelude';
 
 /** SHIFT REG — samples IN on each clock and shifts it down four stages: OUT 4 is OUT 1
     delayed by three clocks, the classic canon/bucket-brigade CV move. SLEW adds optional
@@ -7,10 +7,6 @@ class Shift extends Base {
   s = [0, 0, 0, 0];
   filt = [new OnePole(), new OnePole(), new OnePole(), new OnePole()];
   lc = 0;
-
-  defaults(): Params {
-    return { slew: 0.0005 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const outs = [O[0]?.[0], O[1]?.[0], O[2]?.[0], O[3]?.[0]];

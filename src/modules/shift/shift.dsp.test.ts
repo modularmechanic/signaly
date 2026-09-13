@@ -1,27 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null, postMessage: (): void => {} };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let Shift: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./shift.dsp');
-  Shift = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 describe('shift.dsp', () => {
-  it("holds OUT 4 at OUT 1's value from three clocks earlier", () => {
-    const s = new Shift();
+  it("holds OUT 4 at OUT 1's value from three clocks earlier", async () => {
+    const s = await loadProcessor('shift');
     s.p.slew = 0.0005; // effectively instant at 48kHz — a clean sample & hold
     const O = [
       [new Float32Array(64)],

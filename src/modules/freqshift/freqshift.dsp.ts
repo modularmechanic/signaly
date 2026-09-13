@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 const SHIFT_RANGE = 1000; // matches the SHIFT knob's +/-1000 Hz span
 const N = 65; // FIR Hilbert transformer length (odd)
@@ -24,10 +24,6 @@ class FreqShift extends Base {
   buf = new Float64Array(N);
   wp = 0;
   ph = 0;
-
-  defaults(): Params {
-    return { shift: 100, mix: 0.5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

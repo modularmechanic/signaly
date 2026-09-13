@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 const LANES = 4;
 const STEPS = 16;
@@ -11,10 +11,6 @@ class TrigSeq extends Base {
   pos = [0, 0, 0, 0];
   lc = 0;
   lr = 0;
-
-  defaults(): Params {
-    return { len1: STEPS, len2: STEPS, len3: STEPS, len4: STEPS };
-  }
 
   override msg(m: InMsg): void {
     if (m.t === 'cell') {

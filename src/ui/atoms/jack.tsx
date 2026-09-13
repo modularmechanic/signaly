@@ -3,15 +3,13 @@ import { KIND_NAME, type JackDef, type Kind } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import {
   armJack,
+  beginDrag,
   cancelArm,
-  jackKey,
-  registerJack,
-  startJackDrag,
-  subscribeArm,
+  getArmed,
+  subscribe,
   unpatchJack,
-  unregisterJack,
-  type JackDir,
-} from '../../hooks/patch-state';
+} from '../../hooks/jack-interaction';
+import { jackKey, registerJack, unregisterJack, type JackDir } from '../../hooks/jack-registry';
 
 const KIND_GLYPH: Record<Kind, string> = { a: '●', p: '◆', g: '■', c: '▲' };
 
@@ -27,31 +25,33 @@ export function Jack({ m, def, dir, patched }: JackProps): ReactNode {
   const [armed, setArmed] = useState(false);
   const uid = m.uid;
 
-  useEffect(
-    () => subscribeArm((a) => setArmed(!!a && a.uid === uid && a.dir === dir && a.jackId === def.id)),
-    [uid, dir, def.id],
-  );
+  // Any outcome can move the arm, so re-read it rather than tracking each kind.
+  useEffect(() => {
+    const read = (): void => {
+      const a = getArmed();
+      setArmed(!!a && a.uid === uid && a.dir === dir && a.def.id === def.id);
+    };
+    return subscribe(read);
+  }, [uid, dir, def.id]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    registerJack({ uid, jackId: def.id, dir, kind: def.kind, el });
+    registerJack({ uid, dir, def, el });
     return () => unregisterJack(uid, dir, def.id);
-  }, [uid, dir, def.id, def.kind]);
+  }, [uid, dir, def]);
 
-  const arm = (): void => armJack(uid, dir, def.id);
+  const arm = (): void => void armJack({ uid, dir, def });
 
   const onPointerDown = (e: PointerEvent<HTMLButtonElement>): void => {
     e.stopPropagation();
     const el = ref.current;
-    if (el) startJackDrag({ uid, jackId: def.id, dir, kind: def.kind, el }, e.nativeEvent);
+    if (el) beginDrag({ uid, dir, def, el }, e.nativeEvent);
   };
-  const unpatch = (): void => {
-    unpatchJack(uid, dir, def.id);
-  };
+  const unpatch = (): void => void unpatchJack({ uid, dir, def });
 
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>): void => {
-    if (e.key === 'Escape') return cancelArm();
+    if (e.key === 'Escape') return void cancelArm();
     if (e.key === 'Delete' || e.key === 'Backspace') {
       if (!patched) return;
       // The panel also removes the whole module on Delete; never let this bubble that far.

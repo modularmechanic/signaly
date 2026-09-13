@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, onePoleCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, onePoleCoeff } from '../../engine/dsp-prelude';
 
 /** Germanium: softer knee, fewer harmonics. Silicon: harder knee, brighter and more
     harmonically dense — the two-transistor character the MODE switch selects. */
@@ -14,10 +14,6 @@ class Fuzz extends Base {
   gateA = onePoleCoeff(4);
   starveEnv = 0;
   starveA = onePoleCoeff(15);
-
-  defaults(): Params {
-    return { fuzz: 4, gate: 0, starve: 0, level: 0.8, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

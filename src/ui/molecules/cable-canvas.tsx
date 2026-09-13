@@ -1,329 +1,190 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import type { Kind } from '../../core/types';
-import { addDraw } from '../../hooks/render-bus';
-import {
-  clickRemovesCable,
-  getDrag,
-  getJack,
-  invalidateJackRects,
-  jackCenter,
-  jackKey,
-  type JackInfo,
-} from '../../hooks/patch-state';
-import { disconnectCable } from '../../engine/rack';
+import { readTokens, type Tokens } from '../../hooks/canvas-tokens';
+import { disconnectAt, getDrag } from '../../hooks/jack-interaction';
+import { getJack, invalidateJackRects, jackCenter, jackKey, type JackDir } from '../../hooks/jack-registry';
+import { useCanvas } from '../../hooks/use-canvas';
 import { useRackStore } from '../../state/rack-store';
 import { useSettingsStore } from '../../state/settings-store';
+import { clickRemovesCable, jackSpace, overlayView, type Endpoint, type Pt, type Seg } from './cable-overlay';
 
-interface Pt {
-  x: number;
-  y: number;
-}
-interface Seg {
-  a: Pt;
-  b: Pt;
-  kind: Kind;
-  color: string;
-  alpha?: number;
-  /** absent on the in-progress drag rope, which is not clickable */
-  id?: number;
-}
-
-/* Cable metrics are quoted at 100% rack zoom and scaled by it before use: the panels behind
-   them scale, so a plug drawn at a fixed 12px would swallow a zoomed-out socket and shrink to a
-   speck against a zoomed-in one. `z` below is the live rack zoom. */
-const SAG = 14;
+// Cable metrics are quoted at 100% rack zoom and scaled by it: the panels behind them scale, so a
+// plug drawn at a fixed 12px would swallow a zoomed-out socket and shrink to a speck zoomed in.
 const WIDTH = 3;
-/** Socket the plug seats in, and the pin inside it. */
 const PLUG_R = 6;
 const PIN_R = 2;
 /** kind is legible without colour: the highlight pass carries a per-kind dash */
 const DASH: Record<Kind, number[]> = { a: [], p: [10, 5], g: [3, 3], c: [1, 4] };
-/** how close the pointer must come to a cable's centre line to grab it */
-const HIT_PX = 7;
-/** samples per curve for hit-testing: 24 keeps the error under a pixel at rack scale */
-const HIT_STEPS = 24;
 const INTERACTIVE = 'button, input, select, textarea, a, [role="slider"], [role="radio"], [contenteditable]';
 
-const control = (s: Seg, z: number): Pt => ({
-  x: (s.a.x + s.b.x) / 2,
-  // The droop term is already proportional to the on-screen span; only the constant needs `z`.
-  y: (s.a.y + s.b.y) / 2 + SAG * z + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16,
-});
-
-/** Squared distance from p to the quadratic through a -> control -> b, by sampling. */
-function distToRope(s: Seg, p: Pt, z: number): number {
-  const c = control(s, z);
-  let best = Infinity;
-  let px = s.a.x;
-  let py = s.a.y;
-  for (let i = 1; i <= HIT_STEPS; i++) {
-    const t = i / HIT_STEPS;
-    const u = 1 - t;
-    const x = u * u * s.a.x + 2 * u * t * c.x + t * t * s.b.x;
-    const y = u * u * s.a.y + 2 * u * t * c.y + t * t * s.b.y;
-    // distance from p to the segment (px,py)-(x,y)
-    const dx = x - px;
-    const dy = y - py;
-    const len = dx * dx + dy * dy;
-    const h = len === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - px) * dx + (p.y - py) * dy) / len));
-    const ex = px + h * dx - p.x;
-    const ey = py + h * dy - p.y;
-    best = Math.min(best, Math.hypot(ex, ey));
-    px = x;
-    py = y;
+function rope(ctx: CanvasRenderingContext2D, s: Seg, t: Tokens, lit: boolean, z: number): void {
+  const color = t.kind[s.kind];
+  const w = WIDTH * z;
+  const curve = (dy: number): void => {
+    ctx.beginPath();
+    ctx.moveTo(s.a.x, s.a.y + dy);
+    ctx.quadraticCurveTo(s.c.x, s.c.y + dy, s.b.x, s.b.y + dy);
+    ctx.stroke();
+  };
+  ctx.lineCap = 'round';
+  ctx.globalAlpha = s.alpha ?? 1;
+  ctx.strokeStyle = 'rgba(0,0,0,.55)';
+  ctx.lineWidth = w + 4 * z;
+  curve(5 * z);
+  ctx.strokeStyle = t.bg;
+  ctx.lineWidth = w + 2 * z;
+  curve(0);
+  if (lit) {
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = w + 4 * z;
+    curve(0);
   }
-  return best;
+  // Seg.shade over the black jacket just laid down is a per-channel multiply, so the jacket
+  // darkens without its hue moving — see the CVD note on SHADE_MIN in cable-overlay.ts.
+  ctx.globalAlpha = (s.alpha ?? 1) * (s.shade ?? 1);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lit ? w + z : w;
+  curve(0);
+  ctx.globalAlpha = s.alpha ?? 1;
+  ctx.strokeStyle = 'rgba(255,255,255,.22)';
+  ctx.lineWidth = Math.max(0.5, z);
+  ctx.setLineDash(DASH[s.kind].map((d) => d * z));
+  curve(-0.5 * z);
+  ctx.setLineDash([]);
+  for (const p of [s.a, s.b]) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, PLUG_R * z, 0, Math.PI * 2);
+    ctx.fillStyle = t.metal2;
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2 * z;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, PIN_R * z, 0, Math.PI * 2);
+    ctx.fillStyle = t.edge;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 
-/** One canvas for every cable. Never re-renders: endpoints and cables are read
-    inside the shared render-bus draw, and an unchanged signature skips the repaint. */
-/** Where a jack really is on screen.
+const blockedAt = (x: number, y: number): boolean => {
+  const el = document.elementFromPoint(x, y);
+  return !!el?.closest(INTERACTIVE);
+};
 
-    The rack is scaled with CSS `zoom`, and engines disagree about what `getBoundingClientRect`
-    reports inside a zoomed box: Chromium and Firefox scale it by the zoom, others hand back
-    unscaled layout pixels. Guessing wrong puts every cable at a fraction of its true position,
-    which is exactly what "the cables go all over the place when you zoom" looks like.
-
-    So it is measured, never assumed: the rack's painted width over its layout width IS the
-    browser's answer. When that already matches the zoom (Chromium, Firefox) this returns null
-    and nothing is corrected; otherwise the jack points are mapped into real screen space. */
-export function jackSpace(
-  rect: { left: number; top: number; width: number },
-  layoutWidth: number,
-  zoom: number,
-): { ox: number; oy: number; k: number } | null {
-  if (zoom === 1 || layoutWidth <= 0 || rect.width <= 0) return null;
-  const reported = rect.width / layoutWidth;
-  const k = zoom / reported;
-  if (!Number.isFinite(k) || Math.abs(k - 1) < 0.01) return null;
-  return { ox: rect.left, oy: rect.top, k };
-}
-
+/** One canvas for every cable. Never re-renders: geometry is rebuilt inside the shared
+    render-bus draw, and an unchanged signature skips the repaint. */
 export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): ReactNode {
-  const ref = useRef<HTMLCanvasElement>(null);
+  const ptr = useRef({ x: -1, y: -1, inside: false });
+  /** The press in progress: where it started, whether it started on a control, still down. */
+  const press = useRef({ x: 0, y: 0, onControl: false, down: false });
+  const hover = useRef<number | null>(null);
+  /** Anything that could change what lies under the pointer since the last frame. */
+  const moved = useRef(true);
+  const last = useRef('');
 
-  useEffect(() => {
-    const cv = ref.current;
-    if (!cv) return;
-    const ctx = cv.getContext('2d');
-    if (!ctx) return;
-
-    const css = getComputedStyle(document.documentElement);
-    const read = (name: string, fallback: string): string => css.getPropertyValue(name).trim() || fallback;
-    const kindColor: Record<Kind, string> = {
-      a: read('--kind-a', '#ffb02e'),
-      p: read('--kind-p', '#5ab4ff'),
-      g: read('--kind-g', '#ff5fa0'),
-      c: read('--kind-c', '#68f3bf'),
-    };
-    const jacket = read('--bg', '#0a0a0b');
-    const plug = read('--metal-2', '#0f1012');
-    const pin = read('--edge', '#050506');
-
-    /** Live rack zoom: every cable metric below is multiplied by it. */
-    let z = useSettingsStore.getState().zoom;
-    const ptr = { x: -1, y: -1, inside: false };
-    /** The press in progress: where it started, whether it started on a control, still down. */
-    const press = { x: 0, y: 0, onControl: false, down: false };
-    /** Set at pointerup; the click that follows may remove a cable only if this survives. */
-    let armed = false;
-    let dpr = 1;
-    const size = (): void => {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-      cv.width = Math.max(1, Math.round(window.innerWidth * dpr));
-      cv.height = Math.max(1, Math.round(window.innerHeight * dpr));
-      cv.style.width = window.innerWidth + 'px';
-      cv.style.height = window.innerHeight + 'px';
-    };
-    size();
-
-    let hover: number | null = null;
-    /** Hit-testing is only ever wrong after the pointer or the cables move; idle frames skip it. */
-    let moved = true;
-
-    const rope = (s: Seg, lit: boolean): void => {
-      const w = WIDTH * z;
-      const mx = (s.a.x + s.b.x) / 2;
-      const my = (s.a.y + s.b.y) / 2 + SAG * z + Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) * 0.16;
-      const curve = (dy: number): void => {
-        ctx.beginPath();
-        ctx.moveTo(s.a.x, s.a.y + dy);
-        ctx.quadraticCurveTo(mx, my + dy, s.b.x, s.b.y + dy);
-        ctx.stroke();
-      };
-      ctx.lineCap = 'round';
-      ctx.globalAlpha = s.alpha ?? 1;
-      ctx.strokeStyle = 'rgba(0,0,0,.55)';
-      ctx.lineWidth = w + 4 * z;
-      curve(5 * z);
-      ctx.strokeStyle = jacket;
-      ctx.lineWidth = w + 2 * z;
-      curve(0);
-      if (lit) {
-        ctx.strokeStyle = 'rgba(255,255,255,.85)';
-        ctx.lineWidth = w + 4 * z;
-        curve(0);
-      }
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = lit ? w + z : w;
-      curve(0);
-      ctx.strokeStyle = 'rgba(255,255,255,.22)';
-      ctx.lineWidth = Math.max(0.5, z);
-      ctx.setLineDash(DASH[s.kind].map((d) => d * z));
-      curve(-0.5 * z);
-      ctx.setLineDash([]);
-      for (const p of [s.a, s.b]) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, PLUG_R * z, 0, Math.PI * 2);
-        ctx.fillStyle = plug;
-        ctx.fill();
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = 2 * z;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, PIN_R * z, 0, Math.PI * 2);
-        ctx.fillStyle = pin;
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    };
-
-    let last = '';
-    const draw = (): void => {
-      const segs: Seg[] = [];
-      let sig = `${cv.width}x${cv.height}z${z}`;
+  const ref = useCanvas(
+    (ctx, w, h) => {
+      const zoom = useSettingsStore.getState().zoom;
       const el = rack.current;
-      const sp = el ? jackSpace(el.getBoundingClientRect(), el.offsetWidth, z) : null;
+      const sp = el ? jackSpace(el.getBoundingClientRect(), el.offsetWidth, zoom) : null;
       const map = (p: Pt): Pt =>
         sp ? { x: sp.ox + (p.x - sp.ox) * sp.k, y: sp.oy + (p.y - sp.oy) * sp.k } : p;
-      for (const c of useRackStore.getState().cables) {
-        const out = getJack(jackKey(c.from.uid, 'out', c.from.jack));
-        const inp = getJack(jackKey(c.to.uid, 'in', c.to.jack));
-        if (!out || !inp) continue;
-        const a = map(jackCenter(out));
-        const b = map(jackCenter(inp));
-        segs.push({ a, b, kind: out.kind, color: kindColor[out.kind], id: c.id });
-        sig += `|${c.id},${a.x | 0},${a.y | 0},${b.x | 0},${b.y | 0}`;
-      }
-      const drag = getDrag();
-      if (drag) {
-        const fixed: JackInfo = drag.fixed;
-        const at = map(jackCenter(fixed));
-        const mouse = { x: drag.x, y: drag.y };
-        segs.push({
-          a: fixed.dir === 'out' ? at : mouse,
-          b: fixed.dir === 'out' ? mouse : at,
-          kind: drag.kind,
-          color: kindColor[drag.kind],
-          alpha: 0.85,
-        });
-        sig += `|d${drag.x | 0},${drag.y | 0},${drag.kind}`;
-      }
-      // While a control is being dragged the cursor is only passing over cables — highlighting
-      // one as "click to remove" would advertise something this gesture must not do.
-      if (drag || (press.down && press.onControl)) hover = null;
-      else if (moved) hover = hitTest(segs);
-      moved = false;
-      sig += `|h${hover ?? ''}`;
-      if (sig === last) return;
-      last = sig;
-      document.body.classList.toggle('cable-hover', hover !== null);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      for (const s of segs) rope(s, s.id !== undefined && s.id === hover);
-    };
+      const lookup = (uid: number, dir: JackDir, jackId: string): Endpoint | undefined => {
+        const info = getJack(jackKey(uid, dir, jackId));
+        return info && { at: map(jackCenter(info)), kind: info.def.kind };
+      };
+      const view = overlayView({
+        cables: useRackStore.getState().cables,
+        lookup,
+        drag: getDrag(),
+        pointer: ptr.current,
+        blockedAt,
+        controlHeld: press.current.down && press.current.onControl,
+        moved: moved.current,
+        prevHover: hover.current,
+        zoom,
+        w,
+        h,
+      });
+      hover.current = view.hover;
+      moved.current = false;
+      if (view.sig === last.current) return;
+      last.current = view.sig;
+      document.body.classList.toggle('cable-hover', view.hover !== null);
+      ctx.clearRect(0, 0, w, h);
+      const t = readTokens();
+      for (const s of view.segs) rope(ctx, s, t, s.id !== undefined && s.id === view.hover, zoom);
+    },
+    { viewport: true },
+  );
 
-    /** Nearest cable under the pointer, or null. The canvas never takes pointer events,
-        so a cable lying over a knob or jack loses: the control stays clickable. */
-    const hitTest = (segs: Seg[]): number | null => {
-      if (!ptr.inside) return null;
-      let best: number | null = null;
-      let bestD = HIT_PX * z;
-      for (const s of segs) {
-        if (s.id === undefined) continue;
-        const d = distToRope(s, ptr, z);
-        if (d < bestD) {
-          bestD = d;
-          best = s.id;
-        }
-      }
-      if (best === null) return null;
-      const el = document.elementFromPoint(ptr.x, ptr.y);
-      return el && el.closest(INTERACTIVE) ? null : best;
-    };
-
+  useEffect(() => {
+    /** Set at pointerup; the click that follows may remove a cable only if this survives. */
+    let armed = false;
     const onMove = (e: PointerEvent): void => {
-      ptr.x = e.clientX;
-      ptr.y = e.clientY;
-      ptr.inside = true;
-      moved = true;
+      ptr.current.x = e.clientX;
+      ptr.current.y = e.clientY;
+      ptr.current.inside = true;
+      moved.current = true;
     };
     const onLeave = (): void => {
-      ptr.inside = false;
-      moved = true;
+      ptr.current.inside = false;
+      moved.current = true;
     };
     const onDown = (e: PointerEvent): void => {
       // A press that was cancelled, or that never produced a click, must not arm this one.
       armed = false;
-      press.x = e.clientX;
-      press.y = e.clientY;
-      press.down = true;
-      press.onControl = e.target instanceof Element && e.target.closest(INTERACTIVE) !== null;
-      moved = true;
+      press.current = {
+        x: e.clientX,
+        y: e.clientY,
+        down: true,
+        onControl: e.target instanceof Element && e.target.closest(INTERACTIVE) !== null,
+      };
+      moved.current = true;
     };
     const onUp = (e: PointerEvent): void => {
-      press.down = false;
+      const p = press.current;
+      p.down = false;
       armed = clickRemovesCable({
-        onControl: press.onControl,
-        travel: Math.hypot(e.clientX - press.x, e.clientY - press.y),
+        onControl: p.onControl,
+        travel: Math.hypot(e.clientX - p.x, e.clientY - p.y),
       });
-      moved = true;
+      moved.current = true;
     };
-    /** A cancelled press produces no click, so it must leave nothing armed behind it. */
+    // A cancelled press produces no click, so it must leave nothing armed behind it.
     const onCancel = (): void => {
-      press.down = false;
+      press.current.down = false;
       armed = false;
-      moved = true;
+      moved.current = true;
     };
     const onClick = (): void => {
       const remove = armed;
       // One press, one chance: a click with no press behind it (a keyboard Enter, say) must
       // never fall through to whatever cable the cursor was last resting on.
       armed = false;
-      if (!remove || hover === null) return;
-      disconnectCable(hover);
-      hover = null;
+      if (!remove || hover.current === null) return;
+      disconnectAt(hover.current);
+      hover.current = null;
       document.body.classList.remove('cable-hover');
     };
-
-    const relayout = (): void => {
+    // Cached jack centres go stale on scroll, on resize, on a zoom, and on any rack mutation —
+    // removing or reordering a module reflows the row without firing either event.
+    // Each of these can slide a cable under a pointer that has not moved, so each must re-arm the
+    // hit test as well as drop the cached rects — or a click removes whatever used to be there.
+    const stale = (): void => {
       invalidateJackRects();
-      size();
-      last = '';
-      moved = true;
+      moved.current = true;
     };
-
-    // A rack mutation only moves jacks; the canvas is viewport-sized and does not need resizing.
-    const reflow = (): void => {
-      invalidateJackRects();
-      last = '';
-      moved = true;
-    };
-    window.addEventListener('resize', relayout);
-    window.addEventListener('scroll', reflow, true);
-    // Pinching the page itself moves painted content under a fixed canvas; re-measure when the
-    // visual viewport changes so a phone pinch cannot leave the cables behind.
-    window.visualViewport?.addEventListener('resize', relayout);
-    window.visualViewport?.addEventListener('scroll', reflow);
-    // Removing or reordering a module reflows the row without a resize or scroll event, so the
-    // cached jack rects would otherwise keep drawing every cable at its old position.
-    const unsubRack = useRackStore.subscribe(reflow);
-    // Zoom moves every jack and changes every cable metric.
-    const unsubZoom = useSettingsStore.subscribe((st) => {
-      if (st.zoom === z) return;
-      z = st.zoom;
-      reflow();
+    const unsubRack = useRackStore.subscribe(stale);
+    const unsubZoom = useSettingsStore.subscribe((s, prev) => {
+      if (s.zoom !== prev.zoom) stale();
     });
+    window.addEventListener('resize', stale);
+    window.addEventListener('scroll', stale, true);
+    // Pinching the page itself moves painted content under a fixed canvas.
+    window.visualViewport?.addEventListener('resize', stale);
+    window.visualViewport?.addEventListener('scroll', stale);
     // Capture phase: a control's own handler calls stopPropagation, and pointer capture
     // retargets the event to it, so the bubble phase never reliably reaches the window.
     window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
@@ -332,15 +193,13 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerleave', onLeave, { passive: true });
     window.addEventListener('click', onClick);
-    const unregister = addDraw(draw);
     return () => {
-      unregister();
       unsubRack();
       unsubZoom();
-      window.removeEventListener('resize', relayout);
-      window.removeEventListener('scroll', reflow, true);
-      window.visualViewport?.removeEventListener('resize', relayout);
-      window.visualViewport?.removeEventListener('scroll', reflow);
+      window.removeEventListener('resize', stale);
+      window.removeEventListener('scroll', stale, true);
+      window.visualViewport?.removeEventListener('resize', stale);
+      window.visualViewport?.removeEventListener('scroll', stale);
       window.removeEventListener('pointerdown', onDown, { capture: true });
       window.removeEventListener('pointerup', onUp, { capture: true });
       window.removeEventListener('pointercancel', onCancel, { capture: true });
@@ -349,7 +208,7 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
       window.removeEventListener('click', onClick);
       document.body.classList.remove('cable-hover');
     };
-  }, [rack]);
+  }, []);
 
   return <canvas className="cable-canvas" ref={ref} aria-hidden="true" />;
 }

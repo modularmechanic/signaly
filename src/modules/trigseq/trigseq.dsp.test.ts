@@ -1,29 +1,12 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  msg?(m: { t: string; [k: string]: unknown }): void;
-}
-type Ctor = new (o?: { processorOptions?: { p?: Record<string, number> } }) => Proc;
-
-let TrigSeq: Ctor;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./trigseq.dsp');
-  TrigSeq = reg.mock.calls[0]![1] as Ctor;
-});
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 describe('trigseq.dsp', () => {
-  it('realigns lanes of length 3 and 4 every 12 clocks (their LCM)', () => {
-    const t = new TrigSeq({ processorOptions: { p: { len1: 3, len2: 4, len3: 16, len4: 16 } } });
+  it('realigns lanes of length 3 and 4 every 12 clocks (their LCM)', async () => {
+    const t = (await loadProcessor('trigseq', { len1: 3, len2: 4, len3: 16, len4: 16 })) as Proc & {
+      msg?(m: { t: string; [k: string]: unknown }): void;
+    };
     // Only step 0 of lane 1 and lane 2 is hit, so both fire together exactly when both
     // lanes are back at position 0 — every LCM(3,4) = 12 clocks.
     const grid = [[1, 0, 0], [1, 0, 0, 0], [0], [0]];

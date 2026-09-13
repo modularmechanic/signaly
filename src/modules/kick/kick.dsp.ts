@@ -1,4 +1,4 @@
-import { Base, TP, ch, clamp, flush, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, TP, ch, clamp, flush, Lcg } from '../../engine/dsp-prelude';
 
 /** How far above TUNE the pitch envelope starts, at full sweep. */
 const SWEEP = 4;
@@ -15,10 +15,6 @@ class Kick extends Base {
   ledHold = 0;
   led = 0;
   rng = new Lcg(0x9d2c07);
-
-  defaults(): Params {
-    return { tune: 50, pdec: 0.04, adec: 0.35, click: 0.3, drive: 0.2, level: 0.8 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0];

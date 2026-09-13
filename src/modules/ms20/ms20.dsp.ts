@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff } from '../../engine/dsp-prelude';
 
 // Korg35-style 2-pole Sallen-Key. Unlike the TPT cores in SVF/WASP/MORPH, this is the naive
 // two-integrator loop with resonance fed straight back around both stages — and the feedback
@@ -8,10 +8,6 @@ import { Base, ch, clamp, flush, lpCoeff, type Params } from '../../engine/dsp-p
 class Ms20 extends Base {
   bp = 0;
   lp = 0;
-
-  defaults(): Params {
-    return { cut: 900, res: 0.4, cvA: 0, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

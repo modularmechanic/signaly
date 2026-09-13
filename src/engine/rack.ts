@@ -2,15 +2,10 @@ import { getSpec } from '../modules/registry';
 import { useRackStore } from '../state/rack-store';
 import { useSettingsStore } from '../state/settings-store';
 import { makeNode, pushParam } from './node-factory';
-import { connect, disconnect } from './patch';
-import type { Cable, ModuleInstance, RackRow } from './types';
+import type { Cable, JackRef, ModuleInstance, RackRow } from './types';
 
 let nextUid = 1;
 let nextCableId = 1;
-
-/** Why the last move was refused. UI reads it to say "Row full — N HP needed, M free". */
-let lastRowRejection: { needed: number; free: number } | null = null;
-export const getLastRowRejection = (): { needed: number; free: number } | null => lastRowRejection;
 
 /** A module's own failure must never block the rack mutation around it. */
 function quietly(fn: () => void): void {
@@ -28,24 +23,36 @@ export function rowUsedHp(rowId: string): number {
   return row ? row.uids.reduce((n, uid) => n + (s.modules[uid]?.def.hp ?? 0), 0) : 0;
 }
 
-/** Capacity gate. `ownHp` is subtracted for a module already sitting in that row. */
-function fits(row: RackRow | undefined, hp: number, ownHp = 0): boolean {
-  if (!row) return false;
+/** Row capacity check. Returns null when `hp` fits, else the needed/free HP for a refusal reason. */
+function rowOverflow(
+  row: RackRow | undefined,
+  hp: number,
+  ownHp = 0,
+): { needed: number; free: number } | null {
+  if (!row) return { needed: hp, free: 0 };
   const free = useSettingsStore.getState().rowWidthHp - rowUsedHp(row.id) + ownHp;
-  if (hp > free) {
-    lastRowRejection = { needed: hp, free };
-    return false;
-  }
-  lastRowRejection = null;
-  return true;
+  return hp > free ? { needed: hp, free } : null;
 }
+
+/** Capacity gate for addModule's spill logic — never reports why, an add is never refused. */
+const fits = (row: RackRow | undefined, hp: number): boolean => rowOverflow(row, hp) === null;
 
 /** Wire or unwire one cable's audio edge, plus the destination's attenuverter gain. */
 function wireCable(c: Pick<Cable, 'from' | 'to'>, on: boolean): void {
   const s = useRackStore.getState();
   const outRef = s.modules[c.from.uid]?.jacks.out[c.from.jack];
   const inRef = s.modules[c.to.uid]?.jacks.in[c.to.jack];
-  const edge = on ? connect : disconnect;
+  const edge = (from: JackRef, to: JackRef): void => {
+    if (on) {
+      from.node.connect(to.node, from.idx, to.idx);
+      return;
+    }
+    try {
+      from.node.disconnect(to.node, from.idx, to.idx);
+    } catch {
+      /* disconnect throws when the edge was never connected */
+    }
+  };
   if (outRef && inRef) edge(outRef, inRef);
   const cvg = s.modules[c.to.uid]?.cvGains?.[c.to.jack];
   if (cvg) edge({ node: cvg.node, idx: 0 }, cvg.target);
@@ -112,19 +119,37 @@ export function removeModule(uid: number): void {
   teardownModule(m);
 }
 
+/** Add a module and apply its full state — knobs, switches, and validated ext — in one place.
+    Shared by duplicateModule and snapshot restore so a throwing serializer.load behaves
+    identically on both paths: the ext is dropped and the module keeps its default state. */
+export function materialise(
+  defId: string,
+  rowIdx: number | undefined,
+  opts: { vals?: Record<string, number>; sws?: Record<string, number>; ext?: unknown },
+): ModuleInstance | null {
+  const inst = addModule(defId, rowIdx);
+  if (!inst) return null;
+  Object.entries(opts.vals ?? {}).forEach(([id, v]) => setParam(inst.uid, id, v));
+  Object.entries(opts.sws ?? {}).forEach(([id, i]) => setSwitch(inst.uid, id, i));
+  const serialize = getSpec(defId)?.serialize;
+  if (serialize && opts.ext !== undefined && serialize.validate(opts.ext)) {
+    try {
+      serialize.load(inst, opts.ext);
+    } catch {
+      /* a bad ext blob restores defaults */
+    }
+  }
+  return inst;
+}
+
 /** Clone into the same row with identical knob/switch/ext state, no cables. */
 export function duplicateModule(uid: number): ModuleInstance | null {
   const store = useRackStore.getState();
   const src = store.modules[uid];
   if (!src) return null;
   const rowIdx = store.rows.findIndex((r) => r.uids.includes(uid));
-  const clone = addModule(src.def.id, rowIdx < 0 ? undefined : rowIdx);
-  if (!clone) return null;
-  Object.entries(src.vals).forEach(([id, v]) => setParam(clone.uid, id, v));
-  Object.entries(src.sws).forEach(([id, i]) => setSwitch(clone.uid, id, i));
-  const spec = getSpec(src.def.id);
-  if (spec?.serialize) spec.serialize.load(clone, spec.serialize.save(src));
-  return clone;
+  const ext = getSpec(src.def.id)?.serialize?.save(src);
+  return materialise(src.def.id, rowIdx < 0 ? undefined : rowIdx, { vals: src.vals, sws: src.sws, ext });
 }
 
 /** One cable per input jack: an existing cable on the destination is pulled first. */
@@ -200,14 +225,17 @@ export function insertRow(at: number): number {
 
 export const removeRow = (rowId: string): void => useRackStore.getState().removeRow(rowId);
 
+export type MoveResult = true | { needed: number; free: number };
+
 /** Row membership/order only — never touches audio, modules or cables. */
-export function moveModule(uid: number, toRow: number, toIndex: number): boolean {
+export function moveModule(uid: number, toRow: number, toIndex: number): MoveResult {
   const store = useRackStore.getState();
   const m = store.modules[uid];
   const target = store.rows[toRow];
-  if (!m || !target) return false;
+  if (!m || !target) return { needed: 0, free: 0 };
   const sameRow = target.uids.includes(uid);
-  if (!fits(target, m.def.hp, sameRow ? m.def.hp : 0)) return false;
+  const overflow = rowOverflow(target, m.def.hp, sameRow ? m.def.hp : 0);
+  if (overflow) return overflow;
   store.placeModule(uid, toRow, toIndex);
   return true;
 }

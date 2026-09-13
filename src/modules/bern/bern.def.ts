@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'bern',
@@ -11,7 +11,7 @@ export const def: ModuleDef = {
   dark: true,
   knobs: [
     { id: 'bias', label: 'BIAS', min: 0, max: 1, initial: 0.5, fmt: 'fPc', big: true, cvIn: 'bcv' },
-    { id: 'biasA', label: 'BIAS CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'bcv' },
+    att('bcv', 'BIAS CV', 'biasA'),
   ],
   ins: [
     { id: 'gate', label: 'GATE', kind: 'g' },

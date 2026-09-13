@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, onePoleCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff, onePoleCoeff } from '../../engine/dsp-prelude';
 
 // One vactrol state drives amplitude and brightness together — that coupling is the
 // whole point of a low pass gate, and MODE lets you break it apart.
@@ -7,10 +7,6 @@ class Lpg extends Base {
   f1 = 0;
   f2 = 0;
   lg = 0;
-
-  defaults(): Params {
-    return { level: 0, resp: 0.15, colour: 0.6, mode: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

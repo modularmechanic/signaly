@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, type BaseOptions, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, type BaseOptions } from '../../engine/dsp-prelude';
 import { biquad, EQ_Q, HI_F, LO_F, MID_F, NB, NCH } from './mix8.eq';
 
 /** Knob prefix → band index in `co`. `mf` is the mid band's frequency, so it re-bakes band 1 too. */
@@ -22,24 +22,6 @@ class Mix8 extends Base {
   constructor(o?: BaseOptions) {
     super(o);
     for (let c = 0; c < NCH; c++) for (let b = 0; b < NB; b++) this.bake(c, b);
-  }
-
-  defaults(): Params {
-    const p: Params = { master: 0.8, ret1: 0.8, ret2: 0.8 };
-    for (let c = 1; c <= NCH; c++) {
-      p[`l${c}`] = 0.75;
-      p[`p${c}`] = 0;
-      p[`m${c}`] = 0;
-      p[`s${c}`] = 0;
-      p[`lo${c}`] = 0;
-      p[`mid${c}`] = 0;
-      p[`mf${c}`] = MID_F;
-      p[`hi${c}`] = 0;
-      p[`snd1_${c}`] = 0;
-      p[`snd2_${c}`] = 0;
-      p[`pre${c}`] = 0;
-    }
-    return p;
   }
 
   bake(c: number, b: number): void {

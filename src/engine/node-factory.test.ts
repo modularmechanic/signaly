@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ModuleDef } from '../core/types';
-import { makeNode } from './node-factory';
+import { makeNode, seedParams } from './node-factory';
 import type { ModuleInstance, NativeSpec } from './types';
 
 vi.mock('./audio-context', () => ({
@@ -15,6 +15,7 @@ const knob = (id: string): ModuleDef['knobs'][number] => ({
   min: -1,
   max: 1,
   initial: 0,
+  fmt: 'f1',
   attenuates: 'cv',
 });
 
@@ -28,6 +29,43 @@ const DEF: ModuleDef = {
   ins: [{ id: 'cv', label: 'CV', kind: 'c' }],
   outs: [],
 };
+
+describe('seedParams', () => {
+  it('takes the def initials, and a switch initial rather than 0', () => {
+    const def = {
+      knobs: [{ id: 'freq', label: 'F', min: 0, max: 1, initial: 0.25, fmt: 'f1' as const }],
+      sws: [{ id: 'wave', label: 'W', options: ['A', 'B', 'C'], initial: 2 }],
+    };
+    expect(seedParams(def)).toEqual({ freq: 0.25, wave: 2 });
+  });
+
+  it('prefers a placed instance live values', () => {
+    const def = {
+      knobs: [{ id: 'freq', label: 'F', min: 0, max: 1, initial: 0.25, fmt: 'f1' as const }],
+      sws: [{ id: 'wave', label: 'W', options: ['A', 'B'], initial: 1 }],
+    };
+    expect(seedParams(def, { vals: { freq: 0.9 }, sws: { wave: 0 } })).toEqual({ freq: 0.9, wave: 0 });
+  });
+});
+
+describe('native jack coverage', () => {
+  it('throws when native.audio leaves a declared jack unfilled', () => {
+    const m: ModuleInstance = {
+      uid: 2,
+      def: { ...DEF, knobs: [], outs: [{ id: 'out', label: 'OUT', kind: 'a' }] },
+      jacks: { in: {}, out: {} },
+      vals: {},
+      sws: {},
+      ext: {},
+    };
+    const native: NativeSpec = {
+      audio: (mm) => {
+        mm.jacks.in.cv = { node: {} as AudioNode, idx: 0 };
+      },
+    };
+    expect(() => makeNode(m, native)).toThrow(/out\.out/);
+  });
+});
 
 describe('installCvAttenuverters', () => {
   it('installs one gain per CV input even if two knobs claim the same jack', () => {

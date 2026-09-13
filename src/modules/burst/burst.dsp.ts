@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 /** One trigger in, COUNT triggers out. CURVE bends the gaps geometrically:
     +1 halves each gap (accelerating roll), -1 doubles it, 0 is metronomic. */
@@ -11,10 +11,6 @@ class Burst extends Base {
   timer = 0;
   hold = 0;
   eocHold = 0;
-
-  defaults(): Params {
-    return { count: 4, space: 0.06, curve: 0, ccvamt: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0];

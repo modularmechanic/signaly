@@ -20,9 +20,27 @@ export type Cat =
   | 'CUSTOM';
 
 export type FmtName =
-  'fHz' | 'fMs' | 'fPc' | 'f1' | 'fSemi' | 'fInt' | 'fKey' | 'fChord' | 'fShape' | 'fRate';
+  'fHz' | 'fMs' | 'fMsec' | 'fPc' | 'f1' | 'fSemi' | 'fInt' | 'fKey' | 'fChord' | 'fShape' | 'fRate';
 
 export type Display = 'scope' | 'meter' | 'steps' | 'env' | 'piano' | 'text';
+
+/** The range each fmt implies, as bounds a knob's [min,max] must stay inside. fmt is not
+    cosmetic: fPc renders v*100, fMs reads the value as SECONDS and fMsec as MILLISECONDS, fHz as
+    signed hertz, and fKey/fChord/
+    fShape/fRate index a fixed list of labels and clamp out-of-range values silently. Names
+    absent here — f1, fSemi, fInt — bound nothing. checkDef holds every knob to this, so an
+    entry here must match the matching formatter in hooks/formatters.ts. */
+export const FMT_RANGE: Partial<Record<FmtName, readonly [number, number]>> = {
+  // Signed: a frequency shift is legitimately negative. The bound is Nyquist either way.
+  fHz: [-22050, 22050],
+  fMs: [0, 60],
+  fMsec: [0, 60000],
+  fPc: [0, 2],
+  fKey: [0, 11],
+  fChord: [0, 11],
+  fShape: [0, 3],
+  fRate: [0, 6],
+};
 
 export interface KnobDef {
   id: string;
@@ -30,7 +48,7 @@ export interface KnobDef {
   min: number;
   max: number;
   initial: number;
-  fmt?: FmtName;
+  fmt: FmtName;
   curve?: 'lin' | 'log';
   big?: boolean;
   fader?: boolean;
@@ -41,6 +59,20 @@ export interface KnobDef {
   /** overrides the module kit's knob style for this one control (a trimmer among Davies knobs) */
   look?: KnobLook;
 }
+
+/** The bipolar attenuverter for CV input `jack`. The engine reads this knob as a gain on that
+    input (KnobDef.attenuates), never as a DSP param — so the range is fixed, the DSP must not
+    scale the input, and a jack may carry at most one. The knob it modulates, if any, names the
+    same jack in `cvIn`. Declaring the four numbers by hand is the mistake this exists to stop. */
+export const att = (jack: string, label: string, id = `${jack}A`): KnobDef => ({
+  id,
+  label,
+  min: -1,
+  max: 1,
+  initial: 0,
+  fmt: 'f1',
+  attenuates: jack,
+});
 
 export interface SwitchDef {
   id: string;
@@ -88,10 +120,14 @@ export interface ModuleDef {
   sws?: SwitchDef[];
   ins: JackDef[];
   outs: JackDef[];
+  /** which renderer fills the screen — see modules/display-contract.ts for what each needs */
   display?: Display;
+  /** reserve the screen box without naming a renderer: the module's `.parts.tsx` fills it */
+  screen?: boolean;
   /** ids lit by a `{ t: 'led', id, v }` worklet feed; laid out as `led:<id>` panel nodes */
   leds?: string[];
-  /** optional authored geometry (user modules); built-ins use the computed layout */
+  /** authored geometry, an exception to the computed layout (ADR-0001): user modules, and the
+      rare built-in whose controls the layout cannot place, currently MIX 8 and TUBE */
   panel?: PanelLayout;
   /** visual identity; falls back to CAT_KIT[cat]. See src/core/look.ts. */
   look?: Kit;
@@ -126,8 +162,3 @@ export const CAT_ORDER: readonly Cat[] = [
   'UTILITY',
   'CUSTOM',
 ];
-
-/** One HP in CSS pixels — must match `--hp` in styles/tokens.css. */
-export const HP_PX = 26;
-/** Panel height in CSS pixels — must match `--panel-h` in styles/tokens.css. */
-export const PANEL_H = 658;

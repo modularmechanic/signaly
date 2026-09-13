@@ -3,6 +3,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModuleInstance } from '../../engine/types';
 import { def as svf } from '../../modules/svf/svf.def';
+import { def as seq } from '../../modules/seq/seq.def';
+import { def as voct } from '../../modules/voct/voct.def';
 import { setParam } from '../../engine/rack';
 import { useRackStore } from '../../state/rack-store';
 import { PanelNodeView } from './module-panel-node';
@@ -37,6 +39,54 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+});
+
+const displayNode = { id: 'display:text', kind: 'display' as const, x: 0, y: 0, w: 1, h: 1 };
+
+/** VOCT is a native with `display: 'text'`: its feed is `m.ext.text`, assigned in audio(). */
+const voctInstance = (ext: Record<string, unknown>): ModuleInstance => ({
+  uid: 2,
+  def: voct,
+  jacks: { in: {}, out: {} },
+  vals: {},
+  sws: {},
+  ext,
+});
+
+describe('PanelNodeView display placeholder', () => {
+  let host2: HTMLDivElement;
+  let root2: Root;
+
+  const render = (inst: ModuleInstance): void => {
+    host2 = document.createElement('div');
+    document.body.appendChild(host2);
+    root2 = createRoot(host2);
+    act(() => root2.render(<PanelNodeView node={displayNode} m={inst} connected={new Set()} />));
+  };
+
+  afterEach(() => {
+    act(() => root2.unmount());
+    host2.remove();
+  });
+
+  it('says so out loud when the declared display has no feed behind it', () => {
+    render(voctInstance({}));
+    const screen = host2.querySelector<HTMLElement>('.screen-missing');
+    expect(screen?.textContent).toBe('NO TEXT');
+    expect(screen?.title).toMatch(/m\.ext\.text was never assigned/);
+  });
+
+  it('says so out loud when a reserved screen has no parts component to fill it', () => {
+    // seq declares `screen: true`; PanelNodeView here is handed no `parts`.
+    render({ ...voctInstance({}), def: seq });
+    expect(host2.querySelector('.screen-missing')?.textContent).toBe('NO SCREEN');
+  });
+
+  it('draws the real display once the feed is there', () => {
+    render(voctInstance({ text: '+3 ST' }));
+    expect(host2.querySelector('.screen-missing')).toBeNull();
+    expect(host2.querySelector('.text-screen')?.textContent).toBe('+3 ST');
+  });
 });
 
 describe('PanelNodeView knob cvIn marker', () => {

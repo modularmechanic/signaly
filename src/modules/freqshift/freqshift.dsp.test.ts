@@ -1,26 +1,7 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null } = { onmessage: null };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let FreqShift: new () => Proc;
-
-const SR = 48000;
 const HALF = 32; // matches (N-1)/2 for the module's 65-tap FIR
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./freqshift.dsp');
-  FreqShift = reg.mock.calls[0]![1] as new () => Proc;
-});
 
 /** Single-frequency correlation energy (a one-bin DFT) over [start,end). */
 function toneEnergy(y: Float32Array, start: number, end: number, freq: number, sr: number): number {
@@ -35,8 +16,8 @@ function toneEnergy(y: Float32Array, start: number, end: number, freq: number, s
 }
 
 describe('freqshift.dsp', () => {
-  it('passes fully dry input through unchanged (delay-matched to the wet path)', () => {
-    const m = new FreqShift();
+  it('passes fully dry input through unchanged (delay-matched to the wet path)', async () => {
+    const m = await loadProcessor('freqshift');
     m.p.mix = 0;
     const n = 512;
     const inp = new Float32Array(n);
@@ -48,8 +29,8 @@ describe('freqshift.dsp', () => {
     for (let i = HALF; i < n; i++) expect(up[i]).toBeCloseTo(inp[i - HALF]!, 5);
   });
 
-  it('shifts a 1 kHz tone up by SHIFT and removes the original, and shifts DOWN the other way', () => {
-    const m = new FreqShift();
+  it('shifts a 1 kHz tone up by SHIFT and removes the original, and shifts DOWN the other way', async () => {
+    const m = await loadProcessor('freqshift');
     m.p.shift = 100;
     m.p.mix = 1;
     const n = 9600;

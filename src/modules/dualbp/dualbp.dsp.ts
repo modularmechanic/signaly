@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, TP } from '../../engine/dsp-prelude';
 
 interface Coeff {
   b0: number;
@@ -26,10 +26,6 @@ class DualBp extends Base {
   x22 = 0;
   y21 = 0;
   y22 = 0;
-
-  defaults(): Params {
-    return { freq: 300, spread: 24, res: 0.5, cvA: 0, mix: 0.5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

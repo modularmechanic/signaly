@@ -5,6 +5,9 @@ import { verifyDsp } from '../../features/user-modules/dsp-verify';
 import type { UserModule } from '../../features/user-modules/schema';
 import { DspCodePanel } from './dsp-code-panel';
 
+vi.mock('../../engine/audio-context', () => ({
+  getAudioContext: () => ({ audioWorklet: { addModule: () => Promise.resolve() } }),
+}));
 vi.mock('../../features/user-modules/dsp-transpile', () => ({
   bindProcessorName: (src: string) => src,
   transpileDsp: () => ({ ok: true, code: 'built' }),
@@ -47,7 +50,7 @@ beforeEach(() => {
   host = document.createElement('div');
   document.body.appendChild(host);
   root = createRoot(host);
-  act(() => root.render(<DspCodePanel um={um} onRegister={() => Promise.resolve(null)} />));
+  act(() => root.render(<DspCodePanel um={um} onSave={() => Promise.resolve(null)} />));
 });
 
 afterEach(() => {
@@ -76,7 +79,7 @@ describe('DspCodePanel', () => {
     vi.mocked(verifyDsp).mockResolvedValue(null);
     await click('Verify');
     act(() =>
-      root.render(<DspCodePanel um={um} onRegister={() => Promise.reject(new Error('worklet exploded'))} />),
+      root.render(<DspCodePanel um={um} onSave={() => Promise.reject(new Error('worklet exploded'))} />),
     );
     await click('Save');
     expect(host.querySelector('.editor-msg')?.textContent).toBe('worklet exploded');

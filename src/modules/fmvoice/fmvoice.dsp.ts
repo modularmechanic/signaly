@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 /** Discrete RATIO steps each operator can snap to. */
 const RATIOS = [0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 12];
@@ -18,23 +18,6 @@ class FMVoice extends Base {
   stage = 1; // 0 attack, 1 decay
   gateLast = 0;
   led = 0;
-
-  defaults(): Params {
-    return {
-      tune: 220,
-      r1: 1,
-      r2: 1,
-      r3: 1,
-      r4: 1,
-      l1: 1,
-      l2: 0,
-      l3: 0,
-      l4: 0,
-      atk: 0.005,
-      dec: 0.6,
-      algo: 0,
-    };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const voct = ch(I, 0),

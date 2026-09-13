@@ -10,9 +10,18 @@ const SHN = ['UP', 'DOWN', 'UP-DN', 'RANDOM'];
 const RATEN = ['/8', '/4', '/2', 'x1', 'x2', 'x4', 'x8'];
 
 export const FMT: Record<FmtName, (v: number) => string> = {
-  fHz: (v) =>
-    v >= 1000 ? (v / 1000).toFixed(2) + ' kHz' : v >= 100 ? v.toFixed(0) + ' Hz' : v.toFixed(1) + ' Hz',
+  // Branch on magnitude so a negative shift reads -1.00 kHz, not -1000.0 Hz.
+  fHz: (v) => {
+    const a = Math.abs(v);
+    return a >= 1000
+      ? (v / 1000).toFixed(2) + ' kHz'
+      : a >= 100
+        ? v.toFixed(0) + ' Hz'
+        : v.toFixed(1) + ' Hz';
+  },
   fMs: (v) => (v >= 1 ? v.toFixed(2) + ' s' : (v * 1000).toFixed(0) + ' ms'),
+  // The value is already milliseconds, for knobs whose DSP works in ms.
+  fMsec: (v) => (v >= 1000 ? (v / 1000).toFixed(2) + ' s' : v.toFixed(0) + ' ms'),
   fPc: (v) => (v * 100).toFixed(0) + ' %',
   f1: (v) => v.toFixed(2),
   fSemi: (v) => (v > 0 ? '+' : '') + v.toFixed(1) + ' st',

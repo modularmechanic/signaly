@@ -1,4 +1,4 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 /** Bresenham Euclidean test: is rotated step `s` of `n` a hit when `f` are filled? */
 const onAt = (s: number, n: number, f: number): boolean =>
@@ -13,10 +13,6 @@ class Euklid extends Base {
   accent = 0;
   sent = -1;
   pat = new Uint8Array(16);
-
-  defaults(): Params {
-    return { steps: 16, fill: 5, rot: 0, prob: 1, chaos: 0 };
-  }
 
   rnd(): number {
     return (this.rng.next() + 1) / 2;

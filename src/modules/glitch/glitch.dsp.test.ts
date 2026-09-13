@@ -1,26 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./glitch.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** A non-periodic-at-loop-scale test tone so an accidental period match can't fake a pass. */
 function tone(n: number): Float32Array {
@@ -30,9 +9,8 @@ function tone(n: number): Float32Array {
 }
 
 describe('glitch.dsp', () => {
-  it('passes the dry signal through unchanged at MIX 0', () => {
-    const g = new Ctor();
-    Object.assign(g.p, { length: 60, repeats: 3, prob: 1, pitch: 3, mix: 0, sync: 0 });
+  it('passes the dry signal through unchanged at MIX 0', async () => {
+    const g = await loadProcessor('glitch', { length: 60, repeats: 3, prob: 1, pitch: 3, mix: 0, sync: 0 });
     const n = 4000;
     const inp = tone(n);
     const clk = new Float32Array(n);
@@ -44,9 +22,8 @@ describe('glitch.dsp', () => {
     expect(worst).toBe(0);
   });
 
-  it('never repeats at PROBABILITY 0', () => {
-    const g = new Ctor();
-    Object.assign(g.p, { length: 60, repeats: 3, prob: 0, pitch: 3, mix: 1, sync: 0 });
+  it('never repeats at PROBABILITY 0', async () => {
+    const g = await loadProcessor('glitch', { length: 60, repeats: 3, prob: 0, pitch: 3, mix: 1, sync: 0 });
     const n = 12000;
     const inp = tone(n);
     const clk = new Float32Array(n);
@@ -58,11 +35,17 @@ describe('glitch.dsp', () => {
     expect(worst).toBe(0);
   });
 
-  it('repeats on every clock at PROBABILITY 1, with the repeat length matching LENGTH', () => {
-    const g = new Ctor();
+  it('repeats on every clock at PROBABILITY 1, with the repeat length matching LENGTH', async () => {
     const lengthMs = 60;
     const repeats = 3;
-    Object.assign(g.p, { length: lengthMs, repeats, prob: 1, pitch: 3, mix: 1, sync: 0 });
+    const g = await loadProcessor('glitch', {
+      length: lengthMs,
+      repeats,
+      prob: 1,
+      pitch: 3,
+      mix: 1,
+      sync: 0,
+    });
     const loopLen = Math.round((lengthMs / 1000) * SR); // 2880 samples
     const clockAt = 4000;
     const n = clockAt + loopLen * (repeats + 2);

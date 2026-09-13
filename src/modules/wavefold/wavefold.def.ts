@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'wavefold',
@@ -22,7 +22,7 @@ export const def: ModuleDef = {
       cvIn: 'fcv',
     },
     { id: 'sym', label: 'SYMMETRY', min: -1, max: 1, initial: 0, fmt: 'f1' },
-    { id: 'fcvA', label: 'FOLD CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
+    att('fcv', 'FOLD CV'),
     { id: 'level', label: 'LEVEL', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 1, fmt: 'fPc' },
   ],

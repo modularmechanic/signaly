@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, OnePole, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, OnePole, lpCoeff } from '../../engine/dsp-prelude';
 
 /** Capture a moment of audio and loop it. MODE GATE freezes while held; TOGGLE latches on a
     trigger. While frozen the capture buffer stops being written, which is what makes the loop
@@ -11,10 +11,6 @@ class Freeze extends Base {
   loopLen = 4800;
   sm = new OnePole(0, 0);
   led = 0;
-
-  defaults(): Params {
-    return { size: 250, pitch: 0, smooth: 0.3, mix: 0.6, mode: 0 };
-  }
 
   /** Two taps a half-loop apart, constant-power blended (sin^2 + cos^2 = 1): each tap's own
       wrap-click lands exactly where its envelope is zero, so the loop seam never clicks.

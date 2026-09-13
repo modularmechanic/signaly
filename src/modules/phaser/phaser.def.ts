@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'phaser',
@@ -31,7 +31,7 @@ export const def: ModuleDef = {
       cvIn: 'ccv',
     },
     { id: 'fb', label: 'FEEDBACK', min: -0.9, max: 0.9, initial: 0.4, fmt: 'f1' },
-    { id: 'ccvA', label: 'CENTRE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'ccv' },
+    att('ccv', 'CENTRE CV'),
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.5, fmt: 'fPc' },
   ],
   sws: [{ id: 'stages', label: 'STAGES', options: ['4', '6', '8'], initial: 1 }],

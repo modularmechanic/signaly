@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'shimmer',
@@ -13,7 +13,7 @@ export const def: ModuleDef = {
     { id: 'window', label: 'WINDOW', min: 0.02, max: 0.2, initial: 0.08, fmt: 'fMs', curve: 'log' },
     { id: 'damp', label: 'DAMP', min: 500, max: 16000, initial: 5000, fmt: 'fHz', curve: 'log' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.35, fmt: 'fPc' },
-    { id: 'fcvA', label: 'FB CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
+    att('fcv', 'FB CV'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JackDef, ModuleDef } from '../../core/types';
 import type { ModuleInstance } from '../../engine/types';
 import { connectCable, disconnectCable } from '../../engine/rack';
-import { cancelArm } from '../../hooks/patch-state';
+import { cancelArm } from '../../hooks/jack-interaction';
 import { useRackStore } from '../../state/rack-store';
 import { Jack } from './jack';
 

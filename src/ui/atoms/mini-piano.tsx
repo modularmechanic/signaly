@@ -41,7 +41,7 @@ export function MiniPiano({ active, root, playing, color, octave = 4, onToggle }
           className={cls(pc, 'b')}
           aria-label={name(pc)}
           aria-pressed={active[pc] === true}
-          style={{ left: `calc(${BLACK_BOUND[pc] ?? 0} / 7 * 100% - 9px)` }}
+          style={{ '--bk': BLACK_BOUND[pc] ?? 0 } as CSSProperties}
           onClick={(e) => {
             e.stopPropagation();
             onToggle?.(pc);

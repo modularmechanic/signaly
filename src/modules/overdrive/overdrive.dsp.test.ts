@@ -1,26 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./overdrive.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` in `buf`, read over the settled second half. */
 function mag(buf: Float32Array, f: number): number {
@@ -39,9 +18,8 @@ function mag(buf: Float32Array, f: number): number {
 
 /** A 200 Hz + 4 kHz two-tone through the drive at low DRIVE, so the tone stack's own
     shape — not clipping distortion — decides which tone comes out on top. */
-function run(tone: number): Float32Array {
-  const o = new Ctor();
-  Object.assign(o.p, { drive: 1, tone, level: 0.8 });
+async function run(tone: number): Promise<Float32Array> {
+  const o = await loadProcessor('overdrive', { drive: 1, tone, level: 0.8 });
   const n = 4800;
   const inp = new Float32Array(n);
   for (let i = 0; i < n; i++) {
@@ -53,9 +31,8 @@ function run(tone: number): Float32Array {
 }
 
 describe('overdrive.dsp', () => {
-  it('stays near silent when LEVEL is near zero', () => {
-    const o = new Ctor();
-    Object.assign(o.p, { drive: 6, tone: 0.5, level: 0.001 });
+  it('stays near silent when LEVEL is near zero', async () => {
+    const o = await loadProcessor('overdrive', { drive: 6, tone: 0.5, level: 0.001 });
     const n = 1024;
     const inp = new Float32Array(n).fill(3);
     const out = new Float32Array(n);
@@ -65,9 +42,9 @@ describe('overdrive.dsp', () => {
     expect(peak).toBeLessThan(0.05);
   });
 
-  it('TONE sweeps the stack from bass-led to treble-led', () => {
-    const dark = run(0);
-    const bright = run(1);
+  it('TONE sweeps the stack from bass-led to treble-led', async () => {
+    const dark = await run(0);
+    const bright = await run(1);
     const darkLo = mag(dark, 200);
     const darkHi = mag(dark, 4000);
     const brightLo = mag(bright, 200);

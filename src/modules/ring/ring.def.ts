@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'ring',
@@ -11,7 +11,7 @@ export const def: ModuleDef = {
   knobs: [
     { id: 'depth', label: 'DEPTH', min: 0, max: 1, initial: 1, fmt: 'fPc', big: true, cvIn: 'dcv' },
     { id: 'offset', label: 'OFFSET', min: 0, max: 1, initial: 0, fmt: 'fPc' },
-    { id: 'dcvamt', label: 'DEPTH CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'dcv' },
+    att('dcv', 'DEPTH CV', 'dcvamt'),
   ],
   ins: [
     { id: 'x', label: 'X', kind: 'a' },

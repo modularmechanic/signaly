@@ -1,38 +1,16 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null; postMessage: () => void } = {
-    onmessage: null,
-    postMessage: () => {},
-  };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-  head: number;
-  msg(m: { t: string; v?: unknown }): void;
-}
-let Cloud: new () => Proc;
-
-const SR = 48000;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./cloud.dsp');
-  Cloud = reg.mock.calls[0]![1] as new () => Proc;
-});
+type Cloud = Proc & { head: number; msg(m: { t: string; v?: unknown }): void };
 
 function sample(): Float32Array {
   return new Float32Array(SR * 2).fill(1); // constant, so a grain's presence is unambiguous
 }
 
 /** Fraction of samples that are near-silent once voices have had time to fill up. */
-function quietFraction(dens: number, size: number): number {
-  const c = new Cloud();
+async function quietFraction(dens: number, size: number): Promise<number> {
+  const c = (await loadProcessor('cloud')) as Cloud;
   c.msg({ t: 'sample', v: sample() });
   c.p.dens = dens;
   c.p.size = size;
@@ -48,15 +26,15 @@ function quietFraction(dens: number, size: number): number {
 }
 
 describe('cloud.dsp', () => {
-  it('overlaps grains as density rises: near-silence between onsets nearly disappears', () => {
-    const sparse = quietFraction(2, 0.005); // short grains, far apart
-    const dense = quietFraction(40, 0.1); // long grains, close together — genuine overlap
+  it('overlaps grains as density rises: near-silence between onsets nearly disappears', async () => {
+    const sparse = await quietFraction(2, 0.005); // short grains, far apart
+    const dense = await quietFraction(40, 0.1); // long grains, close together — genuine overlap
     expect(sparse).toBeGreaterThan(0.3);
     expect(dense).toBeLessThan(0.1);
   });
 
-  it('freeze holds the scan head; unfrozen, it advances', () => {
-    const frozen = new Cloud();
+  it('freeze holds the scan head; unfrozen, it advances', async () => {
+    const frozen = (await loadProcessor('cloud')) as Cloud;
     frozen.msg({ t: 'sample', v: sample() });
     frozen.p.freeze = 1;
     const before = frozen.head;
@@ -64,7 +42,7 @@ describe('cloud.dsp', () => {
     frozen.process([[], []], O);
     expect(frozen.head).toBe(before);
 
-    const running = new Cloud();
+    const running = (await loadProcessor('cloud')) as Cloud;
     running.msg({ t: 'sample', v: sample() });
     running.p.freeze = 0;
     const start = running.head;

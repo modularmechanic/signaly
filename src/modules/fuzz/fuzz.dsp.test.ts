@@ -1,26 +1,6 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./fuzz.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` in `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -37,9 +17,15 @@ function mag(buf: Float32Array, f: number): number {
 }
 
 /** Run a 220 Hz sine at `volts` through the fuzz. */
-function run(volts: number, params: Partial<Params>): Float32Array {
-  const f = new Ctor();
-  Object.assign(f.p, { fuzz: 4, gate: 0, starve: 0, level: 0.8, mode: 0, ...params });
+async function run(volts: number, params: Params): Promise<Float32Array> {
+  const f = await loadProcessor('fuzz', {
+    fuzz: 4,
+    gate: 0,
+    starve: 0,
+    level: 0.8,
+    mode: 0,
+    ...params,
+  });
   const n = 4800;
   const inp = new Float32Array(n);
   for (let i = 0; i < n; i++) inp[i] = volts * Math.sin((2 * Math.PI * 220 * i) / SR);
@@ -67,22 +53,22 @@ function harmonics(buf: Float32Array): number {
 }
 
 describe('fuzz.dsp', () => {
-  it('stays near silent when LEVEL is near zero', () => {
-    expect(peak(run(5, { level: 0.001, fuzz: 12 }))).toBeLessThan(0.05);
+  it('stays near silent when LEVEL is near zero', async () => {
+    expect(peak(await run(5, { level: 0.001, fuzz: 12 }))).toBeLessThan(0.05);
   });
 
-  it('the noise gate mutes a quiet signal but passes a loud one', () => {
-    const quiet = peak(run(0.5, { gate: 0.3 }));
-    const loud = peak(run(5, { gate: 0.3 }));
+  it('the noise gate mutes a quiet signal but passes a loud one', async () => {
+    const quiet = peak(await run(0.5, { gate: 0.3 }));
+    const loud = peak(await run(5, { gate: 0.3 }));
     expect(quiet).toBeLessThan(0.05);
     expect(loud).toBeGreaterThan(1);
   });
 
-  it('SILICON is measurably brighter than GERMANIUM at the same FUZZ', () => {
+  it('SILICON is measurably brighter than GERMANIUM at the same FUZZ', async () => {
     // A moderate FUZZ keeps both modes short of full clipping, where the knee shape
     // (and not just the ceiling) is what tells silicon and germanium apart.
-    const ge = harmonics(run(5, { fuzz: 0.5, mode: 0 }));
-    const si = harmonics(run(5, { fuzz: 0.5, mode: 1 }));
+    const ge = harmonics(await run(5, { fuzz: 0.5, mode: 0 }));
+    const si = harmonics(await run(5, { fuzz: 0.5, mode: 1 }));
     expect(si).toBeGreaterThan(ge * 3);
   });
 });

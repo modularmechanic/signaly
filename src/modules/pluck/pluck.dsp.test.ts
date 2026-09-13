@@ -1,26 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./pluck.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` Hz within one block of `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -39,9 +18,8 @@ function mag(buf: Float32Array, f: number): number {
 const rms = (b: Float32Array): number => Math.sqrt(b.reduce((s, v) => s + v * v, 0) / b.length);
 
 /** One triggered pluck at 220 Hz, `dec` seconds of DECAY, for `n` samples. */
-function pluck(dec: number, n: number): Float32Array {
-  const p = new Ctor();
-  Object.assign(p.p, { tune: 220, damp: 8000, bright: 0.8, dec, tcvA: 0 });
+async function pluck(dec: number, n: number): Promise<Float32Array> {
+  const p = await loadProcessor('pluck', { tune: 220, damp: 8000, bright: 0.8, dec, tcvA: 0 });
   const voct = new Float32Array(n); // 0 V: TUNE sets the pitch directly
   const trig = new Float32Array(n);
   trig[0] = 5;
@@ -51,9 +29,8 @@ function pluck(dec: number, n: number): Float32Array {
 }
 
 describe('pluck.dsp', () => {
-  it('is silent with no trigger', () => {
-    const p = new Ctor();
-    Object.assign(p.p, { tune: 220, damp: 8000, bright: 0.8, dec: 1, tcvA: 0 });
+  it('is silent with no trigger', async () => {
+    const p = await loadProcessor('pluck', { tune: 220, damp: 8000, bright: 0.8, dec: 1, tcvA: 0 });
     const n = 2000;
     const voct = new Float32Array(n);
     const trig = new Float32Array(n); // never fires
@@ -62,10 +39,10 @@ describe('pluck.dsp', () => {
     expect(rms(out)).toBe(0);
   });
 
-  it('rings at the tuned frequency and DECAY sets the ring time', () => {
+  it('rings at the tuned frequency and DECAY sets the ring time', async () => {
     const n = SR;
-    const long = pluck(0.6, n);
-    const short = pluck(0.15, n);
+    const long = await pluck(0.6, n);
+    const short = await pluck(0.15, n);
 
     // rings at the tuned frequency: the 220 Hz component dominates the ringing energy
     const early = long.slice(1000, 1000 + 2048);

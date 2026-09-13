@@ -1,27 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-class FakeProcessor {
-  port = { onmessage: null, postMessage: (): void => {} };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-}
-let RndWalk: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./rndwalk.dsp');
-  RndWalk = reg.mock.calls[0]![1] as new () => Proc;
-});
+import { describe, expect, it } from 'vitest';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
 describe('rndwalk.dsp', () => {
-  it('stays inside ±RANGE over 10 000 clocks', () => {
-    const w = new RndWalk();
+  it('stays inside ±RANGE over 10 000 clocks', async () => {
+    const w = await loadProcessor('rndwalk');
     w.p.step = 0.5;
     w.p.range = 5;
     const O = [[new Float32Array(4)]];

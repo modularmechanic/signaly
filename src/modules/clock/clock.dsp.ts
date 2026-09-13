@@ -1,4 +1,4 @@
-import { Base, ch, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 /** index -> beat multiplier; mirrors the fRate labels ÷8 ÷4 ÷2 ×1 ×2 ×4 ×8. */
 const RATE_MULT = [0.125, 0.25, 0.5, 1, 2, 4, 8];
@@ -12,10 +12,6 @@ class Clock extends Base {
   pss = 0;
   recHold = 0;
   dirty = true;
-
-  defaults(): Params {
-    return { bpm: 120, run: 0, r1: 3, r2: 4, r3: 2, r4: 1 };
-  }
 
   override onParam(id: string): void {
     if (id === 'bpm' || id === 'run') this.dirty = true;

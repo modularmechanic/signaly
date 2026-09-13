@@ -1,27 +1,8 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Proc } from '../../../tests/dsp-harness';
+import { loadProcessor } from '../../../tests/dsp-harness';
 
-class FakeProcessor {
-  port: { onmessage: ((e: MessageEvent) => void) | null; postMessage: () => void } = {
-    onmessage: null,
-    postMessage: () => {},
-  };
-}
-
-interface Proc {
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-  p: Record<string, number>;
-  msg(m: { t: string; v?: unknown }): void;
-}
-let Slicer: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', 48000);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./slicer.dsp');
-  Slicer = reg.mock.calls[0]![1] as new () => Proc;
-});
+type Slicer = Proc & { msg(m: { t: string; v?: unknown }): void };
 
 const N = 400; // 4 quarters of 100 samples
 
@@ -46,8 +27,8 @@ function step(s: Proc, trigLevel: number): number {
 }
 
 describe('slicer.dsp', () => {
-  it('CV-selects slice 2 of 4 and plays only that quarter', () => {
-    const s = new Slicer();
+  it('CV-selects slice 2 of 4 and plays only that quarter', async () => {
+    const s = (await loadProcessor('slicer')) as Slicer;
     s.msg({ t: 'sample', v: quarterBuf() });
     s.p.slices = 4;
     const len = 250;
@@ -60,8 +41,8 @@ describe('slicer.dsp', () => {
     expect(avg).toBeLessThan(1.1);
   });
 
-  it('steps to the next slice on each trigger when no CV is patched', () => {
-    const s = new Slicer();
+  it('steps to the next slice on each trigger when no CV is patched', async () => {
+    const s = (await loadProcessor('slicer')) as Slicer;
     s.msg({ t: 'sample', v: quarterBuf() });
     s.p.slices = 4;
     const seen: number[] = [Math.round(step(s, 0))];

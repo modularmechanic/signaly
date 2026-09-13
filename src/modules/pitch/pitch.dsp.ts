@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL } from '../../engine/dsp-prelude';
 
 const SHIFT_RANGE = 24; // matches the SHIFT knobs' +/-24 semitone span
 const CV_VOLTS = 5;
@@ -10,10 +10,6 @@ class Pitch extends Base {
   phA = 0;
   phB = 0.5; // staggered from voice A so the two voices' own seams don't line up
   lastVoice1 = 0;
-
-  defaults(): Params {
-    return { shift1: 0, shift2: 7, scvA: 0, window: 60, fb: 0, mix: 0.5 };
-  }
 
   /** Two reads a half-window apart, constant-power blended: click-free wrap. */
   tap(ph: number, w: number): number {

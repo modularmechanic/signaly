@@ -1,4 +1,4 @@
-import { Base, ch, clamp, flush, lpCoeff, OnePole, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, lpCoeff, OnePole } from '../../engine/dsp-prelude';
 
 const BASE_HZ = 317;
 /** Harmonic stack at METAL 0; the 808's inharmonic square bank at METAL 1. */
@@ -18,10 +18,6 @@ class Hats extends Base {
   lastOpen = 0;
   hp1 = new OnePole(1);
   hp2 = new OnePole(1);
-
-  defaults(): Params {
-    return { tone: 5000, cdec: 0.04, odec: 0.5, metal: 0.8, level: 0.7 };
-  }
 
   /** exp(-1/(t*sr)): the per-sample decay factor for a time constant in seconds. */
   private static coeff(t: number): number {

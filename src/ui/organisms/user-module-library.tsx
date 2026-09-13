@@ -1,8 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { unregisterUserModule } from '../../features/user-modules/runtime-registry';
+import { list, remove } from '../../features/user-modules/lifecycle';
 import { fromRecord, type UserModule } from '../../features/user-modules/schema';
-import { removeImage } from '../../storage/image-store';
-import { listUserModules, removeUserModule, type UserModuleRecord } from '../../storage/user-module-store';
 import { Button } from '../atoms/button';
 
 const MAX_IMPORT_BYTES = 1024 * 1024;
@@ -39,20 +37,24 @@ async function readImport(file: File): Promise<UserModule | { error: string }> {
   if (typeof env.module !== 'object' || env.module === null) return { error: 'The module is missing.' };
   const m = env.module as Record<string, unknown>;
   const now = Date.now();
-  return fromRecord({
-    slug: typeof m.slug === 'string' ? m.slug : '',
-    def: m.def,
-    dsp: typeof m.dsp === 'string' ? m.dsp : '',
-    createdAt: typeof m.createdAt === 'number' ? m.createdAt : now,
-    updatedAt: now,
-  });
+  return fromRecord(
+    {
+      slug: typeof m.slug === 'string' ? m.slug : '',
+      def: m.def,
+      dsp: typeof m.dsp === 'string' ? m.dsp : '',
+      createdAt: typeof m.createdAt === 'number' ? m.createdAt : now,
+      updatedAt: now,
+      // An export is saved work: read it under the rules it was written with, not today's.
+    },
+    true,
+  );
 }
 
 export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode {
   const [, bump] = useState(0);
   const [msg, setMsg] = useState('');
-  const rows = listUserModules().map((rec) => {
-    const parsed = fromRecord(rec);
+  const rows = list().map((rec) => {
+    const parsed = fromRecord(rec, true);
     return {
       rec,
       um: 'error' in parsed ? null : parsed,
@@ -60,10 +62,8 @@ export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode
     };
   });
 
-  const remove = (rec: UserModuleRecord): void => {
-    removeUserModule(rec.slug);
-    unregisterUserModule(rec.slug);
-    if (rec.faceplateImageId) void removeImage(rec.faceplateImageId);
+  const onDelete = (slug: string): void => {
+    remove(slug);
     bump((n) => n + 1);
   };
 
@@ -102,7 +102,7 @@ export function UserModuleLibrary({ onLoad }: UserModuleLibraryProps): ReactNode
             >
               Export
             </Button>
-            <Button onClick={() => remove(rec)}>Delete</Button>
+            <Button onClick={() => onDelete(rec.slug)}>Delete</Button>
           </li>
         ))}
       </ul>

@@ -1,15 +1,4 @@
-import {
-  Base,
-  ch,
-  clamp,
-  flush,
-  ClockSync,
-  DL,
-  OnePole,
-  SYNC_DIV,
-  lpCoeff,
-  type Params,
-} from '../../engine/dsp-prelude';
+import { Base, ch, clamp, flush, ClockSync, DL, OnePole, SYNC_DIV, lpCoeff } from '../../engine/dsp-prelude';
 
 const GLIDE_MS = 20.8229;
 
@@ -22,20 +11,6 @@ class SDelay extends Base {
   tR = new OnePole(GLIDE_MS, 0.5 * sampleRate);
   cs = new ClockSync();
   led = 0;
-
-  defaults(): Params {
-    return {
-      timel: 0.375,
-      timer: 0.5,
-      fb: 0.4,
-      swing: 0,
-      tone: 5000,
-      width: 0.85,
-      mix: 0.35,
-      mode: 0,
-      sync: 0,
-    };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const iL = ch(I, 0),

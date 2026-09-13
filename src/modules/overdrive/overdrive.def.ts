@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'overdrive',
@@ -23,8 +23,8 @@ export const def: ModuleDef = {
     },
     { id: 'tone', label: 'TONE', min: 0, max: 1, initial: 0.5, fmt: 'fPc', cvIn: 'tocv' },
     { id: 'level', label: 'LEVEL', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
-    { id: 'dcvA', label: 'DRIVE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'dcv' },
-    { id: 'tocvA', label: 'TONE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'tocv' },
+    att('dcv', 'DRIVE CV'),
+    att('tocv', 'TONE CV'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

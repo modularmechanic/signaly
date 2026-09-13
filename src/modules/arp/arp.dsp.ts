@@ -45,10 +45,6 @@ class Arp extends Base {
   sentChord = -1;
   sentShape = -1;
 
-  defaults(): Params {
-    return { chord: 0, octs: 1, shape: 0, glen: 0.6 };
-  }
-
   rnd(): number {
     this.rs = (this.rs * 1103515245 + 12345) & 0x7fffffff;
     return this.rs / 0x7fffffff;

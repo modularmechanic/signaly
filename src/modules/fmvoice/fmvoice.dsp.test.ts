@@ -1,26 +1,6 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Params } from '../../engine/dsp-prelude';
-
-const SR = 48000;
-
-class FakeProcessor {
-  port = { onmessage: null as ((e: MessageEvent) => void) | null, postMessage: vi.fn() };
-}
-
-interface Proc {
-  p: Params;
-  process(I: Float32Array[][], O: Float32Array[][]): boolean;
-}
-let Ctor: new () => Proc;
-
-beforeAll(async () => {
-  vi.stubGlobal('sampleRate', SR);
-  vi.stubGlobal('AudioWorkletProcessor', FakeProcessor);
-  const reg = vi.fn();
-  vi.stubGlobal('registerProcessor', reg);
-  await import('./fmvoice.dsp');
-  Ctor = reg.mock.calls[0]?.[1] as new () => Proc;
-});
+import { loadProcessor, SR } from '../../../tests/dsp-harness';
 
 /** Goertzel magnitude of `f` Hz within one block of `buf`. */
 function mag(buf: Float32Array, f: number): number {
@@ -50,9 +30,8 @@ function residual(buf: Float32Array, freqs: number[]): number {
 }
 
 /** GATE held throughout, with envelope settled by the time the window starts. */
-function run(params: Params, n: number): Float32Array {
-  const v = new Ctor();
-  Object.assign(v.p, params);
+async function run(params: Params, n: number): Promise<Float32Array> {
+  const v = await loadProcessor('fmvoice', params);
   const voct = new Float32Array(n);
   const gate = new Float32Array(n).fill(5);
   const tcv = new Float32Array(n);
@@ -62,8 +41,8 @@ function run(params: Params, n: number): Float32Array {
 }
 
 describe('fmvoice.dsp', () => {
-  it('ratio 1:1 on algorithm 0 gives a clean sine at the tuned pitch', () => {
-    const out = run(
+  it('ratio 1:1 on algorithm 0 gives a clean sine at the tuned pitch', async () => {
+    const out = await run(
       { tune: 220, r1: 1, r2: 1, r3: 1, r4: 1, l1: 1, l2: 0, l3: 0, l4: 0, atk: 0.002, dec: 2, algo: 0 },
       8000,
     );
@@ -74,7 +53,7 @@ describe('fmvoice.dsp', () => {
     expect(mag(win, 220) / rms(win)).toBeGreaterThan(1.3);
   });
 
-  it('switching algorithm with identical operator settings changes the spectrum', () => {
+  it('switching algorithm with identical operator settings changes the spectrum', async () => {
     // 200 Hz divides the sample rate evenly, so a 2400-sample window (10 whole periods) has
     // no DFT leakage for it or its 2x/3x/4x ratio partners — a real requirement for `residual`
     // to mean anything, not an artifact of algorithm choice.
@@ -92,8 +71,8 @@ describe('fmvoice.dsp', () => {
       dec: 1000, // negligible decay inside the measurement window: an amplitude-flat tone
     };
     const freqs = [200, 400, 600, 800];
-    const parallel = run({ ...params, algo: 2 }, 8000).slice(4800, 4800 + 2400);
-    const stack = run({ ...params, algo: 0 }, 8000).slice(4800, 4800 + 2400);
+    const parallel = (await run({ ...params, algo: 2 }, 8000)).slice(4800, 4800 + 2400);
+    const stack = (await run({ ...params, algo: 0 }, 8000)).slice(4800, 4800 + 2400);
 
     // PARALLEL is four independent carriers: almost fully explained by those four bins
     expect(residual(parallel, freqs)).toBeLessThan(0.05);

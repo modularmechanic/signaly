@@ -1,13 +1,9 @@
-import { Base, ch, clamp, Lcg, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, Lcg } from '../../engine/dsp-prelude';
 
 class Wasp extends Base {
   ic1 = 0;
   ic2 = 0;
   rng = new Lcg(12345);
-
-  defaults(): Params {
-    return { cut: 900, res: 0.4, dirt: 0.4, cv: 0 };
-  }
 
   /** CMOS crossover kink — asymmetric bite that grows with signal level. */
   kink(v: number, dirt: number): number {

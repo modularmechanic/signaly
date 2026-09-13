@@ -1,4 +1,4 @@
-import { readLinear, Base, ch, clamp, type InMsg, type Params } from '../../engine/dsp-prelude';
+import { readLinear, Base, ch, clamp, type InMsg } from '../../engine/dsp-prelude';
 
 /** Play a loaded sample on a trigger, 1 V/oct + PITCH, between START and END, forward or
     REVERSE, one-shot or LOOP. `msg({t:'sample', v})` hands over the decoded mono buffer — see
@@ -8,10 +8,6 @@ class Sampler extends Base {
   pos = 0;
   playing = false;
   lastTrig = 0;
-
-  defaults(): Params {
-    return { pitch: 0, start: 0, end: 1, loop: 0, reverse: 0 };
-  }
 
   override msg(m: InMsg): void {
     const v = m.v as unknown;

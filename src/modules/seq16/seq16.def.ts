@@ -21,5 +21,6 @@ export const def: ModuleDef = {
     { id: 'cv', label: 'CV OUT', kind: 'p' },
     { id: 'gate', label: 'GATE', kind: 'g' },
   ],
-  display: 'steps',
+  // seq16.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

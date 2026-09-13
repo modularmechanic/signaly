@@ -1,4 +1,4 @@
-import { Base, ch, clamp, onePoleCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, onePoleCoeff } from '../../engine/dsp-prelude';
 
 const CHROMATIC = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -39,10 +39,6 @@ class Quant extends Base {
   lastTrig = 0;
   lastNote = NaN;
   pulse = 0;
-
-  defaults(): Params {
-    return { root: 0, transpose: 0, glide: 0.02, scale: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0];

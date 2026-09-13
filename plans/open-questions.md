@@ -14,13 +14,24 @@ is the single list.
       (120) nor the ceiling (240) and was narrower than the 36 HP built-in MIX 8. The bound is the floor,
       not `MAX_ROW_HP`, because 240 HP rows are optional — only 120 is guaranteed. No browser hint was
       restored: nothing that validates can now fail to place.
-- [x] CVD-safe signal palette — resolved twice. Phase 05 measured the original Okabe-Ito derivation
-      with Viénot/Brettel dichromacy matrices and CIE76: protan 25.5, deutan 29.7, but tritan 3.5
-      (pitch collapsed onto CV). The Blackline rework then re-derived the whole palette for a black
-      ground and retuned `--kind-c` to clear tritan ≥ 15 and protan/deutan ≥ 20. Final values:
-      `--kind-a #ffb02e` audio, `--kind-p #5ab4ff` pitch, `--kind-g #ff5fa0` gate, `--kind-c #68f3bf`
-      CV (`src/styles/tokens.css`, which records why the spec's `#35d0a6` was rejected: deutan ΔE76
-      7.8, tritan 4.9). Colour is never the only channel — ring line-style and glyph carry the kind too.
+- [x] CVD-safe signal palette — resolved three times, and the third time it got a test. Phase 05
+      measured the original Okabe-Ito derivation with Viénot/Brettel dichromacy matrices and CIE76:
+      protan 25.5, deutan 29.7, but tritan 3.5 (pitch collapsed onto CV). The Blackline rework
+      re-derived for a black ground, retuned `--kind-c`, and recorded the budget as met —
+      **but only the pair that had failed was re-checked.** Measured across all six pairs on
+      2026-09-12, the shipped palette did not clear its own budget: deutan 18.9 (gate vs CV) and
+      tritan 11.0 (audio vs gate) against thresholds of 20 and 15, with gate `#ff5fa0` the common
+      term in both. Gate is now `#ef2fbf`, which clears every pair — protan 28.4, deutan 26.5,
+      tritan 16.8 — with the per-cable shade jitter (`SHADE_MIN` 0.97) included in the measurement,
+      and at L\* 56 it stays close to the old gate's brightness on the black faceplate.
+      Final values: `--kind-a #ffb02e` audio, `--kind-p #5ab4ff` pitch, `--kind-g #ef2fbf` gate,
+      `--kind-c #68f3bf` CV (`src/styles/tokens.css`, which also records why the spec's `#35d0a6`
+      was rejected: deutan ΔE76 7.8, tritan 4.9). Colour is never the only channel — ring
+      line-style and glyph carry the kind too.
+      **The budget is now enforced by `src/styles/cvd-palette.test.ts`**, which reads the tokens,
+      simulates all three dichromacies and fails naming the closest pair. That test is the real
+      fix: this drifted for a fortnight because the figure lived in this file instead of in CI.
+      Anyone changing a `--kind-*` value should expect that test to be the thing that argues back.
 - [x] `navigator.storage.persist()` on first save — included. `src/storage/local-json.ts:33` fires it
       once, best-effort, on the first `writeJson`, with the rejection swallowed.
 
@@ -71,10 +82,11 @@ closed in an agent session. Each item says what to do and who has to do it.
       Settings and list models if a key is available, import a user-module JSON, confirm DIST is in the
       browser list. On the second visit check the Network tab: the `react-*.js` chunk must come from
       cache. Do not debug a 404 in the first five minutes — Pages takes a while to propagate.
-- [ ] **Tag `v0.2.0` and publish the release (phase 06 step 8).** *User.* `package.json` is already at `0.2.0`. The changelog entry is already
-      written as `## [0.2.0] — 2026-09-03`. Publishing the GitHub release for that tag is what triggers
-      `release.yml` and puts the site live, so the live smoke test above happens after this step, not
-      before it.
+- [x] **Tag and publish the first release (phase 06 step 8).** *Superseded — re-checked 2026-09-13.*
+      The `v0.2.0` plan was not what shipped: versioning restarted at `0.0.x`, and releases
+      `v0.0.1` through `v0.0.8` have been tagged and published, with `package.json` at `0.0.8`.
+      Publishing a GitHub release is still what triggers `release.yml` and puts the site live, so the
+      live smoke test above follows a release, not the other way round.
 - [x] **CI status badge in the README.** *Done 2026-09-03.* Badge and the live URL are under the
       README title now that the remote is real.
 - [ ] **License and provenance (H2).** *User decision.* MIT shipped as the plan's default

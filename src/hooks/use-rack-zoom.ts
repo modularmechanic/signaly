@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useSettingsStore } from '../state/settings-store';
-import { invalidateJackRects } from './patch-state';
+import { invalidateJackRects } from './jack-registry';
 
 /** One press of + or −. 1.25 is four steps per octave of scale: coarse enough to get somewhere
     on a phone, fine enough to land on a comfortable size. */

@@ -1,4 +1,4 @@
-import { Base, ch, clamp, ClockSync, flush, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, ClockSync, flush, TP } from '../../engine/dsp-prelude';
 
 const STAGES = [4, 6, 8];
 
@@ -11,10 +11,6 @@ class Phaser extends Base {
   last = 0;
   cs = new ClockSync();
   gate = 0;
-
-  defaults(): Params {
-    return { rate: 0.4, depth: 0.6, centre: 800, fb: 0.4, mix: 0.5, stages: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

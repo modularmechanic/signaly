@@ -25,5 +25,6 @@ export const def: ModuleDef = {
     { id: 't3', label: 'LANE 3', kind: 'g' },
     { id: 't4', label: 'LANE 4', kind: 'g' },
   ],
-  display: 'steps',
+  // trigseq.parts.tsx fills this box; no built-in renderer names it.
+  screen: true,
 };

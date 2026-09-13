@@ -1,13 +1,9 @@
-import { Base, blep, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, blep, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 class VCO extends Base {
   ph = 0;
   tri = 0;
   ls = 0;
-
-  defaults(): Params {
-    return { oct: 0, fine: 0, pw: 0.5, fm: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

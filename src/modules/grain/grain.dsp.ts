@@ -1,4 +1,4 @@
-import { Base, ch, clamp, DL, Lcg, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, Lcg, TP } from '../../engine/dsp-prelude';
 
 const VOICES = 8;
 
@@ -16,10 +16,6 @@ class Grain extends Base {
   sch = 0;
   next = 1;
   lg = 0;
-
-  defaults(): Params {
-    return { size: 0.06, dens: 8, pitch: 0, spray: 0, pos: 0.2, posA: 0, mix: 0.6 };
-  }
 
   spawn(len: number, rate: number, d0: number, spray: number, maxD: number): void {
     let v = this.age.findIndex((a) => a < 0);

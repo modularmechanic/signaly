@@ -1,4 +1,4 @@
-import { Base, ch, clamp, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, TP } from '../../engine/dsp-prelude';
 
 const LEN = 1024;
 const TABLES = 8;
@@ -41,10 +41,6 @@ const BANK = buildBank();
 
 class Wavetable extends Base {
   ph = 0;
-
-  defaults(): Params {
-    return { tune: 0, fine: 0, pos: 0, posA: 0, fm: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

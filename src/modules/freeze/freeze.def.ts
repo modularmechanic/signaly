@@ -9,7 +9,7 @@ export const def: ModuleDef = {
   look: 'press',
   worklet: 'freeze',
   knobs: [
-    { id: 'size', label: 'SIZE', min: 20, max: 2000, initial: 250, fmt: 'fMs', curve: 'log', big: true },
+    { id: 'size', label: 'SIZE', min: 20, max: 2000, initial: 250, fmt: 'fMsec', curve: 'log', big: true },
     { id: 'pitch', label: 'PITCH', min: -24, max: 24, initial: 0, fmt: 'fSemi', cvIn: 'pcv' },
     { id: 'smooth', label: 'SMOOTH', min: 0, max: 1, initial: 0.3, fmt: 'fPc' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.6, fmt: 'fPc' },

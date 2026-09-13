@@ -1,10 +1,6 @@
-import { Base, ch, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 class Atn extends Base {
-  defaults(): Params {
-    return { a1: 1, o1: 0, a2: 1, o2: 0 };
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const i1 = ch(I, 0),
       i2 = ch(I, 1);
