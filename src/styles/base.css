@@ -50,6 +50,28 @@ svg {
   border-radius: var(--r-sm);
 }
 
+/* Forced colours strip box-shadow, and the ring above is nothing but a box-shadow, so without this
+   every knob, fader, jack, switch and button loses its focus indicator outright. System colours are
+   mandatory in here: a var() would be substituted away with everything else. The controls below are
+   empty elements whose entire appearance is a gradient, so they need a border to keep a silhouette
+   rather than flattening into blank blocks. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .knob,
+  .knob-cap,
+  .fader,
+  .fader-cap,
+  .led,
+  .mpk,
+  .screw {
+    border: 1px solid CanvasText;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
