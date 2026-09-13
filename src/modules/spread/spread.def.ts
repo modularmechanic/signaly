@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'spread',
@@ -10,7 +10,7 @@ export const def: ModuleDef = {
   worklet: 'spread',
   knobs: [
     { id: 'width', label: 'WIDTH', min: 0, max: 2, initial: 1, fmt: 'fPc', big: true, cvIn: 'wcv' },
-    { id: 'wcvA', label: 'WIDTH CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'wcv' },
+    att('wcv', 'WIDTH CV'),
     {
       id: 'bass',
       label: 'BASS MONO',

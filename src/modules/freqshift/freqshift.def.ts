@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'freqshift',
@@ -12,7 +12,7 @@ export const def: ModuleDef = {
   knobs: [
     { id: 'shift', label: 'SHIFT', min: -1000, max: 1000, initial: 100, fmt: 'fHz', big: true, cvIn: 'scv' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.5, fmt: 'fPc' },
-    { id: 'scvA', label: 'SHIFT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'scv' },
+    att('scv', 'SHIFT CV'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

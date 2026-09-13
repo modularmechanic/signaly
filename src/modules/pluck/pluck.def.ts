@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'pluck',
@@ -23,7 +23,7 @@ export const def: ModuleDef = {
     { id: 'damp', label: 'DAMP', min: 200, max: 16000, initial: 3500, fmt: 'fHz', curve: 'log' },
     { id: 'bright', label: 'BRIGHT', min: 0, max: 1, initial: 0.6, fmt: 'fPc' },
     { id: 'dec', label: 'DECAY', min: 0.05, max: 8, initial: 1.2, fmt: 'fMs', curve: 'log' },
-    { id: 'tcvA', label: 'TUNE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'tcv' },
+    att('tcv', 'TUNE CV'),
   ],
   ins: [
     { id: 'voct', label: 'V/OCT', kind: 'p' },

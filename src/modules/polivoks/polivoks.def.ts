@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'polivoks',
@@ -23,7 +23,7 @@ export const def: ModuleDef = {
     },
     { id: 'res', label: 'RES', min: 0, max: 1, initial: 0.3, fmt: 'fPc' },
     { id: 'drive', label: 'DRIVE', min: 0.3, max: 8, initial: 1, fmt: 'f1' },
-    { id: 'cvA', label: 'CV AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+    att('cv', 'CV AMT'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

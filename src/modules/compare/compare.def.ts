@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'compare',
@@ -11,7 +11,7 @@ export const def: ModuleDef = {
   knobs: [
     { id: 'centre', label: 'CENTRE', min: -5, max: 5, initial: 0, fmt: 'f1', big: true, cvIn: 'ccv' },
     { id: 'width', label: 'WIDTH', min: 0.1, max: 10, initial: 2, fmt: 'f1' },
-    { id: 'ccvamt', label: 'CENTRE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'ccv' },
+    att('ccv', 'CENTRE CV', 'ccvamt'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'c' },

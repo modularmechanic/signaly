@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'xfade',
@@ -10,9 +10,9 @@ export const def: ModuleDef = {
   worklet: 'xfade',
   knobs: [
     { id: 'fade', label: 'FADE', min: 0, max: 1, initial: 0.5, fmt: 'fPc', big: true, cvIn: 'fcv' },
-    { id: 'fcvamt', label: 'FADE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
+    att('fcv', 'FADE CV', 'fcvamt'),
     { id: 'pan', label: 'PAN', min: -1, max: 1, initial: 0, fmt: 'f1', cvIn: 'pcv' },
-    { id: 'pcvamt', label: 'PAN CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'pcv' },
+    att('pcv', 'PAN CV', 'pcvamt'),
   ],
   ins: [
     { id: 'a', label: 'A', kind: 'a' },

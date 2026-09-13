@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'fuzz',
@@ -24,7 +24,7 @@ export const def: ModuleDef = {
     { id: 'gate', label: 'GATE', min: 0, max: 1, initial: 0, fmt: 'fPc' },
     { id: 'starve', label: 'STARVE', min: 0, max: 1, initial: 0, fmt: 'fPc' },
     { id: 'level', label: 'LEVEL', min: 0, max: 1.2, initial: 0.8, fmt: 'fPc' },
-    { id: 'fcvA', label: 'FUZZ CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
+    att('fcv', 'FUZZ CV'),
   ],
   sws: [{ id: 'mode', label: 'MODE', options: ['GERM', 'SIL'] }],
   ins: [

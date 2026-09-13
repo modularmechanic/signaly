@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'cloud',
@@ -14,16 +14,7 @@ export const def: ModuleDef = {
     { id: 'pitch', label: 'PITCH', min: -24, max: 24, initial: 0, fmt: 'fSemi' },
     { id: 'spray', label: 'SPRAY', min: 0, max: 1, initial: 0, fmt: 'fPc' },
     { id: 'pos', label: 'POSITION', min: 0, max: 1, initial: 0.2, fmt: 'fPc', cvIn: 'poscv' },
-    {
-      id: 'posA',
-      label: 'POS CV',
-      min: -1,
-      max: 1,
-      initial: 0,
-      fmt: 'f1',
-      attenuates: 'poscv',
-      look: 'trimmer',
-    },
+    { ...att('poscv', 'POS CV', 'posA'), look: 'trimmer' },
   ],
   sws: [{ id: 'freeze', label: 'FREEZE', options: ['OFF', 'ON'] }],
   ins: [
