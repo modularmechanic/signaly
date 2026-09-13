@@ -113,7 +113,7 @@ export function CableCanvas({ rack }: { rack: RefObject<HTMLElement | null> }): 
     const kindColor: Record<Kind, string> = {
       a: read('--kind-a', '#ffb02e'),
       p: read('--kind-p', '#5ab4ff'),
-      g: read('--kind-g', '#ff5fa0'),
+      g: read('--kind-g', '#ef2fbf'),
       c: read('--kind-c', '#68f3bf'),
     };
     const jacket = read('--bg', '#0a0a0b');
