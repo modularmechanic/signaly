@@ -58,8 +58,10 @@
   gap: 2px;
 }
 
+/* --d is the knob's published size input (see the contract block in controls.css); the
+   control's own --d-fit still clamps it to the panel node. */
 .mix8-bands .knob {
-  --d: 38px;
+  --d: calc(38 * var(--u));
 }
 
 .mix8-bands .knob-label {

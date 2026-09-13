@@ -1,6 +1,6 @@
 import { getSpec } from '../modules/registry';
 import { useRackStore } from '../state/rack-store';
-import { addModule, addRow, clearRack, connectCable, setParam, setSwitch } from './rack';
+import { addRow, clearRack, connectCable, materialise } from './rack';
 
 export interface ModuleSnapshot {
   mtype: string;
@@ -113,11 +113,14 @@ export function snapshotRack(): RackSnapshot {
 }
 
 /** Rebuild the rack from a validated snapshot. Unknown mtypes are skipped and a row too narrow
-    for its modules spills into extra rows, never thrown: the remaining modules still load. */
-export function applySnapshot(s: RackSnapshot): void {
+    for its modules spills into extra rows, never thrown: the remaining modules still load.
+    Returns the mtypes nothing is registered for — their cables go with them, so the caller owes
+    the user a notice rather than a silent loss. This layer must not reach into a UI store. */
+export function applySnapshot(s: RackSnapshot): string[] {
   clearRack();
   const byUid = new Map(s.modules.map((m) => [m.uid, m]));
   const remap = new Map<number, number>();
+  const missing = new Set<string>();
 
   // Every row exists before the first module lands: addModule spills into a row it inserts itself,
   // which shifts any live row index the loop would still be holding.
@@ -132,19 +135,13 @@ export function applySnapshot(s: RackSnapshot): void {
       const ms = byUid.get(oldUid);
       if (!ms) continue;
       const at = useRackStore.getState().rows.findIndex((r) => r.id === rowId);
-      const inst = addModule(ms.mtype, at);
-      if (!inst) continue;
-      remap.set(oldUid, inst.uid);
-      Object.entries(ms.vals).forEach(([id, v]) => setParam(inst.uid, id, v));
-      Object.entries(ms.sws).forEach(([id, i]) => setSwitch(inst.uid, id, i));
-      const serialize = getSpec(ms.mtype)?.serialize;
-      if (serialize && ms.ext !== undefined && serialize.validate(ms.ext)) {
-        try {
-          serialize.load(inst, ms.ext);
-        } catch {
-          /* a bad ext blob restores defaults */
-        }
+      const inst = materialise(ms.mtype, at, { vals: ms.vals, sws: ms.sws, ext: ms.ext });
+      // An add is never refused for room, so a null means no spec is registered for that mtype.
+      if (!inst) {
+        missing.add(ms.mtype);
+        continue;
       }
+      remap.set(oldUid, inst.uid);
     }
   });
 
@@ -154,4 +151,5 @@ export function applySnapshot(s: RackSnapshot): void {
     if (from === undefined || to === undefined) continue;
     connectCable({ uid: from, jack: c.from.jack }, { uid: to, jack: c.to.jack });
   }
+  return [...missing];
 }

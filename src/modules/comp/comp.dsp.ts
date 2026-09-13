@@ -3,7 +3,7 @@
 // "Digital Dynamic Range Compressor Design") -> gain reduction in dB. Linear
 // gain x makeup hits both channels; LIMIT brickwalls to ±5V. Posts
 // {t:'meter', in, gr} (dB, ref 5V) every 8 blocks for the panel meter.
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 const REF = 5; // 0 dBFS == 5V (the ±5V audio convention)
 const EPS = 1e-6; // level floor so log10 never sees 0
@@ -15,10 +15,6 @@ class Comp extends Base {
   inDb = -120;
   grDb = 0;
   n = 0; // block counter, throttles the meter post to every 8th block
-
-  defaults(): Params {
-    return { thr: -18, ratio: 4, atk: 0.01, rel: 0.12, knee: 6, makeup: 0, limit: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const l = ch(I, 0),

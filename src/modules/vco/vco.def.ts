@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'vco',
@@ -12,8 +12,8 @@ export const def: ModuleDef = {
     { id: 'fine', label: 'FINE', min: -7, max: 7, initial: 0, fmt: 'fSemi' },
     { id: 'pw', label: 'PW', min: 0.05, max: 0.95, initial: 0.5, fmt: 'fPc', cvIn: 'pwm' },
     { id: 'fm', label: 'FM AMT', min: 0, max: 1, initial: 0, fmt: 'fPc', cvIn: 'fm' },
-    { id: 'fmA', label: 'FM', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fm' },
-    { id: 'pwmA', label: 'PWM', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'pwm' },
+    att('fm', 'FM'),
+    att('pwm', 'PWM'),
   ],
   ins: [
     { id: 'voct', label: 'V/OCT', kind: 'p' },

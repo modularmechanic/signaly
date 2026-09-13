@@ -73,7 +73,7 @@ const nodes: PanelNode[] = [
   { id: 'fader:master', kind: 'fader', x: MASTER_X, y: 0.108, w: MASTER_W, h: 0.222 },
   ...chs.map((n, i) => row(0.334, 0.102, `knob:p${n}`, 'knob', i)),
   ...chs.map((n, i) => row(0.44, 0.076, `switch:m${n}`, 'switch', i)),
-  { id: 'display:text', kind: 'display', x: 0.018, y: 0.522, w: 0.964, h: 0.24 },
+  { id: 'display:screen', kind: 'display', x: 0.018, y: 0.522, w: 0.964, h: 0.24 },
   ...jacks(ins, 'in', 0.768, 12),
   ...jacks(outs, 'out', 0.872, 6),
 ];
@@ -89,6 +89,7 @@ export const def: ModuleDef = {
   sws,
   ins,
   outs,
-  display: 'text',
+  // mix8.parts.tsx draws the EQ curve into this box; no built-in renderer names it.
+  screen: true,
   panel: { nodes },
 };

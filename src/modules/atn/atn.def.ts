@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'atn',
@@ -12,8 +12,8 @@ export const def: ModuleDef = {
     { id: 'o1', label: 'OFF 1', min: -1, max: 1, initial: 0, fmt: 'f1' },
     { id: 'a2', label: 'ATT 2', min: -1, max: 1, initial: 1, fmt: 'f1' },
     { id: 'o2', label: 'OFF 2', min: -1, max: 1, initial: 0, fmt: 'f1' },
-    { id: 'in1A', label: 'IN 1', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in1' },
-    { id: 'in2A', label: 'IN 2', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in2' },
+    att('in1', 'IN 1'),
+    att('in2', 'IN 2'),
   ],
   ins: [
     { id: 'in1', label: 'IN 1', kind: 'c' },

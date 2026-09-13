@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'crush',
@@ -12,9 +12,9 @@ export const def: ModuleDef = {
     { id: 'bits', label: 'BITS', min: 1, max: 16, initial: 8, fmt: 'fInt', cvIn: 'bcv' },
     { id: 'rate', label: 'DECIM', min: 1, max: 64, initial: 4, fmt: 'fInt', curve: 'log', cvIn: 'rcv' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 1, fmt: 'fPc', cvIn: 'mcv' },
-    { id: 'bcvA', label: 'BITS CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'bcv' },
-    { id: 'rcvA', label: 'RATE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'rcv' },
-    { id: 'mcvA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mcv' },
+    att('bcv', 'BITS CV'),
+    att('rcv', 'RATE CV'),
+    att('mcv', 'MIX CV'),
   ],
   ins: [
     { id: 'in', label: 'IN', kind: 'a' },

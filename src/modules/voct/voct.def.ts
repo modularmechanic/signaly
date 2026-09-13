@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'voct',
@@ -10,7 +10,7 @@ export const def: ModuleDef = {
   dark: true,
   knobs: [
     { id: 'steps', label: 'SEMITONES', min: -24, max: 24, initial: 0, fmt: 'fInt', big: true, fader: true },
-    { id: 'cvA', label: 'CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
+    att('cv', 'CV'),
   ],
   sws: [{ id: 'lock', label: 'OCT LOCK', options: ['GLIDE', 'LOCK'], initial: 1 }],
   ins: [

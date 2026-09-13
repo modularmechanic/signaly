@@ -1,13 +1,9 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 // TPT state-variable filter (Zavalishin): one topology, three simultaneous outs.
 class SVF extends Base {
   ic1 = 0;
   ic2 = 0;
-
-  defaults(): Params {
-    return { cut: 800, res: 0.25, cv: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

@@ -38,6 +38,14 @@ describe('MiniPiano', () => {
     expect(keys()[0]?.getAttribute('aria-label')).toBe('C2');
   });
 
+  it('a black key hands the stylesheet its boundary and no geometry of its own', () => {
+    act(() => root.render(<MiniPiano active={OFF} />));
+    const cs = keys().find((b) => b.getAttribute('aria-label') === 'C#4');
+    // C# sits on the first white-key boundary; the centring off it is the stylesheet's half-width.
+    expect(cs?.style.getPropertyValue('--bk')).toBe('1');
+    expect(cs?.style.left).toBe('');
+  });
+
   it('a named key toggles its own pitch class', () => {
     const onToggle = vi.fn();
     act(() => root.render(<MiniPiano active={OFF} onToggle={onToggle} />));

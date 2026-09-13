@@ -1,10 +1,6 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 class VCA extends Base {
-  defaults(): Params {
-    return { g1: 1, g2: 1, exp: 0 };
-  }
-
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const a1 = ch(I, 0),
       c1 = ch(I, 1),

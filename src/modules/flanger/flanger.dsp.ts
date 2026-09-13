@@ -1,12 +1,15 @@
-import { Base, ch, clamp, DL, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, TP } from '../../engine/dsp-prelude';
+
+// Must equal the FEEDBK knob's bound in flanger.def.ts — worklet scope cannot import the def.
+const FB_MAX = 0.95;
+// The comb recirculates to 1/(1-g) of its input, which reached 35 V at full feedback. Scale the wet
+// path by (1-g) so the peak lands at the +/-5 V convention instead. Chosen over saturating the loop:
+// this adds no harmonics and leaves the notch depths — the actual flanger sound — untouched, so
+// resonance now trades level for sharpness the way a real one does rather than getting louder.
 
 class Flanger extends Base {
   d = new DL(sampleRate * 0.03);
   ph = 0;
-
-  defaults(): Params {
-    return { rate: 0.25, depth: 0.7, fb: 0.5, mix: 0.5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),
@@ -25,10 +28,12 @@ class Flanger extends Base {
       const depth = clamp((p.depth ?? 0.7) + (dcv?.[i] ?? 0) / 5, 0, 1);
       const d = (0.001 + 0.006 * depth * (0.5 + 0.5 * Math.sin(TP * this.ph))) * sampleRate;
       const y = this.d.read(d);
-      const fb = clamp((p.fb ?? 0.5) + (fcv?.[i] ?? 0) / 5, -0.97, 0.97);
+      // CV cannot push feedback past what the knob itself reaches: same bound as FEEDBK in the def.
+      const fb = clamp((p.fb ?? 0.5) + (fcv?.[i] ?? 0) / 5, -FB_MAX, FB_MAX);
       const mix = clamp((p.mix ?? 0.5) + (mcv?.[i] ?? 0) / 5, 0, 1);
-      this.d.push(x + y * fb * 0.95); // DL.push() flushes denormals in the loop
-      out[i] = x * (1 - mix) + y * mix;
+      const g = fb * 0.95;
+      this.d.push(x + y * g); // DL.push() flushes denormals in the loop
+      out[i] = x * (1 - mix) + y * mix * (1 - Math.abs(g));
     }
     return true;
   }

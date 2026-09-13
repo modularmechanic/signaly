@@ -20,5 +20,6 @@ export const def: ModuleDef = {
     { id: 'cv', label: 'CV OUT', kind: 'p' },
     { id: 'gate', label: 'GATE', kind: 'g' },
   ],
-  display: 'steps',
+  // seq.parts.tsx draws the step editor into this box; no built-in renderer names it.
+  screen: true,
 };

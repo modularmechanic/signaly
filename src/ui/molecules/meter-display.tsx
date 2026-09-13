@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import type { ModuleInstance } from '../../engine/types';
+import { readTokens, type Tokens } from '../../hooks/canvas-tokens';
 import { useWorkletFeed } from '../../hooks/module-api';
 import { useCanvas } from '../../hooks/use-canvas';
 import { stereoCorrelation } from '../../modules/out/out-analysis';
@@ -42,38 +43,18 @@ function FeedMeter({ m }: { m: ModuleInstance }): ReactNode {
   );
 }
 
-interface Pal {
-  hot: string;
-  warm: string;
-  cool: string;
-  dim: string;
-  font: string;
-}
-
-const readPal = (el: Element): Pal => {
-  const cs = getComputedStyle(el);
-  const v = (n: string, fallback: string): string => cs.getPropertyValue(n).trim() || fallback;
-  return {
-    hot: v('--danger', '#ff5d5d'),
-    warm: v('--amber', '#f3c77a'),
-    cool: v('--cat', v('--kind-c', '#68f3bf')),
-    dim: v('--text-dim', '#8d939c'),
-    font: v('--font-mono', 'monospace'),
-  };
-};
-
 const BARS = 40;
 /** log-ish bin spacing: bar 0 -> bin 1, bar BARS -> the top bin. */
 const binAt = (i: number, n: number): number => Math.min(n - 1, Math.round((n - 1) ** (i / BARS)));
 
-function drawSpectrum(ctx: CanvasRenderingContext2D, w: number, h: number, a: OutAnalysis, p: Pal): void {
+function drawSpectrum(ctx: CanvasRenderingContext2D, w: number, h: number, a: OutAnalysis, p: Tokens): void {
   a.l.getFloatFrequencyData(a.spectrumL);
   a.r.getFloatFrequencyData(a.spectrumR);
   const n = a.spectrumL.length;
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, p.hot);
-  g.addColorStop(0.35, p.warm);
-  g.addColorStop(1, p.cool);
+  g.addColorStop(0, p.danger);
+  g.addColorStop(0.35, p.amber);
+  g.addColorStop(1, p.cat);
   ctx.fillStyle = g;
   const bw = w / BARS;
   for (let i = 0; i < BARS; i++) {
@@ -93,7 +74,7 @@ function drawCorrelation(
   y: number,
   h: number,
   a: OutAnalysis,
-  p: Pal,
+  p: Tokens,
   withText: boolean,
 ): void {
   a.l.getFloatTimeDomainData(a.phaseL);
@@ -104,16 +85,16 @@ function drawCorrelation(
   const mid = w / 2;
   const x = mid + c * mid;
   ctx.globalAlpha = 0.35;
-  ctx.fillStyle = p.dim;
+  ctx.fillStyle = p.textDim;
   ctx.fillRect(0, top, w, barH);
   ctx.globalAlpha = 1;
-  ctx.fillStyle = c < 0 ? p.hot : p.cool;
+  ctx.fillStyle = c < 0 ? p.danger : p.cat;
   ctx.fillRect(Math.min(mid, x), top, Math.max(1, Math.abs(x - mid)), barH);
-  ctx.fillStyle = p.warm;
+  ctx.fillStyle = p.amber;
   ctx.fillRect(mid - 0.5, top, 1, barH);
   if (!withText) return;
-  ctx.fillStyle = p.dim;
-  ctx.font = `600 10px ${p.font}`;
+  ctx.fillStyle = p.textDim;
+  ctx.font = `600 10px ${p.fontMono}`;
   ctx.textAlign = 'center';
   ctx.fillText(`CORR ${c >= 0 ? '+' : ''}${c.toFixed(2)}`, mid, top + barH + 12);
 }
@@ -129,9 +110,8 @@ function AnalysisDisplay({
   spectrum: boolean;
   phase: boolean;
 }): ReactNode {
-  const pal = useRef<Pal | null>(null);
   const draw = (ctx: CanvasRenderingContext2D, w: number, h: number): void => {
-    const p = (pal.current ??= readPal(ctx.canvas));
+    const p = readTokens(ctx.canvas);
     ctx.clearRect(0, 0, w, h);
     const strip = phase ? (spectrum ? 9 : h) : 0;
     if (spectrum) drawSpectrum(ctx, w, h - (strip ? strip + 3 : 0), a, p);
@@ -140,7 +120,7 @@ function AnalysisDisplay({
   const ref = useCanvas(draw);
   return (
     <div className="scope-screen" style={{ height: '100%' }} aria-label={spectrum ? 'spectrum analyser' : 'stereo correlation'}>
-      <canvas ref={ref} style={{ height: '100%' }} />
+      <canvas ref={ref} />
     </div>
   );
 }

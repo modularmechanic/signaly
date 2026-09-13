@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 // Time knobs store SECONDS (fMs picks ms/s on readout); dB knobs store raw dB.
 export const def: ModuleDef = {
@@ -15,7 +15,7 @@ export const def: ModuleDef = {
     { id: 'hold', label: 'HOLD', min: 0, max: 0.5, initial: 0.05, fmt: 'fMs' },
     { id: 'rel', label: 'RELEASE', min: 0.005, max: 1, initial: 0.15, fmt: 'fMs', curve: 'log' },
     { id: 'range', label: 'RANGE', min: -90, max: 0, initial: -60, fmt: 'f1' },
-    { id: 'thrcvA', label: 'THRESH CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'thrcv' },
+    att('thrcv', 'THRESH CV'),
   ],
   ins: [
     { id: 'inl', label: 'IN L', kind: 'a' },

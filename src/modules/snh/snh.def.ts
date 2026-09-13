@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'snh',
@@ -12,10 +12,10 @@ export const def: ModuleDef = {
     { id: 'prob', label: 'PROB', min: 0, max: 1, initial: 1, fmt: 'fPc', cvIn: 'pcv' },
     { id: 'slew1', label: 'SLEW 1', min: 0.0005, max: 0.3, initial: 0.001, fmt: 'fMs', curve: 'log' },
     { id: 'slew2', label: 'SLEW 2', min: 0.0005, max: 0.3, initial: 0.001, fmt: 'fMs', curve: 'log' },
-    { id: 'in1A', label: 'IN 1', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in1' },
-    { id: 'in2A', label: 'IN 2', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in2' },
-    { id: 'rcvA', label: 'RATE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'rcv' },
-    { id: 'pcvA', label: 'PROB CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'pcv' },
+    att('in1', 'IN 1'),
+    att('in2', 'IN 2'),
+    att('rcv', 'RATE CV'),
+    att('pcv', 'PROB CV'),
   ],
   ins: [
     { id: 'in1', label: 'IN 1', kind: 'c' },

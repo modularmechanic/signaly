@@ -1,6 +1,6 @@
 # Signaly
 
-A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 40 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
+A lean, accessible, 2D modular synthesizer that runs entirely in the browser. 41 built-in Eurorack-style modules, patch cables, saved patches, and a module builder where you author new modules from a JSON definition plus a small TypeScript DSP class, optionally with help from your own LLM API key.
 
 ## Quickstart
 
@@ -26,7 +26,7 @@ Open the printed URL, click anywhere to start audio, and patch `VCO` into `OUT`.
 
 ## Author a module by hand
 
-A module is a folder under `src/modules/<id>/` with two files. The registry picks them up by glob, so there is nothing to register.
+A module is a folder under `src/modules/<id>/` with two files: the definition, and one implementation — a worklet DSP class or a native Web Audio graph. The registry picks them up by glob, so there is nothing to register, and nothing anywhere counts the modules.
 
 `<id>.def.ts` — the data contract:
 
@@ -41,21 +41,35 @@ export const def: ModuleDef = {
   ins: [{ id: 'voct', label: 'V/OCT', kind: 'p' }],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
   display: undefined,                     // 'scope' | 'meter' | 'steps' | 'env' | 'piano' | 'text'
+  screen: undefined,                      // or `true` to reserve the screen box for your .parts.tsx
 };
 ```
 
-Declaring a `display` is only half of it: each kind reads specific `m.ext` keys or worklet messages, and nothing enforces the pairing. See the display contract table in `docs/system-architecture.md` before you set one.
+Declaring a `display` is only half of it: each kind reads specific `m.ext` keys or worklet messages. `src/modules/display-contract.ts` holds the contract as code — one row per kind, saying what the module must provide — and `checkDef` runs it over your def, so a screen you can never fill is a rejected module rather than a blank rectangle. If the feed goes missing at runtime the panel prints `NO <DISPLAY>` and the reason instead of drawing nothing. Declare `screen: true` instead of a `display` kind when your `.parts.tsx` fills the box.
 
-Jack kinds: `a` audio, `p` pitch (1 V/oct), `g` gate/trigger, `c` control voltage. A knob with `attenuates: '<cvJackId>'` becomes a bipolar attenuverter on that CV input.
+Jack kinds: `a` audio, `p` pitch (1 V/oct), `g` gate/trigger, `c` control voltage.
+
+Every knob needs an `fmt`: it is the knob's unit and, for the integer-stepped names, its quantisation while dragging — not a decoration. `FMT_RANGE` in `src/core/types.ts` bounds the range each name implies (`fPc` renders `v * 100`, `fMs` reads the value as seconds, `fKey`/`fChord`/`fShape`/`fRate` index a fixed label list), and `checkDef` rejects a knob that leaves those bounds.
+
+**Attenuverters.** A CV input gets a bipolar amount knob by declaring `att(jackId, label)` (from `core/types`) in `knobs` — it is the whole declaration, the fixed ±1 range included, and the numbers live in one place:
+
+```ts
+knobs: [
+  { id: 'cut', label: 'CUTOFF', min: 25, max: 14000, initial: 1200, fmt: 'fHz', cvIn: 'cv' },
+  att('cv', 'FREQ CV'),                   // knob id defaults to '<jack>A'; pass a third arg to override
+],
+ins: [{ id: 'cv', label: 'FREQ CV', kind: 'c' }],
+```
+
+The engine puts a `GainNode` between the patch cable and the module input, so the knob is voltage scaling at the jack and **never** a DSP param — do not scale that input in DSP, and do not list the knob's id in the worklet. A jack takes at most one attenuverter; `cvIn` on the modulated knob is the display hint that pairs them.
 
 `<id>.dsp.ts` — one class, runs in the AudioWorklet thread:
 
 ```ts
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 class MyOsc extends Base {
   private ph = 0;
-  defaults(): Params { return { freq: 220, range: 1 }; }   // knob and switch ids
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const out = O[0]?.[0]; if (!out) return true;
     const voct = ch(I, 0);                                   // inputs ordered as def.ins
@@ -71,13 +85,35 @@ class MyOsc extends Base {
 registerProcessor('myosc', MyOsc);
 ```
 
-Signals are volts: audio ±5, gates 0 or 5, pitch 1 V/oct with 0 V = C4. Parameters arrive on `this.p` between blocks. Allocate nothing inside `process()`.
+Signals are volts: audio ±5, gates 0 or 5, pitch 1 V/oct with 0 V = C4. Allocate nothing inside `process()`.
+
+**Parameters come from the definition.** `seedParams(def)` in `src/engine/node-factory.ts` builds `this.p` from every knob and switch before the first block — in the rack and in the offline render that verifies a user module — and live changes arrive on `this.p` between blocks. So a `defaults()` method restating those initials is dead weight; the only reason to write one is internal state the definition does not describe. Read every param with a fallback anyway (`const { freq = 220 } = this.p`): a bare `this.p.freq` is how a DSP that misses a key renders NaN.
+
+`<id>.native.ts` — instead of a worklet, a Web Audio graph built on the main thread:
+
+```ts
+export const native: NativeSpec = {
+  audio(m) {                                       // called once, when the module is placed
+    const g = getAudioContext().createGain();
+    (m.natives ??= []).push(g);                    // teardown disconnects everything pushed here
+    m.jacks.in.in = { node: g, idx: 0 };           // EVERY declared jack, by id, by hand
+    for (const j of m.def.outs) m.jacks.out[j.id] = { node: g, idx: 0 };
+  },
+  param(m, id, v) {},                              // live knob AND switch changes, by id
+  onConnectionChange(m, dir, jack, connected) {},  // optional
+  dispose(m) {},                                   // optional; stop sources you started
+};
+```
+
+`makeNode` throws when `audio()` leaves a declared jack unfilled, because every miss is otherwise silent: `wireCable` no-ops on an unfilled jack (cable drawn, no audio) and the attenuverter gain is skipped on an unfilled CV input (knob turns, nothing happens). Fill the jacks inside `audio()` — the engine installs attenuverter gains straight afterwards, and it can only wrap a jack that is already there. A switch reaches `param()` as its option index, under the switch's own id. Only built-ins can be native; user modules are always worklets.
 
 Symbols available in worklet scope, and nothing else: `Base`, `ch`, `clamp`, `TP`, `DENORMAL`, `flush`, `blep`, `oscW`, `DL`, `OnePole`, `onePoleCoeff`, `lpCoeff`, `Lcg`, `ClockSync`, `SYNC_DIV`, `sampleRate`.
 
-**Panel geometry is computed.** `layoutPanel(def)` lays out every panel from the definition alone — there is no `<id>.panel.ts` file. A built-in may author its own normalised 0..1 `PanelLayout` as `ModuleDef.panel`, but only as a documented exception when it can show the computed layout fails (currently only MIX 8); see `docs/adr/0001-panel-geometry-computed-by-default.md`. Node ids are `knob:`, `fader:`, `switch:`, `in:`, `out:`, `led:`, `label:` plus a single `display`.
+**Panel geometry is computed.** `src/modules/panel-layout.ts` owns it all — the pixel constants (`HP_PX`, `PANEL_H`, the jack and fader widths, `MIN_CONTROL_PX`) and the layout itself. `layoutPanel(def)` lays out every panel from the definition alone; there is no `<id>.panel.ts` file. `fitPanel(def, maxHp)` is the verdict on whether a def lays out and, if not, the narrowest HP that would — `checkDef` reports it as *"use at least N HP"*. A built-in may author its own normalised 0..1 `PanelLayout` as `ModuleDef.panel`, but only as a documented exception when it can show the computed layout fails (currently only MIX 8); see `docs/adr/0001-panel-geometry-computed-by-default.md`. Node ids are `knob:`, `fader:`, `switch:`, `in:`, `out:`, `led:`, `label:` plus a single `display:<kind>`.
 
-User modules made in the builder follow the same contract; they are stored in `localStorage` (definition and DSP source) and IndexedDB (faceplate image), and appear in the module browser after a reload.
+The whole rack scales from one number. `main.tsx` publishes `--u` (`--hp / 26`) and the panel widths on `:root` from those same constants, and the stylesheets draw every hardware dimension as a multiple of it — so `--hp` is the zoom. Type, hairlines and the ≥44px pointer targets deliberately stay fixed; see ADRs 0005 and 0006.
+
+User modules made in the builder follow the same contract, and not by convention: `checkDef` is literally the same function the sweep runs over all 41 built-ins. They are stored in `localStorage` (definition and DSP source) and IndexedDB (faceplate image), and are put back in the registry at boot, so they are in the module browser from the first frame. A saved Patch references its user modules by id and never carries them — open a Patch naming one you do not have installed and it tells you which modules were skipped.
 
 ## Bring your own key
 

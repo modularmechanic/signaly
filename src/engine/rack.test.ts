@@ -9,7 +9,6 @@ import {
   clearRack,
   connectCable,
   duplicateModule,
-  getLastRowRejection,
   moveModule,
   removeModule,
   rowUsedHp,
@@ -62,8 +61,8 @@ const FLT: ModuleDef = {
   cat: 'FILTERS',
   worklet: 'tflt',
   knobs: [
-    { id: 'cut', label: 'CUT', min: 0, max: 100, initial: 50 },
-    { id: 'amt', label: 'AMT', min: -1, max: 1, initial: 0, attenuates: 'cv' },
+    { id: 'cut', label: 'CUT', min: 0, max: 100, initial: 50, fmt: 'fHz' },
+    { id: 'amt', label: 'AMT', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'cv' },
   ],
   sws: [{ id: 'mode', label: 'MODE', options: ['LP', 'HP'] }],
   ins: [
@@ -71,6 +70,18 @@ const FLT: ModuleDef = {
     { id: 'cv', label: 'CV', kind: 'c' },
   ],
   outs: [{ id: 'out', label: 'OUT', kind: 'a' }],
+};
+
+const EXT: ModuleDef = {
+  id: 'text',
+  name: 'EXT',
+  sub: 'test',
+  hp: 2,
+  cat: 'UTILITY',
+  worklet: 'text',
+  knobs: [],
+  ins: [],
+  outs: [],
 };
 
 const add = (id: string, row?: number): ModuleInstance => {
@@ -95,6 +106,16 @@ beforeAll(() => {
   vi.stubGlobal('AudioWorkletNode', FakeWorkletNode);
   registerSpec({ def: SRC });
   registerSpec({ def: FLT });
+  registerSpec({
+    def: EXT,
+    serialize: {
+      save: () => 'blob',
+      load: () => {
+        throw new Error('boom');
+      },
+      validate: (o) => o === 'blob',
+    },
+  });
 });
 
 beforeEach(() => {
@@ -180,8 +201,7 @@ describe('rack', () => {
     fillFirstRow();
     addRow();
     const loose = add('tflt', 1);
-    expect(moveModule(loose.uid, 0, 0)).toBe(false);
-    expect(getLastRowRejection()).toEqual({ needed: 6, free: 0 });
+    expect(moveModule(loose.uid, 0, 0)).toEqual({ needed: 6, free: 0 });
     // moving inside its own row does not count its HP twice
     expect(moveModule(loose.uid, 1, 0)).toBe(true);
   });
@@ -196,5 +216,12 @@ describe('rack', () => {
     expect(clone?.vals.cut).toBe(12);
     expect(clone?.sws.mode).toBe(1);
     expect(useRackStore.getState().cables.filter((c) => c.to.uid === clone?.uid)).toHaveLength(0);
+  });
+
+  it('duplicate swallows a throwing serializer.load and keeps default ext, same as patch restore', () => {
+    const src = add('text');
+    const clone = duplicateModule(src.uid);
+    expect(clone).not.toBeNull();
+    expect(clone?.ext).toEqual({});
   });
 });

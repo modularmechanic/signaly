@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { CAT_COLOR, CAT_ORDER, type Cat, type ModuleDef } from '../../core/types';
 import { allSpecs } from '../../modules/registry';
+import { ModalDialog } from '../molecules/modal-dialog';
 
 export type CatFilter = Cat | 'ALL';
 
@@ -34,7 +35,6 @@ export function ModuleBrowser({ onPick, onClose }: ModuleBrowserProps): ReactNod
   const idx = Math.max(0, Math.min(hi, results.length - 1));
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Escape') return onClose();
     if (e.key === 'Enter') {
       const pick = results[idx];
       if (pick) onPick(pick.id);
@@ -60,44 +60,41 @@ export function ModuleBrowser({ onPick, onClose }: ModuleBrowserProps): ReactNod
   );
 
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal browser" role="dialog" aria-modal="true" aria-label="Module browser">
-        <header className="modal-head">
-          <h2>Modules</h2>
-          <input
-            className="search"
-            type="search"
-            autoFocus
-            value={query}
-            placeholder="Search oscillator, filter, meter…"
-            aria-label="Search modules"
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={onKeyDown}
-          />
-          <button type="button" className="modal-x" aria-label="Close module browser" onClick={onClose}>
-            ×
-          </button>
-        </header>
-        <div className="cat-chips">{[chip('ALL', 'All'), ...cats.map((c) => chip(c, c))]}</div>
-        <ul className="browser-list">
-          {results.map((d, i) => (
-            <li key={d.id}>
-              <button
-                type="button"
-                className={'browser-item' + (i === idx ? ' hi' : '')}
-                style={{ '--cat': CAT_COLOR[d.cat] ?? CAT_COLOR.CUSTOM } as CSSProperties}
-                title={d.sub}
-                onClick={() => onPick(d.id)}
-              >
-                <strong>{d.name}</strong>
-                <span className="browser-sub">{d.sub}</span>
-                <span className="browser-hp">{d.hp} HP</span>
-              </button>
-            </li>
-          ))}
-          {results.length === 0 && <li className="browser-empty">No matching modules.</li>}
-        </ul>
-      </div>
-    </div>
+    <ModalDialog label="Module browser" onClose={onClose}>
+      <header className="modal-head">
+        <h2>Modules</h2>
+        <input
+          className="search"
+          type="search"
+          value={query}
+          placeholder="Search oscillator, filter, meter…"
+          aria-label="Search modules"
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
+        />
+        <button type="button" className="modal-x" aria-label="Close module browser" onClick={onClose}>
+          ×
+        </button>
+      </header>
+      <div className="cat-chips">{[chip('ALL', 'All'), ...cats.map((c) => chip(c, c))]}</div>
+      <ul className="browser-list">
+        {results.map((d, i) => (
+          <li key={d.id}>
+            <button
+              type="button"
+              className={'browser-item' + (i === idx ? ' hi' : '')}
+              style={{ '--cat': CAT_COLOR[d.cat] ?? CAT_COLOR.CUSTOM } as CSSProperties}
+              title={d.sub}
+              onClick={() => onPick(d.id)}
+            >
+              <strong>{d.name}</strong>
+              <span className="browser-sub">{d.sub}</span>
+              <span className="browser-hp">{d.hp} HP</span>
+            </button>
+          </li>
+        ))}
+        {results.length === 0 && <li className="browser-empty">No matching modules.</li>}
+      </ul>
+    </ModalDialog>
   );
 }

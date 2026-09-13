@@ -53,10 +53,39 @@ svg {
   border: 0;
 }
 
+/* Forced colours keep colour and border-style but drop box-shadow and background-image
+   entirely. The focus indicator above is a box-shadow, so it disappears app-wide; the
+   art-only elements are background-image plus box-shadow and nothing else, so they flatten
+   to blank blocks. System colours only in here — a token would defeat the mode. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Silhouettes for elements whose whole appearance is paint. The last two are live-data
+     bars rather than controls — a forced background colour leaves them invisible, and a
+     readout you cannot read is as broken as a control you cannot find. */
+  .knob,
+  .knob-cap,
+  .fader,
+  .fader-cap,
+  .led,
+  .mpk,
+  .channel-vu-fill,
+  .row-bar > i {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* The only reduced-motion rules in the set: `!important` to beat the inline transitions, and
+   an iteration count so an infinite keyframe animation stops instead of racing (0.01ms alone
+   leaves `jack-pulse` cycling). Per-file blocks under this are redundant — do not add one. */
 body.reduced-motion *,
 body.reduced-motion *::before,
 body.reduced-motion *::after {
   animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
@@ -66,6 +95,7 @@ body.reduced-motion *::after {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

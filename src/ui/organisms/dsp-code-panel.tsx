@@ -1,20 +1,18 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { bindProcessorName, transpileDsp } from '../../features/user-modules/dsp-transpile';
-import { verifyDsp } from '../../features/user-modules/dsp-verify';
-import { processorNameFor, toRecord, type UserModule } from '../../features/user-modules/schema';
+import { check } from '../../features/user-modules/lifecycle';
+import type { UserModule } from '../../features/user-modules/schema';
 import { validateUserDef } from '../../features/user-modules/validate';
 import { useUiStore } from '../../state/ui-store';
-import { saveUserModule } from '../../storage/user-module-store';
 import { Button } from '../atoms/button';
 import { CodeEditor } from '../molecules/code-editor';
 
 export interface DspCodePanelProps {
   um: UserModule;
-  /** registers the edited module and previews it; resolves to an error string or null */
-  onRegister: (um: UserModule) => Promise<string | null>;
+  /** installs the edited module and previews it; resolves to an error string or null */
+  onSave: (um: UserModule) => Promise<string | null>;
 }
 
-export function DspCodePanel({ um, onRegister }: DspCodePanelProps): ReactNode {
+export function DspCodePanel({ um, onSave }: DspCodePanelProps): ReactNode {
   const [src, setSrc] = useState(um.dsp);
   const [tabs, setTabs] = useState(false);
   const [msg, setMsg] = useState('');
@@ -27,13 +25,7 @@ export function DspCodePanel({ um, onRegister }: DspCodePanelProps): ReactNode {
     setBusy(true);
     setOk(false);
     try {
-      const name = processorNameFor(um);
-      const built = transpileDsp(bindProcessorName(src, name), name);
-      if (!built.ok) {
-        setMsg(built.error);
-        return;
-      }
-      const failure = await verifyDsp(built.code, name, um.def.outs.length);
+      const failure = await check({ ...um, dsp: src });
       setMsg(failure ?? 'Verified: no NaN, no out-of-range samples.');
       setOk(failure === null);
     } finally {
@@ -44,17 +36,14 @@ export function DspCodePanel({ um, onRegister }: DspCodePanelProps): ReactNode {
   const save = async (): Promise<void> => {
     setBusy(true);
     try {
-      // updatedAt drives the processor name: a live context can never reuse an old one.
-      const next: UserModule = { ...um, dsp: src, updatedAt: Date.now() };
-      const err = await onRegister(next);
+      const err = await onSave({ ...um, dsp: src });
       if (err) {
         setMsg(err);
         setOk(false);
         return;
       }
-      saveUserModule(toRecord(next));
-      setMsg(`Saved ${next.slug}.`);
-      setNotice(`Saved ${next.slug}.`);
+      setMsg(`Saved ${um.slug}.`);
+      setNotice(`Saved ${um.slug}.`);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'unexpected error');
       setOk(false);

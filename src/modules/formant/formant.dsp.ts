@@ -1,4 +1,4 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 // A E I O U — three formant centres each, interpolated by the VOWEL knob.
 const VOWELS = new Float64Array([
@@ -9,10 +9,6 @@ const GAINS = [1, 0.55, 0.3];
 class Formant extends Base {
   // three band-pass sections, two integrator states each
   st = new Float64Array(6);
-
-  defaults(): Params {
-    return { vowel: 0, res: 0.85 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

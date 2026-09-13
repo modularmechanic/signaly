@@ -1,12 +1,8 @@
-import { Base, ch, clamp, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp } from '../../engine/dsp-prelude';
 
 class Crush extends Base {
   c = 0;
   h = 0;
-
-  defaults(): Params {
-    return { bits: 8, rate: 4, mix: 1 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

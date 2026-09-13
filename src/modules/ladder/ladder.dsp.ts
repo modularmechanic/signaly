@@ -1,4 +1,4 @@
-import { Base, ch, clamp, lpCoeff, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, lpCoeff } from '../../engine/dsp-prelude';
 
 // Four one-pole stages with tanh in the feedback path — the transistor ladder.
 class Ladder extends Base {
@@ -6,10 +6,6 @@ class Ladder extends Base {
   s2 = 0;
   s3 = 0;
   s4 = 0;
-
-  defaults(): Params {
-    return { cut: 1200, res: 0.2, drive: 1, cv: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

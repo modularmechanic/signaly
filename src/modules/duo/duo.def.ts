@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'duo',
@@ -12,8 +12,8 @@ export const def: ModuleDef = {
     { id: 'semi', label: 'INTERVAL', min: -12, max: 12, initial: 0, fmt: 'fSemi' },
     { id: 'det', label: 'DETUNE', min: 0, max: 50, initial: 6, fmt: 'fInt' },
     { id: 'mix', label: 'OSC MIX', min: 0, max: 1, initial: 0.5, fmt: 'fPc', cvIn: 'mix' },
-    { id: 'fmA', label: 'FM', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fm' },
-    { id: 'mixA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mix' },
+    att('fm', 'FM'),
+    att('mix', 'MIX CV'),
   ],
   sws: [
     { id: 'w1', label: 'WAVE 1', options: ['SIN', 'TRI', 'SAW', 'SQR'] },

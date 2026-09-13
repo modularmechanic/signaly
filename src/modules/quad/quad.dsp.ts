@@ -1,13 +1,9 @@
-import { Base, ch, clamp, oscW, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, oscW } from '../../engine/dsp-prelude';
 
 class Quad extends Base {
   ph = new Float64Array([Math.random(), Math.random(), Math.random(), Math.random()]);
   // symmetric detune fan around the played pitch, in units of SPREAD cents
   off = new Float64Array([-1.5, -0.5, 0.5, 1.5]);
-
-  defaults(): Params {
-    return { oct: 0, det: 8, wave: 2 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

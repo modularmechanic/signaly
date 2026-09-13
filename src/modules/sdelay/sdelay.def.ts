@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'sdelay',
@@ -16,9 +16,9 @@ export const def: ModuleDef = {
     { id: 'tone', label: 'TONE', min: 300, max: 16000, initial: 5000, fmt: 'fHz', curve: 'log' },
     { id: 'width', label: 'WIDTH', min: 0, max: 1, initial: 0.85, fmt: 'fPc' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.35, fmt: 'fPc', cvIn: 'mcv' },
-    { id: 'tcvA', label: 'TIME CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'tcv' },
-    { id: 'fcvA', label: 'FB CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
-    { id: 'mcvA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mcv' },
+    att('tcv', 'TIME CV'),
+    att('fcv', 'FB CV'),
+    att('mcv', 'MIX CV'),
   ],
   sws: [
     { id: 'mode', label: 'MODE', options: ['STEREO', 'PINGPONG', 'CROSS'] },

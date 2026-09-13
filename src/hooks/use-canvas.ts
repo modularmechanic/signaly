@@ -1,10 +1,13 @@
 import { useEffect, useRef, type RefObject } from 'react';
+import { invalidateTokens } from './canvas-tokens';
 import { addDraw } from './render-bus';
 
 export interface UseCanvasOptions {
   /** Fixed CSS-pixel size. Omit either to size from the element's own box instead. */
   width?: number;
   height?: number;
+  /** Size to the viewport rather than to any box — a fixed, full-screen overlay. */
+  viewport?: boolean;
 }
 
 /** A `<canvas>` ref that stays DPR-sharp and repaints on the shared render bus.
@@ -16,7 +19,7 @@ export function useCanvas(
   const ref = useRef<HTMLCanvasElement>(null);
   const drawRef = useRef(draw);
   drawRef.current = draw;
-  const { width, height } = opts;
+  const { width, height, viewport } = opts;
 
   useEffect(() => {
     const canvas = ref.current;
@@ -24,17 +27,19 @@ export function useCanvas(
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let w = width ?? canvas.clientWidth;
-    let h = height ?? canvas.clientHeight;
+    let w = viewport ? window.innerWidth : (width ?? canvas.clientWidth);
+    let h = viewport ? window.innerHeight : (height ?? canvas.clientHeight);
 
     const resize = (cssW: number, cssH: number): void => {
       w = cssW;
       h = cssH;
+      // a DPR move or a reflow is the one signal we get that computed styles may have shifted
+      invalidateTokens();
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.max(1, Math.round(w * dpr));
       canvas.height = Math.max(1, Math.round(h * dpr));
-      if (width !== undefined) canvas.style.width = w + 'px';
-      if (height !== undefined) canvas.style.height = h + 'px';
+      if (viewport || width !== undefined) canvas.style.width = w + 'px';
+      if (viewport || height !== undefined) canvas.style.height = h + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize(w, h);
@@ -59,8 +64,11 @@ export function useCanvas(
     }
     watchDpr();
 
+    const onViewport = (): void => resize(window.innerWidth, window.innerHeight);
+    if (viewport) window.addEventListener('resize', onViewport);
+
     let ro: ResizeObserver | undefined;
-    if (width === undefined || height === undefined) {
+    if (!viewport && (width === undefined || height === undefined)) {
       ro = new ResizeObserver((entries) => {
         const box = entries[0]?.contentRect;
         if (box) resize(width ?? box.width, height ?? box.height);
@@ -72,9 +80,10 @@ export function useCanvas(
     return () => {
       unregister();
       ro?.disconnect();
+      window.removeEventListener('resize', onViewport);
       mq?.removeEventListener('change', onDpr);
     };
-  }, [width, height]);
+  }, [width, height, viewport]);
 
   return ref;
 }

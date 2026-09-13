@@ -2,7 +2,7 @@
 // opens when that crosses THRESHOLD (offset by THRESH CV) or while TRIGGER is
 // high. A separate ATTACK/HOLD/RELEASE envelope ramps toward unity when open
 // and toward the RANGE attenuation when closed. GATE OUT is 5V while open.
-import { Base, ch, type Params } from '../../engine/dsp-prelude';
+import { Base, ch } from '../../engine/dsp-prelude';
 
 const DET_TAU = 0.003; // detector follower time constant (s)
 const THRCV_DB_PER_V = 6; // threshold CV scale: volts -> dB offset
@@ -15,10 +15,6 @@ class Gate extends Base {
   gain = 0; // gate gain envelope (0..1)
   holdCtr = 0; // samples left in the HOLD window
   msgCtr = 0;
-
-  defaults(): Params {
-    return { thr: -40, atk: 0.002, hold: 0.05, rel: 0.15, range: -60 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inl = ch(I, 0),

@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'tape',
@@ -14,11 +14,11 @@ export const def: ModuleDef = {
     { id: 'wow', label: 'WOW', min: 0, max: 1, initial: 0.4, fmt: 'fPc', cvIn: 'wcv' },
     { id: 'sat', label: 'SAT', min: 0.5, max: 5, initial: 1.6, fmt: 'f1', cvIn: 'scv' },
     { id: 'mix', label: 'MIX', min: 0, max: 1, initial: 0.4, fmt: 'fPc', cvIn: 'mcv' },
-    { id: 'tcvA', label: 'TIME CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'tcv' },
-    { id: 'fcvA', label: 'REGEN CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'fcv' },
-    { id: 'wcvA', label: 'WOW CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'wcv' },
-    { id: 'scvA', label: 'SAT CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'scv' },
-    { id: 'mcvA', label: 'MIX CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'mcv' },
+    att('tcv', 'TIME CV'),
+    att('fcv', 'REGEN CV'),
+    att('wcv', 'WOW CV'),
+    att('scv', 'SAT CV'),
+    att('mcv', 'MIX CV'),
   ],
   sws: [{ id: 'sync', label: 'SYNC', options: ['FREE', '1/1', '1/2', '1/4.', '1/4', '1/8.', '1/8', '1/8T', '1/16', '1/16T'] }],
   ins: [

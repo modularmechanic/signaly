@@ -1,12 +1,8 @@
-import { Base, ch, clamp, oscW, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, oscW } from '../../engine/dsp-prelude';
 
 class Duo extends Base {
   p1 = 0;
   p2 = Math.random();
-
-  defaults(): Params {
-    return { oct: 0, semi: 0, det: 6, mix: 0.5, w1: 2, w2: 2, sync: 0 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const vo = ch(I, 0),

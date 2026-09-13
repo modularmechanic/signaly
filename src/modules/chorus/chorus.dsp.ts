@@ -1,12 +1,8 @@
-import { Base, ch, clamp, DL, TP, type Params } from '../../engine/dsp-prelude';
+import { Base, ch, clamp, DL, TP } from '../../engine/dsp-prelude';
 
 class Chorus extends Base {
   d = new DL(sampleRate * 0.1);
   ph = 0;
-
-  defaults(): Params {
-    return { rate: 0.5, depth: 0.5, mix: 0.5 };
-  }
 
   process(I: Float32Array[][], O: Float32Array[][]): boolean {
     const inp = ch(I, 0),

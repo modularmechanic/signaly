@@ -1,5 +1,6 @@
 node_modules
-dist
+# anchored: an unanchored rule also swallowed src/modules/dist/, the DIST module's source
+/dist
 coverage
 .omc/
 *.log

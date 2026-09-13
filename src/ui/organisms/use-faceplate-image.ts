@@ -1,27 +1,25 @@
 import { useEffect, useState } from 'react';
 import { getImage } from '../../storage/image-store';
-import { getUserModule } from '../../storage/user-module-store';
 
-const PREFIX = 'user:';
-
-/** Blob URL of a user module's faceplate image, or null. Built-ins never have one. */
-export function useFaceplateImage(defId: string): string | null {
-  const [url, setUrl] = useState<string | null>(null);
+/** Blob URL for a stored faceplate image, or null. The id comes from the module's spec
+    (ModuleSpec.faceplate), so "a built-in with a faceplate" is a data question rather than a
+    forbidden one — this hook no longer knows what a user module is. The id is kept beside the
+    url so a change of module shows nothing rather than the previous module's faceplate. */
+export function useFaceplateImage(imageId: string | undefined): string | null {
+  const [img, setImg] = useState<{ id: string; url: string } | null>(null);
   useEffect(() => {
-    if (!defId.startsWith(PREFIX)) return;
-    const imageId = getUserModule(defId.slice(PREFIX.length))?.faceplateImageId;
     if (imageId === undefined) return;
     let objectUrl: string | null = null;
     let live = true;
     void getImage(imageId).then((blob) => {
       if (!blob || !live) return;
       objectUrl = URL.createObjectURL(blob);
-      setUrl(objectUrl);
+      setImg({ id: imageId, url: objectUrl });
     });
     return () => {
       live = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [defId]);
-  return url;
+  }, [imageId]);
+  return img !== null && img.id === imageId ? img.url : null;
 }

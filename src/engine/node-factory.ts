@@ -1,5 +1,20 @@
+import type { ModuleDef } from '../core/types';
 import { getAudioContext } from './audio-context';
 import type { ModuleInstance, NativeSpec } from './types';
+
+/** THE param source: every knob and switch id -> its value, the def's initial unless `live`
+    (a placed instance) has moved it. A DSP's `this.p` is this bag and nothing else — both the
+    live node and verifyDsp's offline render are seeded from here — so a `defaults()` that only
+    restates def initials is dead weight. */
+export function seedParams(
+  d: Pick<ModuleDef, 'knobs' | 'sws'>,
+  live?: Pick<ModuleInstance, 'vals' | 'sws'>,
+): Record<string, number> {
+  const p: Record<string, number> = {};
+  for (const k of d.knobs) p[k.id] = live?.vals[k.id] ?? k.initial;
+  for (const s of d.sws ?? []) p[s.id] = live?.sws[s.id] ?? s.initial ?? 0;
+  return p;
+}
 
 /** One AudioWorkletNode with one mono output per declared out jack. */
 export function createWorkletModuleNode(
@@ -23,17 +38,28 @@ export function makeNode(m: ModuleInstance, native?: NativeSpec): void {
   const d = m.def;
   if (d.worklet) {
     const ac = getAudioContext();
-    const p: Record<string, number> = {};
-    d.knobs.forEach((k) => (p[k.id] = m.vals[k.id] ?? k.initial));
-    (d.sws ?? []).forEach((s) => (p[s.id] = m.sws[s.id] ?? 0));
-    const node = createWorkletModuleNode(ac, d.worklet, d.ins.length, d.outs.length, p);
+    const node = createWorkletModuleNode(ac, d.worklet, d.ins.length, d.outs.length, seedParams(d, m));
     m.node = node;
     d.ins.forEach((j, i) => (m.jacks.in[j.id] = { node, idx: i }));
     d.outs.forEach((j, i) => (m.jacks.out[j.id] = { node, idx: i }));
   } else if (native) {
     native.audio(m);
+    assertJacksFilled(m);
   }
   installCvAttenuverters(m);
+}
+
+/** A native fills `m.jacks` by hand, by string key, and every miss is otherwise silent:
+    wireCable no-ops on an unfilled jack (cable drawn, no audio) and installCvAttenuverters
+    skips an unfilled CV input (knob turns, nothing happens). Only a built-in can be native,
+    so a miss is always a programming error — say so at construction, loudly. */
+function assertJacksFilled(m: ModuleInstance): void {
+  const missing = [
+    ...m.def.ins.filter((j) => !m.jacks.in[j.id]).map((j) => `in.${j.id}`),
+    ...m.def.outs.filter((j) => !m.jacks.out[j.id]).map((j) => `out.${j.id}`),
+  ];
+  if (missing.length)
+    throw new Error(`${m.def.id}: native.audio left ${missing.join(', ')} unfilled in m.jacks`);
 }
 
 /** A bipolar amount knob is voltage scaling at the CV input, not a DSP param, so the

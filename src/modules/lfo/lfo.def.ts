@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'lfo',
@@ -9,7 +9,7 @@ export const def: ModuleDef = {
   worklet: 'lfo',
   knobs: [
     { id: 'rate', label: 'RATE', min: 0.02, max: 30, initial: 2, fmt: 'fHz', curve: 'log', cvIn: 'rate' },
-    { id: 'rateA', label: 'RATE CV', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'rate' },
+    att('rate', 'RATE CV'),
   ],
   ins: [
     { id: 'rate', label: 'RATE CV', kind: 'c' },

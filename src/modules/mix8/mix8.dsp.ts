@@ -29,21 +29,6 @@ class Mix8 extends Base {
     }
   }
 
-  defaults(): Params {
-    const p: Params = { master: 0.8, sel: 0 };
-    for (let c = 1; c <= NCH; c++) {
-      p[`l${c}`] = 0.75;
-      p[`p${c}`] = 0;
-      p[`m${c}`] = 0;
-    }
-    for (let b = 1; b <= NB; b++) {
-      p[`eq${b}f`] = EQ_F[b - 1] ?? 1000;
-      p[`eq${b}g`] = 0;
-      p[`eq${b}q`] = EQ_Q;
-    }
-    return p;
-  }
-
   bake(c: number, b: number): void {
     const i = (c * NB + b) * 3;
     biquad(b, this.eq[i] ?? 1000, this.eq[i + 1] ?? 0, this.eq[i + 2] ?? EQ_Q, sampleRate, this.co, (c * NB + b) * 5);

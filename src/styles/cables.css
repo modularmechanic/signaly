@@ -2,13 +2,6 @@
    colour, socket ring line-style and a glyph — so hue is never the only channel.
    The coloured ring is the only colour on an otherwise black Thonkiconn socket. */
 
-.jack-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px 6px;
-  justify-content: center;
-}
-
 .jack-cell {
   display: flex;
   flex-direction: column;
@@ -44,24 +37,27 @@
   color: var(--jc, var(--kind-a));
 }
 
-/* ---------- socket ---------- */
+/* ---------- socket ----------
+   --jack-d is published by src/main.tsx from JACK_D_PX, the same number panel-layout packs jack
+   columns to, so the socket can never outgrow the column that holds it. No coarse-pointer
+   override: the >=44px pseudo-target below is the touch floor, and --hp scales the hardware. */
 .jack {
   position: relative;
   display: grid;
   place-items: center;
-  width: 37px;
-  height: 37px;
+  width: var(--jack-d);
+  height: var(--jack-d);
   padding: 0;
   border: 2px solid var(--jc, var(--kind-a));
   border-radius: 50%;
   background:
     radial-gradient(
       circle,
-      var(--edge) 0 5.7px,
-      color-mix(in srgb, var(--metal) 64%, var(--edge)) 5.7px 7.2px,
-      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) 7.2px 13.6px,
-      color-mix(in srgb, var(--metal-2) 60%, var(--edge)) 13.6px 15.1px,
-      transparent 15.1px
+      var(--edge) 0 calc(5.7 * var(--u)),
+      color-mix(in srgb, var(--metal) 64%, var(--edge)) calc(5.7 * var(--u)) calc(7.2 * var(--u)),
+      color-mix(in srgb, var(--metal) 70%, var(--metal-hi)) calc(7.2 * var(--u)) calc(13.6 * var(--u)),
+      color-mix(in srgb, var(--metal-2) 60%, var(--edge)) calc(13.6 * var(--u)) calc(15.1 * var(--u)),
+      transparent calc(15.1 * var(--u))
     ),
     repeating-conic-gradient(
       from 0deg,
@@ -160,22 +156,21 @@
 }
 
 .jack.patched::after {
-  background:
-    radial-gradient(
-        circle at 42% 38%,
-        var(--chrome) 0,
-        color-mix(in srgb, var(--chrome) 45%, var(--edge)) 52%,
-        var(--edge) 78%,
-        transparent 80%
-      )
-      50% 50% / 13px 13px no-repeat;
+  background: radial-gradient(
+      circle at 42% 38%,
+      var(--chrome) 0,
+      color-mix(in srgb, var(--chrome) 45%, var(--edge)) 52%,
+      var(--edge) 78%,
+      transparent 80%
+    )
+    50% 50% / calc(13 * var(--u)) calc(13 * var(--u)) no-repeat;
 }
 
 .jack.patched .jack-glyph {
   opacity: 0;
 }
 
-/* set by patch-state while a drag/arm is looking for a partner */
+/* set by jack-interaction while a drag/arm is looking for a partner */
 .jack.compat {
   outline: 3px dashed var(--jc, var(--kind-a));
   outline-offset: 4px;
@@ -236,18 +231,4 @@ body.cable-hover .rack {
   letter-spacing: 0.05em;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
   pointer-events: none;
-}
-
-@media (pointer: coarse) {
-  .jack {
-    width: 46px;
-    height: 46px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .jack.hot,
-  .jack[aria-pressed='true'] {
-    animation: none;
-  }
 }

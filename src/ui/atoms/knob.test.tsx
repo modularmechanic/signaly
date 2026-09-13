@@ -159,15 +159,13 @@ describe('Knob', () => {
     at('pointerup', 2, 40);
   });
 
-  it('pointer angle and ring pct share one -135deg..+135deg sweep, lin and log', () => {
+  it('publishes travel as --pct and paints nothing itself, lin and log', () => {
     for (const d of [CUT, LOG]) {
       for (const n of [0, 0.25, 0.5, 0.75, 1]) {
         const el = renderAt(d, knobValue(d, n));
         expect(Number(el.style.getPropertyValue('--pct'))).toBeCloseTo(n, 6);
-        const deg = /rotate\((-?[\d.]+)deg\)/.exec(
-          (el.querySelector('.knob-cap') as HTMLElement).style.transform,
-        )?.[1];
-        expect(Number(deg)).toBeCloseTo(-135 + n * 270, 1);
+        // The angle is the stylesheet's, derived from --pct and --sweep — see control-geometry.test.
+        expect(el.querySelector('.knob-cap')?.getAttribute('style')).toBeNull();
       }
     }
   });

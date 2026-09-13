@@ -1,20 +1,21 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { readTokens } from '../../hooks/canvas-tokens';
 import { useCanvas } from '../../hooks/use-canvas';
 
 export interface ScopeDisplayProps {
   analyser?: AnalyserNode;
-  color?: string;
 }
 
-/** Oscilloscope trace on the shared render bus. Buffer is allocated once per analyser. */
-export function ScopeDisplay({ analyser, color }: ScopeDisplayProps): ReactNode {
-  const c = color ?? '#57e08a';
+/** Oscilloscope trace on the shared render bus. Buffer is allocated once per analyser.
+    The trace colour is the module's own `--cat`, read off the screen element. */
+export function ScopeDisplay({ analyser }: ScopeDisplayProps): ReactNode {
   const buf = useMemo(() => new Float32Array(analyser ? analyser.fftSize : 1), [analyser]);
 
   const draw = (ctx: CanvasRenderingContext2D, w: number, h: number): void => {
     ctx.clearRect(0, 0, w, h);
     if (!analyser) return;
     analyser.getFloatTimeDomainData(buf);
+    const c = readTokens(ctx.canvas).cat;
     const mid = h / 2;
     const amp = mid - 1;
     ctx.beginPath();
@@ -32,9 +33,9 @@ export function ScopeDisplay({ analyser, color }: ScopeDisplayProps): ReactNode 
     ctx.stroke();
   };
 
-  const ref = useCanvas(draw, { height: 46 });
+  const ref = useCanvas(draw);
   return (
-    <div className="scope-screen" style={{ '--scope-c': c } as CSSProperties}>
+    <div className="scope-screen" style={{ height: '100%' }}>
       <canvas ref={ref} />
     </div>
   );

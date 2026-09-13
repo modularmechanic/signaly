@@ -1,4 +1,4 @@
-import type { ModuleDef } from '../../core/types';
+import { att, type ModuleDef } from '../../core/types';
 
 export const def: ModuleDef = {
   id: 'mult',
@@ -7,7 +7,7 @@ export const def: ModuleDef = {
   hp: 4,
   cat: 'AMP / MIX',
   native: 'mult',
-  knobs: [{ id: 'inA', label: 'IN', min: -1, max: 1, initial: 0, fmt: 'f1', attenuates: 'in' }],
+  knobs: [att('in', 'IN')],
   ins: [{ id: 'in', label: 'IN', kind: 'c' }],
   outs: [
     { id: 'o1', label: 'OUT 1', kind: 'c' },

@@ -6,7 +6,6 @@ import { layoutPanel } from '../../modules/panel-layout';
 import { getSpec } from '../../modules/registry';
 import { selectConnectedJacks, selectModuleRevision, useRackStore } from '../../state/rack-store';
 import { useUiStore } from '../../state/ui-store';
-import { Screw } from '../atoms/screw';
 import { ModuleHeader } from '../molecules/module-header';
 import { PanelNodeView } from './module-panel-node';
 import { useFaceplateImage } from './use-faceplate-image';
@@ -24,9 +23,9 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
   useRackStore(selectModuleRevision(uid));
   const connected = useRackStore(selectConnectedJacks(uid));
   const selected = useUiStore((s) => s.selectedUid === uid);
-  const faceplate = useFaceplateImage(m.def.id);
-
   const spec = getSpec(m.def.id);
+  const faceplate = useFaceplateImage(spec?.faceplate);
+
   const tint = CAT_COLOR[m.def.cat] ?? CAT_COLOR.CUSTOM;
   // The computed fallback layout repeats the module name; the header already shows it.
   const nodes = layoutPanel(m.def).nodes;
@@ -51,20 +50,18 @@ export function ModulePanel({ m }: ModulePanelProps): ReactNode {
           '--cat': tint,
           '--hp-count': m.def.hp,
           backgroundImage: faceplate === null ? undefined : `url(${faceplate})`,
-          backgroundSize: '100% 100%',
+          backgroundSize: faceplate === null ? undefined : '100% 100%',
         } as CSSProperties
       }
       role="group"
       aria-label={`${m.def.name} module`}
       tabIndex={0}
       data-uid={uid}
+      data-def-id={m.def.id}
       onClick={() => useUiStore.getState().setSelectedUid(uid)}
       onKeyDown={onKeyDown}
     >
-      <Screw at="tl" />
-      <Screw at="tr" />
-      <Screw at="bl" />
-      <Screw at="br" />
+      <i className="screws" aria-hidden="true" />
       <div className="panel-grab" draggable onDragStart={onDragStart} title="Drag to move">
         <ModuleHeader name={m.def.name} sub={m.def.sub} color={tint} />
       </div>
