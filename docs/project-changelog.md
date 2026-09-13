@@ -6,6 +6,10 @@ tag and shipped inside v0.0.1.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.0.9] — 2026-09-13
+
 A structural refactor ported onto master, plus the defects its stricter checks found.
 
 ### Fixed
@@ -54,6 +58,11 @@ A structural refactor ported onto master, plus the defects its stricter checks f
   processor's params in the rack and in the offline verify render alike, and `defaults()` is gone from
   every DSP. `KnobDef.fmt` is required, `FMT_RANGE` bounds each format's range, and every attenuverter
   is declared with `att()`.
+- **User modules saved on an earlier release keep loading.** The checker's new rules — required
+  `fmt`, format ranges, one knob/switch id namespace, the fader minimum, the display contract and the
+  layout fit — apply to new definitions and to a module the moment it is saved again, not to work
+  read back from storage or an export. A knob saved without `fmt` reads as `f1`, which is how it
+  always displayed.
 - **The display contract is code.** `src/modules/display-contract.ts` replaces the prose table in
   `docs/system-architecture.md`; a def that declares a screen it can never fill is rejected, and a
   screen whose feed is missing at runtime shows `NO <DISPLAY>` and the reason instead of drawing
